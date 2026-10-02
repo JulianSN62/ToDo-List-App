@@ -2,7 +2,7 @@
 
 Estado del desarrollo por fase (según la sección 14 de `docs/specs-and-design.md`), con lo hecho, lo pendiente y por dónde seguir. Se actualiza al terminar cada fase o funcionalidad.
 
-**Última actualización:** 2026-10-02 · Versión de la app: 0.1.0 · Git: repositorio local desde el 2026-10-02, sin remoto (X87).
+**Última actualización:** 2026-10-03 · Versión de la app: 0.1.0 · Git: repositorio público en GitHub ([JulianSN62/ToDo-List-App](https://github.com/JulianSN62/ToDo-List-App)) desde el 2026-10-03 (X88). Push solo cuando se pide explícitamente (X89).
 
 **Prioridad actual (X84):** web y PWA. El proyecto Android se mantiene compilando, pero no se prueba hasta nuevo aviso.
 
