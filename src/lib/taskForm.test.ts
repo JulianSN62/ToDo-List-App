@@ -3,6 +3,7 @@ import {
   applyLinkDraft,
   diffTaskForm,
   emptyTaskForm,
+  filesToCreate,
   hasTaskFormChanges,
   isLinkDraftDirty,
   isTaskFormDirty,
@@ -43,6 +44,7 @@ const withExtras: TaskFormValues = taskToForm(
 const noTagOrLinkChanges = {
   tags: { add: [], remove: [] },
   links: { add: [], update: [], remove: [] },
+  files: { add: [], remove: [] },
 };
 
 describe('formulario de tarea', () => {
@@ -56,6 +58,7 @@ describe('formulario de tarea', () => {
       color: null,
       tagIds: [],
       links: [],
+      files: [],
     });
   });
 
@@ -195,5 +198,69 @@ describe('formulario de tarea', () => {
     expect(isLinkDraftDirty(links, { key: 'l1', url: 'https://example.com/', label: 'X' })).toBe(
       true,
     );
+  });
+
+  it('carga los archivos guardados y calcula cuáles agregar y quitar', () => {
+    const initial = taskToForm(
+      {
+        folderId: 'f1',
+        title: 'Con archivos',
+        description: null,
+        dueDate: null,
+        isPriority: false,
+        color: null,
+      },
+      {
+        tagIds: [],
+        links: [],
+        files: [
+          { id: 'a1', name: 'foto.jpg', mimeType: 'image/jpeg', size: 100 },
+          { id: 'a2', name: 'doc.pdf', mimeType: 'application/pdf', size: 200 },
+        ],
+      },
+    );
+    expect(initial.files.map((file) => [file.key, file.id, file.data])).toEqual([
+      ['a1', 'a1', null],
+      ['a2', 'a2', null],
+    ]);
+    expect(isTaskFormDirty(initial, initial)).toBe(false);
+
+    const data = new Blob(['hola']);
+    const current: TaskFormValues = {
+      ...initial,
+      files: [
+        initial.files[1]!,
+        { key: 'k1', id: null, name: 'nota.txt', mimeType: 'text/plain', size: 4, data },
+      ],
+    };
+    const changes = diffTaskForm(initial, current);
+    expect(changes.files).toEqual({
+      add: [{ name: 'nota.txt', mimeType: 'text/plain', size: 4, data }],
+      remove: ['a1'],
+    });
+    expect(hasTaskFormChanges(changes)).toBe(true);
+    expect(isTaskFormDirty(initial, current)).toBe(true);
+    expect(filesToCreate(current.files)).toEqual(changes.files.add);
+  });
+
+  it('quitar un archivo deja cambios sin guardar', () => {
+    const initial = taskToForm(
+      {
+        folderId: 'f1',
+        title: 'Con archivo',
+        description: null,
+        dueDate: null,
+        isPriority: false,
+        color: null,
+      },
+      {
+        tagIds: [],
+        links: [],
+        files: [{ id: 'a1', name: 'x.pdf', mimeType: 'application/pdf', size: 1 }],
+      },
+    );
+    const current = { ...initial, files: [] };
+    expect(isTaskFormDirty(initial, current)).toBe(true);
+    expect(diffTaskForm(initial, current).files).toEqual({ add: [], remove: ['a1'] });
   });
 });

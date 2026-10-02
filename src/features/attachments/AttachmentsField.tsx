@@ -1,23 +1,35 @@
-import { Link2, Lock, Paperclip, Pencil, Plus, X } from 'lucide-react';
-import { useId, type KeyboardEvent } from 'react';
+import { Link2, Paperclip, Pencil, Plus, X } from 'lucide-react';
+import { useEffect, useId, useState, type KeyboardEvent } from 'react';
 import { es } from '@/i18n/es';
+import { formatFileSize, MAX_FILE_BYTES } from '@/lib/files';
+import { newId } from '@/lib/ids';
 import { linkDisplayText } from '@/lib/links';
-import type { LinkDraft, LinkEditorDraft } from '@/lib/taskForm';
+import { errorMeta, logger } from '@/lib/logger';
+import type { FileDraft, LinkDraft, LinkEditorDraft } from '@/lib/taskForm';
 import { LIMITS } from '@/lib/validation';
+import { files as fileService } from '@/platform';
 import { Button, IconButton } from '@/ui/button';
 import { Input } from '@/ui/input';
+import { Spinner } from '@/ui/spinner';
+import type { FileListItem } from './fileItems';
+import { FileList } from './FileList';
 import { openExternalLink } from './openLink';
+import { prepareFile } from './prepareFiles';
 
-// Campo "Adjuntos" de la ventana de tarea: links (agregar, editar, quitar).
-// Los archivos y fotos llegan en la Fase 9. El link en edición lo maneja la ventana,
-// para no perderlo si se guarda la tarea sin tocar "Listo".
-export function LinksField({
+// Campo "Adjuntos" de la ventana de tarea: links (agregar, editar, quitar) y archivos
+// (elegir varios, quitar). Todo se guarda al tocar "Guardar"/"Crear". El link en edición
+// lo maneja la ventana, para no perderlo si se guarda la tarea sin tocar "Listo".
+export function AttachmentsField({
   links,
   draft,
   error,
   onDraftChange,
   onCommitDraft,
   onRemove,
+  files,
+  onAddFiles,
+  onRemoveFile,
+  onBusyChange,
 }: {
   links: LinkDraft[];
   draft: LinkEditorDraft | null;
@@ -25,8 +37,52 @@ export function LinksField({
   onDraftChange: (draft: LinkEditorDraft | null) => void;
   onCommitDraft: () => void;
   onRemove: (key: string) => void;
+  files: FileListItem[];
+  onAddFiles: (files: FileDraft[]) => void;
+  onRemoveFile: (key: string) => void;
+  /** true mientras se preparan archivos (no se debería guardar todavía). */
+  onBusyChange?: (busy: boolean) => void;
 }) {
   const id = useId();
+  const [preparing, setPreparing] = useState(false);
+  const [fileErrors, setFileErrors] = useState<string[]>([]);
+
+  useEffect(() => {
+    onBusyChange?.(preparing);
+  }, [preparing, onBusyChange]);
+
+  // Elige archivos, comprime las fotos y descarta los que superan el límite.
+  async function pickFiles() {
+    const picked = await fileService.pickFiles({ multiple: true });
+    if (picked.length === 0) return;
+    setPreparing(true);
+    setFileErrors([]);
+    try {
+      const added: FileDraft[] = [];
+      const errors: string[] = [];
+      for (const file of picked) {
+        const result = await prepareFile(file);
+        if (result.ok) {
+          added.push({ key: newId(), id: null, ...result.file });
+        } else {
+          errors.push(
+            es.files.tooLarge(
+              result.name,
+              formatFileSize(result.size),
+              formatFileSize(MAX_FILE_BYTES),
+            ),
+          );
+        }
+      }
+      if (added.length > 0) onAddFiles(added);
+      setFileErrors(errors);
+    } catch (caught) {
+      logger.warn('No se pudieron preparar los archivos', errorMeta(caught));
+      setFileErrors([es.files.saveError]);
+    } finally {
+      setPreparing(false);
+    }
+  }
 
   // Enter agrega el link sin enviar la ventana (Ctrl/Cmd + Enter sigue guardando la tarea).
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -139,6 +195,16 @@ export function LinksField({
 
       {draft?.key === null ? editor : null}
 
+      <FileList items={files} onRemove={onRemoveFile} />
+
+      {fileErrors.length > 0 ? (
+        <div role="alert" className="flex flex-col gap-1 text-caption text-danger">
+          {fileErrors.map((message, index) => (
+            <p key={index}>{message}</p>
+          ))}
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-2">
         {draft === null ? (
           <Button
@@ -151,10 +217,16 @@ export function LinksField({
             {es.links.add}
           </Button>
         ) : null}
-        <span className="flex items-center gap-2 text-caption text-muted">
-          <Lock aria-hidden className="size-4" />
-          {es.links.fileComingSoon}
-        </span>
+        <Button
+          variant="secondary"
+          size="sm"
+          aria-label={es.files.addLabel}
+          disabled={preparing}
+          onClick={() => void pickFiles()}
+        >
+          {preparing ? <Spinner /> : <Plus />}
+          {preparing ? es.files.preparing : es.files.add}
+        </Button>
       </div>
     </div>
   );

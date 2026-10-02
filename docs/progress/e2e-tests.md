@@ -1,6 +1,6 @@
 # Tests E2E (spec 15.1)
 
-**Estado:** ✅ En el repo desde el Bloque 4 (2026-10-02). Decisiones X93–X95. **54 tests:** 25 en mobile y 29 en desktop. Tardan unos 2–3 minutos, contando el build.
+**Estado:** ✅ En el repo desde el Bloque 4 (2026-10-02). Decisiones X93–X95. **64 tests:** 30 en mobile y 34 en desktop (desde el Bloque 5, con los 10 de adjuntos). Tardan unos 2–3 minutos, contando el build.
 
 ## Cómo se corren
 
@@ -44,11 +44,14 @@ npm run e2e
 | `mobile.spec.ts` | Sin atajos ni ayuda. Buscar como pantalla. Botón Volver en Ajustes, Hoy y Buscar. |
 | `settings.spec.ts` | El tema se aplica y se recuerda. La retención y las alertas quedan deshabilitadas antes del primer sync. Resumen de alertas y nota de Android. Exportar respaldo JSON, con su contenido validado. |
 | `offline.spec.ts` | Sin conexión: la app abre desde el service worker. Crear, editar y borrar. El indicador muestra "Sin conexión · N pendientes" y Ajustes, el contador. Todo sigue al recargar y al volver la conexión. |
-| `screens.spec.ts` | Pasada por Carpetas, tareas, Hoy, Buscar, Ajustes y Alertas en tema claro y oscuro: el tema del sistema se respeta y no hay scroll horizontal. |
+| `attachments.spec.ts` | Archivos adjuntos (Bloque 5). Usa un **Storage ficticio**: el test responde los pedidos de subida, URL firmada y descarga al Supabase de prueba. Prueba:<br>• Adjuntar al crear, con contador en la fila y "Pendiente de subir" sin servidor. Todo sigue al recargar.<br>• Una foto de 4000×3000 queda en 1600×1200 y pesa menos. Se rechaza un archivo de 10,5 MB.<br>• Un error 403 deja "Reintentar"; al reintentar se sube a `{usuario}/{tarea}/{id}-nombre`.<br>• "Liberar espacio", la miniatura que se vuelve a bajar con URL firmada, el visor de fotos y ver sin conexión lo ya abierto. Un PDF no guardado avisa que falta conexión.<br>• Quitar un archivo. Cerrar sesión avisa lo pendiente y vacía los archivos del dispositivo (IndexedDB). |
+| `screens.spec.ts` | Pasada por Carpetas, tareas, Hoy, Buscar, Ajustes y Alertas en tema claro y oscuro, más la ventana con archivos, los detalles de una tarea con archivos y Ajustes → Datos: el tema del sistema se respeta y no hay scroll horizontal. |
 
 ## Límites (lo que no pueden probar)
 
 - **Sincronización real con el servidor:** sin backend, los cambios quedan pendientes. Se comprueba la cola, pero no la subida. Sigue siendo una prueba manual tuya: dos navegadores con tu cuenta.
+- **Storage real:** los adjuntos se prueban contra un Storage ficticio con las mismas respuestas que Supabase. Las políticas del bucket y la limpieza diaria se prueban con tu cuenta. Las funciones SQL de la limpieza, en cambio, tienen tests sobre PGlite.
+- **PDF en pestaña nueva:** el navegador sin ventana de los tests no muestra PDF. Se comprobó a mano con Edge real (X102).
 - **Login con código real:** hace falta tu email. Ya lo probaste en la Fase 1.
 - **Pantallas con la configuración del servidor:** sin la fila `user_settings`, la retención y las alertas solo se ven deshabilitadas. Su lógica con datos está cubierta por los tests de componente: `RetentionSetting.test.tsx` y `DueAlertsScreen.test.tsx`.
 - **Android:** los E2E son de la web. El celular se prueba a mano cuando se retome la Fase 8 (X84).

@@ -85,10 +85,64 @@ export interface ExportFile {
 /** "canceled": el usuario cerró el menú de compartir sin elegir destino. */
 export type SaveResult = 'saved' | 'canceled';
 
-/** Archivos: exportación (Fase 6); selector y cámara llegan en la Fase 9. */
+/** Archivo binario que la app le entrega al usuario (por ejemplo, un adjunto). */
+export interface BinaryFile {
+  name: string;
+  mimeType: string;
+  data: Blob;
+}
+
+export interface PickFilesOptions {
+  multiple?: boolean;
+  /** Tipos aceptados, como en <input accept>. Sin valor: cualquier archivo. */
+  accept?: string;
+}
+
+/** Archivos: exportación (Fase 6), adjuntos (Fase 9). La cámara llega con Android. */
 export interface FileService {
   /** Web: descarga el archivo. Android: lo guarda en la caché y abre el menú de compartir. */
   saveAndShare(file: ExportFile): Promise<SaveResult>;
-  pickFiles?(): Promise<PickedFile[]>;
+  /** Selector de archivos del sistema. Devuelve [] si se cierra sin elegir. */
+  pickFiles(options?: PickFilesOptions): Promise<PickedFile[]>;
+  /** Web: descarga el archivo (nunca lo abre en la app). Android: menú de compartir. */
+  saveFile(file: BinaryFile): Promise<SaveResult>;
+  /** Web: abre un PDF en una pestaña nueva; si el navegador lo bloquea, lo descarga. */
+  openPdf(file: BinaryFile): Promise<void>;
   takePhoto?(): Promise<PickedFile | null>;
+}
+
+export interface CompressImageOptions {
+  outputType: string;
+  quality: number;
+  /** Lado mayor máximo, en píxeles. */
+  maxSide: number;
+}
+
+export interface CompressedImage {
+  data: Blob;
+  width: number;
+  height: number;
+}
+
+/** Compresión de fotos antes de subirlas. */
+export interface ImageService {
+  /** null si el navegador no puede leer la imagen (por ejemplo, HEIC). */
+  compress(data: Blob, options: CompressImageOptions): Promise<CompressedImage | null>;
+}
+
+export interface StoredFileInfo {
+  id: string;
+  /** Cuándo se guardó (milisegundos desde 1970). */
+  savedAt: number;
+}
+
+/** Archivos guardados en el dispositivo: adjuntos sin subir y los ya descargados. */
+export interface LocalFileStore {
+  put(id: string, data: Blob): Promise<void>;
+  get(id: string): Promise<Blob | null>;
+  remove(ids: readonly string[]): Promise<void>;
+  list(): Promise<StoredFileInfo[]>;
+  clear(): Promise<void>;
+  /** Pide que el sistema no borre estos datos cuando falte espacio. */
+  requestPersistence(): Promise<void>;
 }

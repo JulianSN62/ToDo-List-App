@@ -2,9 +2,11 @@
 
 Estado del desarrollo por fase (según la sección 14 de `docs/specs-and-design.md`), con lo hecho, lo pendiente y por dónde seguir. Se actualiza al terminar cada fase o funcionalidad.
 
-**Última actualización:** 2026-10-02 (Bloque 4) · Versión de la app: 0.1.0 · Git: repositorio público en GitHub ([JulianSN62/ToDo-List-App](https://github.com/JulianSN62/ToDo-List-App)) desde el 2026-10-02 (X88). Push solo cuando se pide explícitamente (X89).
+**Última actualización:** 2026-10-02 (Bloque 5) · Versión de la app: 0.1.0 · Git: repositorio público en GitHub ([JulianSN62/ToDo-List-App](https://github.com/JulianSN62/ToDo-List-App)) desde el 2026-10-02 (X88). Push solo cuando se pide explícitamente (X89).
 
-**Avance estimado: ~72 % de la v1** (≈ 82 % de la parte web/PWA). Faltan 3 fases del spec: la 8 (notificaciones de Android), la 9 (archivos) y la 10 (pulido y entrega). Son unos 4 bloques: el 5 y el 6 para web, y unos 2 para Android.
+**Avance estimado: ~80 % de la v1** (≈ 92 % de la parte web/PWA). Falta:
+- La Fase 10 (pulido y entrega): el **Bloque 6**, para web.
+- La parte de Android: notificaciones (Fase 8) y cámara (resto de la Fase 9), en unos 2 bloques.
 
 **Prioridad actual (X84):** web y PWA. El proyecto Android se mantiene compilando, pero no se prueba hasta nuevo aviso.
 
@@ -21,25 +23,50 @@ Estado del desarrollo por fase (según la sección 14 de `docs/specs-and-design.
 | 6 — Configuración, respaldo, limpieza programada | ✅ Hecha (Bloques 3 y 4: alertas de vencimiento también en web) · falta que despliegues la limpieza en Supabase | [phase-06-settings-backup-cleanup.md](./phase-06-settings-backup-cleanup.md) |
 | 7 — PWA y desktop | ✅ Hecha en código (Bloque 3) · falta que publiques la web en Netlify | [phase-07-pwa.md](./phase-07-pwa.md) |
 | 8 — Android y notificaciones | 🟡 Base Android lista y APK compilado · notificaciones **pospuestas** hasta probar el celular (X84) · cálculo de avisos adelantado (Bloque 4) | [phase-08-android-base.md](./phase-08-android-base.md) |
-| 9 — Archivos y fotos | ⏳ Pendiente | — |
+| 9 — Archivos y fotos | ✅ Hecha en web (Bloque 5) · falta que corras la migración nueva y pruebes con tu cuenta · cámara y Android sin probar (X84) | [phase-09-files.md](./phase-09-files.md) |
 | 10 — Pulido y entrega | ⏳ Pendiente | — |
-| Tests E2E (spec 15.1) | ✅ En el repo (Bloque 4): `npm run e2e`, 54 tests | [e2e-tests.md](./e2e-tests.md) |
+| Tests E2E (spec 15.1) | ✅ En el repo (Bloque 4): `npm run e2e`, 64 tests (10 de adjuntos en el Bloque 5) | [e2e-tests.md](./e2e-tests.md) |
 
 ## Plan vigente (2026-10-02, decisiones X84–X87)
 
 Bloques chicos, cada uno cerrado con lint, typecheck, tests y build en verde, documentación al día, **un commit** y tu confirmación.
 
 - **Bloque 3 — ✅ hecho:** resto de las Fases 6 y 7.
-- **Bloque 4 — ✅ hecho:** tests E2E en el repo y Ajustes → Alertas de vencimiento en web (detalle abajo).
-- **Bloque 5 — siguiente sesión: archivos adjuntos (Fase 9, web):** elegir archivos desde la PC, límite de 10 MB, compresión de imágenes, cola de subida sin conexión con estado y "Reintentar", URL firmada, caché para ver sin conexión y borrado del archivo al eliminar. La cámara (Android) queda para cuando se pruebe el celular.
-- **Bloque 6 — pulido web (Fase 10, web):** carga diferida (bundle de ~1,2 MB), accesibilidad (avisos con una ventana abierta, contraste, foco), errores, estados vacíos, textos finales, `SETUP.md` completo y endurecer `file_paths.xml` de Android (sin probar en el celular).
+- **Bloque 4 — ✅ hecho:** tests E2E en el repo y Ajustes → Alertas de vencimiento en web.
+- **Bloque 5 — ✅ hecho:** archivos adjuntos en web (Fase 9). Detalle abajo.
+- **Bloque 6 — siguiente sesión: pulido web (Fase 10, web):** carga diferida (bundle de ~1,2 MB), accesibilidad (avisos con una ventana abierta, contraste, foco), errores, estados vacíos, textos finales, `SETUP.md` completo y endurecer `file_paths.xml` de Android (sin probar en el celular).
 - **Pospuesto — notificaciones Android (resto de la Fase 8, X84).** Se retoma cuando quieras probar el celular; hace falta el **modelo y la versión de Android** (Spike B). Plan ya armado:
   - **8A Base:** `@capacitor/local-notifications`, canales (`due_alerts`, `reminders`, `pinned`), permisos (notificaciones y alarmas exactas), tabla local `notif_registry`, tocar una notificación abre `/task/:id`, cerrar sesión las cancela.
   - **8B Lógica pura con tests:** ~~cálculo de avisos (6.6)~~ (hecho en el Bloque 4: `dueAlertFireTimes`), conjunto deseado (ventana de 60 días, máx. 200) y diferencias para `reconcile()`.
   - **8C** Avisos de vencimiento programados con la configuración de Ajustes (la pantalla ya está, Bloque 4).
   - **8D Recordatorios personalizados (9.7)**, **8E Tareas ancladas (9.6)** y **8F Diagnóstico (SET-6)** con notificación de prueba.
 
-## Última tanda: Bloque 4 — Tests E2E y alertas de vencimiento (2026-10-02)
+## Última tanda: Bloque 5 — Archivos adjuntos en web (2026-10-02)
+
+Plan de la sesión en 5 fases (X96): 5A servidor, 5B datos y plataforma, 5C interfaz, 5D pruebas y 5E cierre. Decisiones del usuario en X97 y técnicas en X98–X104. Detalle en [phase-09-files.md](./phase-09-files.md).
+
+- **Adjuntar:** "+ Archivo" en la ventana de la tarea.
+  - Varios a la vez, de cualquier tipo. Se adjuntan al guardar, como los links.
+  - Las fotos se comprimen (1600 px, calidad 0,8). Se rechaza lo que pase de 10 MB.
+- **Lista con estado:** miniatura o ícono, tamaño y "Pendiente de subir" / "Subiendo…" / "No se pudo subir" con **Reintentar** / "En la nube". Se ve en la ventana y en los detalles de la fila.
+- **Sin conexión:** el archivo se guarda en el dispositivo y una **cola** lo sube cuando vuelve la red, con reintentos.
+- **Abrir:** fotos en un visor, PDF en pestaña nueva, el resto se descarga.
+  - Si no está en el dispositivo, se baja con una URL firmada y queda guardado para verlo sin conexión.
+  - Las fotos se bajan solas para la miniatura.
+- **Ajustes → Datos:** espacio en la nube (de 1 GB) y en el dispositivo, con **Liberar espacio**.
+- **Limpieza:**
+  - Cerrar sesión borra los archivos del dispositivo.
+  - Una **migración nueva** agrega restricciones y una **papelera de Storage**. Corrige que los archivos de tareas borradas desde la app quedaban huérfanos en Storage.
+
+**Verificación:**
+- `npm run lint`, `npm run typecheck`, `npm test` (**210 tests**, 31 archivos, incluida la migración nueva sobre PGlite) y `npm run build`: sin errores.
+- `npm run e2e`: **64 de 64** en verde (10 nuevos de adjuntos, con Storage ficticio).
+- Capturas de la ventana con archivos, los detalles de la fila y Ajustes → Datos, revisadas a 390px y 1280px, en claro y oscuro.
+- PDF en pestaña nueva comprobado con Edge real y la CSP de producción.
+- `npm run android:build`: el APK de debug sigue compilando (sin probar en el celular, X84).
+- **Sin probar todavía (necesita tu cuenta):** la subida real a Storage, ver los archivos desde otro navegador y la limpieza de Storage.
+
+## Tanda anterior: Bloque 4 — Tests E2E y alertas de vencimiento (2026-10-02)
 
 Plan de la sesión en 5 fases (X90): 4A infraestructura E2E, 4B pruebas pasadas al repo + modo sin conexión, 4C lógica pura de las alertas, 4D pantalla de Alertas y 4E cierre.
 
@@ -92,12 +119,15 @@ Pedidos del usuario después de probar el login en el navegador (detalle en [pha
 
 ## Próximo paso recomendado
 
-1. **Vos — probar el Bloque 4 en la PC** (`npm run dev`, con tu cuenta y después de sincronizar):
-   1. Ajustes → Alertas de vencimiento.
-   2. Cambiá los días y la hora, recargá y miralo en otro navegador.
-   3. Opcional: `npm run e2e` para ver correr las pruebas (necesita Edge).
+1. **Vos — preparar y probar el Bloque 5:**
+   1. Correr la migración `supabase/migrations/20261003120000_attachment_files.sql` en el SQL Editor (`docs/SETUP.md`, paso 12.2).
+   2. Con `npm run dev` y tu cuenta, seguir la lista de [phase-09-files.md](./phase-09-files.md#lo-que-tenés-que-hacer-vos):
+      - adjuntar una foto y un PDF y verlos en Storage;
+      - abrirlos en otro navegador;
+      - adjuntar sin conexión y reconectar.
 2. **Vos — pendientes de antes:**
    - Desplegar la limpieza programada en Supabase (`docs/SETUP.md` paso 12).
    - Publicar en Netlify (paso 10).
-   - Probar la sincronización real entre dos navegadores con tu cuenta.
-3. **Siguiente sesión: Bloque 5** (archivos adjuntos en web, Fase 9).
+   - Probar la sincronización real entre dos navegadores.
+   - Probar Ajustes → Alertas con datos reales.
+3. **Siguiente sesión: Bloque 6** (pulido web, Fase 10).

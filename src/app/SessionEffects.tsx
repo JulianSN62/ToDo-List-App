@@ -1,9 +1,16 @@
 import { useEffect, useRef } from 'react';
-import { runStartupCleanup, setAutoRefresh, startSync, useHasSynced } from '@/data';
+import {
+  runStartupCleanup,
+  setAutoRefresh,
+  startFileSync,
+  startSync,
+  stopFileSync,
+  useHasSynced,
+} from '@/data';
 import { lifecycle, platform } from '@/platform';
 
-// Efectos mientras hay una sesión iniciada: sincronización, limpieza local
-// y renovación del token según la app esté en primer o segundo plano.
+// Efectos mientras hay una sesión iniciada: sincronización, subida de archivos,
+// limpieza local y renovación del token según la app esté en primer o segundo plano.
 export function SessionEffects({ userId }: { userId: string }) {
   const hasSynced = useHasSynced();
   const cleanedAfterFirstSync = useRef(false);
@@ -11,6 +18,11 @@ export function SessionEffects({ userId }: { userId: string }) {
   useEffect(() => {
     void startSync();
     void runStartupCleanup();
+    // Cola de subida de archivos adjuntos (se corta al cerrar sesión).
+    startFileSync();
+    return () => {
+      void stopFileSync();
+    };
   }, [userId]);
 
   // La primera vez que llega la configuración del servidor se vuelve a limpiar.

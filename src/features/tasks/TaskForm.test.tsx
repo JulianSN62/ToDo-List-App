@@ -1,12 +1,16 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Task, TaskLink } from '@/data';
+import type { Task, TaskFile, TaskLink } from '@/data';
+import type { PickedFile } from '@/platform';
 import { TaskForm } from './TaskForm';
 
 const create = vi.fn<(input: unknown) => Promise<string>>();
 const applyEdits = vi.fn<(id: string, edits: unknown) => Promise<void>>();
 const showToast = vi.fn();
+const pickFiles = vi.fn<() => Promise<PickedFile[]>>();
+const retryUpload = vi.fn(async (_id: string) => undefined);
+let savedFiles: TaskFile[] = [];
 
 const folders = new Map([
   ['f1', { id: 'f1', parentId: null, name: 'Universidad' }],
@@ -23,6 +27,15 @@ vi.mock('@/data', () => ({
   },
   useFolderTree: () => ({ byId: folders }),
   useTags: () => ({ tags, byId: new Map(tags.map((tag) => [tag.id, tag])), isLoading: false }),
+  useTaskFiles: () => ({ files: savedFiles, isLoading: false }),
+  useOnline: () => true,
+  fileRepo: {
+    getFile: vi.fn(async () => new Blob()),
+    readLocal: vi.fn(async () => null),
+    retryUpload: (id: string) => retryUpload(id),
+  },
+  wakeFileSync: vi.fn(),
+  FileFetchError: class FileFetchError extends Error {},
 }));
 
 vi.mock('@/ui/toast', () => ({
@@ -34,7 +47,17 @@ vi.mock('@/ui/toast', () => ({
 vi.mock('@/platform', () => ({
   platform: { isNative: false },
   externalLinks: { open: vi.fn() },
+  files: { pickFiles: () => pickFiles(), openPdf: vi.fn(), saveFile: vi.fn() },
+  // Sin compresión: los archivos se adjuntan tal cual.
+  images: { compress: vi.fn(async () => null) },
 }));
+
+function picked(name: string, mimeType: string, size: number): PickedFile {
+  return { name, mimeType, size, data: new Blob([new Uint8Array(Math.min(size, 16))]) };
+}
+
+// El visor de fotos usa paneles responsive; no hace falta en estas pruebas.
+vi.mock('../attachments/ImageViewer', () => ({ ImageViewer: () => null }));
 
 // El selector real usa paneles responsive; acá alcanza con elegir "Trabajo".
 vi.mock('../folders/FolderPickerSheet', () => ({
@@ -109,6 +132,28 @@ function renderCreate() {
   return { onClose, title: screen.getByRole('textbox', { name: 'Título' }) };
 }
 
+function renderEdit(extras: { tagIds?: string[]; links?: TaskLink[]; files?: TaskFile[] } = {}) {
+  const onClose = vi.fn();
+  const onDirtyChange = vi.fn();
+  savedFiles = extras.files ?? [];
+  render(
+    <TaskForm
+      mode={{
+        kind: 'edit',
+        task,
+        tagIds: extras.tagIds ?? [],
+        links: extras.links ?? [],
+        files: savedFiles,
+      }}
+      today={TODAY}
+      onClose={onClose}
+      onCancel={vi.fn()}
+      onDirtyChange={onDirtyChange}
+    />,
+  );
+  return { onClose, onDirtyChange };
+}
+
 describe('ventana de nueva tarea', () => {
   beforeEach(() => {
     create.mockReset();
@@ -136,6 +181,7 @@ describe('ventana de nueva tarea', () => {
       color: null,
       tagIds: [],
       links: [],
+      files: [],
     });
   });
 
@@ -258,21 +304,6 @@ describe('ventana de edición', () => {
     applyEdits.mockResolvedValue();
   });
 
-  function renderEdit(extras: { tagIds?: string[]; links?: TaskLink[] } = {}) {
-    const onClose = vi.fn();
-    const onDirtyChange = vi.fn();
-    render(
-      <TaskForm
-        mode={{ kind: 'edit', task, tagIds: extras.tagIds ?? [], links: extras.links ?? [] }}
-        today={TODAY}
-        onClose={onClose}
-        onCancel={vi.fn()}
-        onDirtyChange={onDirtyChange}
-      />,
-    );
-    return { onClose, onDirtyChange };
-  }
-
   it('muestra los datos guardados y guarda solo lo que cambió', async () => {
     const user = userEvent.setup();
     const { onClose, onDirtyChange } = renderEdit();
@@ -290,6 +321,7 @@ describe('ventana de edición', () => {
       folderId: null,
       tags: { add: [], remove: [] },
       links: { add: [], update: [], remove: [] },
+      files: { add: [], remove: [] },
     });
   });
 
@@ -341,6 +373,7 @@ describe('ventana de edición', () => {
       folderId: null,
       tags: { add: [], remove: ['tag-u'] },
       links: { add: [], update: [], remove: ['l1'] },
+      files: { add: [], remove: [] },
     });
   });
 
@@ -365,5 +398,104 @@ describe('ventana de edición', () => {
         },
       }),
     );
+  });
+});
+
+describe('archivos en la ventana', () => {
+  beforeEach(() => {
+    create.mockReset();
+    create.mockResolvedValue('id');
+    applyEdits.mockReset();
+    applyEdits.mockResolvedValue();
+    pickFiles.mockReset();
+    retryUpload.mockClear();
+    savedFiles = [];
+  });
+
+  const savedFile = (overrides: Partial<TaskFile> = {}): TaskFile => ({
+    id: 'a1',
+    taskId: 't1',
+    name: 'presupuesto.pdf',
+    mimeType: 'application/pdf',
+    size: 2048,
+    position: 'a1',
+    status: 'uploaded',
+    cached: true,
+    ...overrides,
+  });
+
+  it('adjunta los archivos elegidos al crear y avisa los que superan 10 MB', async () => {
+    const user = userEvent.setup();
+    const { onClose, title } = renderCreate();
+    pickFiles.mockResolvedValue([
+      picked('informe.pdf', 'application/pdf', 2000),
+      picked('fotos.zip', 'application/zip', 11 * 1024 * 1024),
+    ]);
+
+    await user.click(screen.getByRole('button', { name: 'Adjuntar archivos' }));
+
+    expect(await screen.findByRole('button', { name: 'Abrir informe.pdf' })).toBeInTheDocument();
+    expect(screen.getByText('Se adjunta al guardar')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      '«fotos.zip» pesa 11 MB. El límite es 10 MB por archivo.',
+    );
+    expect(screen.queryByRole('button', { name: 'Abrir fotos.zip' })).not.toBeInTheDocument();
+
+    await user.type(title, 'Entregar informe');
+    await user.click(screen.getByRole('button', { name: 'Crear' }));
+
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        files: [
+          { name: 'informe.pdf', mimeType: 'application/pdf', size: 2000, data: expect.any(Blob) },
+        ],
+      }),
+    );
+  });
+
+  it('quitar un archivo nuevo antes de guardar no lo adjunta', async () => {
+    const user = userEvent.setup();
+    const { title } = renderCreate();
+    pickFiles.mockResolvedValue([picked('nota.txt', 'text/plain', 10)]);
+
+    await user.click(screen.getByRole('button', { name: 'Adjuntar archivos' }));
+    await user.click(await screen.findByRole('button', { name: 'Quitar el archivo nota.txt' }));
+    await user.type(title, 'Sin archivos');
+    await user.click(screen.getByRole('button', { name: 'Crear' }));
+
+    await waitFor(() => expect(create).toHaveBeenCalledTimes(1));
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ files: [] }));
+  });
+
+  it('quitar un archivo guardado se aplica al tocar "Guardar"', async () => {
+    const user = userEvent.setup();
+    const { onClose, onDirtyChange } = renderEdit({ files: [savedFile()] });
+
+    expect(screen.getByRole('button', { name: 'Abrir presupuesto.pdf' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Quitar el archivo presupuesto.pdf' }));
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+    expect(applyEdits).toHaveBeenCalledWith(
+      't1',
+      expect.objectContaining({ files: { add: [], remove: ['a1'] } }),
+    );
+  });
+
+  it('muestra el estado de la subida y permite reintentar', async () => {
+    const user = userEvent.setup();
+    renderEdit({
+      files: [
+        savedFile({ id: 'a1', name: 'uno.pdf', status: 'pending' }),
+        savedFile({ id: 'a2', name: 'dos.pdf', status: 'failed' }),
+      ],
+    });
+
+    expect(screen.getByText('Pendiente de subir')).toBeInTheDocument();
+    expect(screen.getByText('No se pudo subir')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Reintentar la subida de dos.pdf' }));
+    expect(retryUpload).toHaveBeenCalledWith('a2');
   });
 });

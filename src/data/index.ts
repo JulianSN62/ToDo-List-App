@@ -1,7 +1,16 @@
 // Única puerta de entrada a los datos para la UI.
 // La UI nunca importa PowerSync ni Supabase directamente: todo pasa por acá.
 
-export type { CurrentUser, Folder, Tag, Task, TaskLink, UserSettings } from './types';
+export type {
+  CurrentUser,
+  FileStatus,
+  Folder,
+  Tag,
+  Task,
+  TaskFile,
+  TaskLink,
+  UserSettings,
+} from './types';
 export { DEFAULT_SETTINGS } from './types';
 
 export { DataProvider } from './DataProvider';
@@ -18,6 +27,12 @@ export { tagRepo, TagNameTakenError, type TagInput } from './repositories/tagRep
 export { settingsRepo } from './repositories/settingsRepo';
 export { backupRepo, type BackupExport } from './repositories/backupRepo';
 export { runStartupCleanup } from './repositories/maintenance';
+export {
+  fileRepo,
+  FileFetchError,
+  type FileFetchErrorKind,
+  type NewFileInput,
+} from './repositories/attachmentRepo';
 
 export { useFolderTree, useFolderCounts, type FolderTree } from './queries/folders';
 export {
@@ -34,11 +49,19 @@ export {
   type TagList,
   type TaskTagIndex,
 } from './queries/tags';
-export { useAttachmentCounts, useTaskLinks } from './queries/attachments';
+export {
+  useAttachmentCounts,
+  useFileStorageUsage,
+  usePendingFileCount,
+  useTaskFiles,
+  useTaskLinks,
+  type FileStorageUsage,
+} from './queries/attachments';
 export { useSettings, useStoredSettings } from './queries/settings';
 
 export { useSyncState, useOnline, useHasSynced, type SyncKind, type SyncState } from './syncState';
 export { startSync, syncNow, stopSyncAndClear, getPendingUploadCount } from './sync';
+export { startFileSync, stopFileSync, wakeFileSync } from './fileSync';
 
 export {
   AuthFlowError,

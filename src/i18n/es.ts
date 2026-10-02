@@ -260,8 +260,6 @@ export const es = {
   links: {
     add: 'Link',
     addLabel: 'Agregar link',
-    file: 'Archivo',
-    fileComingSoon: 'Archivos y fotos: disponible en una próxima versión',
     urlLabel: 'Dirección',
     urlPlaceholder: 'ejemplo.com/documento',
     labelLabel: 'Texto (opcional)',
@@ -273,6 +271,46 @@ export const es = {
     open: (text: string) => `Abrir ${text} (se abre fuera de la app)`,
     count: (count: number) => plural(count, 'adjunto', 'adjuntos'),
     openError: 'No se pudo abrir el link.',
+  },
+
+  files: {
+    add: 'Archivo',
+    addLabel: 'Adjuntar archivos',
+    preparing: 'Preparando…',
+    tooLarge: (name: string, size: string, max: string) =>
+      `«${name}» pesa ${size}. El límite es ${max} por archivo.`,
+    saveError: 'No se pudieron guardar los archivos en este dispositivo.',
+    list: 'Archivos adjuntos',
+    open: (name: string) => `Abrir ${name}`,
+    remove: (name: string) => `Quitar el archivo ${name}`,
+    retry: 'Reintentar',
+    retryLabel: (name: string) => `Reintentar la subida de ${name}`,
+    status: {
+      draft: 'Se adjunta al guardar',
+      pending: 'Pendiente de subir',
+      pendingOffline: 'Se sube cuando haya conexión',
+      uploading: 'Subiendo…',
+      failed: 'No se pudo subir',
+      remote: 'En la nube',
+    },
+    downloading: 'Descargando…',
+    offline: 'Sin conexión: este archivo todavía no está guardado en este dispositivo.',
+    notUploadedYet: 'Este archivo todavía se está subiendo desde otro dispositivo.',
+    openError: 'No se pudo abrir el archivo.',
+    download: 'Descargar',
+    viewerAlt: (name: string) => `Vista previa de ${name}`,
+    storage: {
+      title: 'Archivos adjuntos',
+      cloud: (used: string, limit: string) =>
+        `${used} en la nube (el plan gratuito de Supabase permite ${limit}).`,
+      device: (size: string) => `${size} guardados en este dispositivo.`,
+      help: 'Los archivos se descargan la primera vez que los abrís y quedan guardados para verlos sin conexión.',
+      free: 'Liberar espacio',
+      freeTitle: '¿Liberar espacio en este dispositivo?',
+      freeDescription: (size: string) =>
+        `Se borran de este dispositivo ${size} de archivos que ya están en la nube. Se vuelven a descargar cuando los abras con conexión. Los que todavía no se subieron se conservan.`,
+      freed: 'Espacio liberado',
+    },
   },
 
   filters: {

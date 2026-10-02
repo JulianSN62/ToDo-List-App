@@ -46,6 +46,25 @@ export interface TaskLink {
   position: string;
 }
 
+/**
+ * Estado de un archivo adjunto visto desde este dispositivo:
+ * pending/uploading/failed/uploaded = se adjuntó acá; remote = vino de otro dispositivo.
+ */
+export type FileStatus = 'pending' | 'uploading' | 'failed' | 'uploaded' | 'remote';
+
+// Archivo adjunto a una tarea (tabla attachments con kind = 'file').
+export interface TaskFile {
+  id: string;
+  taskId: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  position: string;
+  status: FileStatus;
+  /** Está guardado en este dispositivo (se puede ver sin conexión). */
+  cached: boolean;
+}
+
 export interface UserSettings {
   completedRetentionDays: number;
   dueAlertsEnabled: boolean;

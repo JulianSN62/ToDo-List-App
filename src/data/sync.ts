@@ -1,6 +1,8 @@
 import { logger, errorMeta } from '@/lib/logger';
+import { localFiles } from '@/platform';
 import { SupabaseConnector } from './connector';
 import { getDb } from './db';
+import { stopFileSync } from './fileSync';
 
 // Conexión del motor de sincronización. La app funciona igual sin conexión:
 // esto solo sube y baja cambios cuando hay internet.
@@ -26,16 +28,37 @@ export async function syncNow(): Promise<void> {
   }
 }
 
-// Al cerrar sesión: corta la sincronización y borra todos los datos locales.
+// Al cerrar sesión: corta la sincronización y borra todos los datos locales,
+// incluidos los archivos adjuntos guardados en el dispositivo.
 export async function stopSyncAndClear(): Promise<void> {
+  await stopFileSync();
   await getDb().disconnectAndClear();
+  await localFiles.clear().catch((error: unknown) => {
+    logger.warn('No se pudieron borrar los archivos locales', errorMeta(error));
+  });
 }
 
+// Cambios y archivos que todavía no se subieron (se perderían al cerrar sesión).
 export async function getPendingUploadCount(): Promise<number> {
+  const db = getDb();
+  let total = 0;
   try {
-    const stats = await getDb().getUploadQueueStats();
-    return stats.count;
+    total += (await db.getUploadQueueStats()).count;
   } catch {
-    return 0;
+    // Sin estadísticas: se cuenta lo demás.
   }
+  try {
+    const files = await db.get<{ total: number }>(
+      `SELECT COUNT(*) AS total
+         FROM attachment_local_state s
+         JOIN attachments a ON a.id = s.id
+         JOIN tasks t ON t.id = a.task_id
+        WHERE s.upload_status IN ('pending', 'uploading', 'failed')
+          AND a.deleted_at IS NULL AND t.deleted_at IS NULL`,
+    );
+    total += files.total;
+  } catch {
+    // Igual que arriba.
+  }
+  return total;
 }

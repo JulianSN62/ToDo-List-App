@@ -1,5 +1,6 @@
 import { usePowerSync, useStatus } from '@powersync/react';
 import { useEffect, useState, useSyncExternalStore } from 'react';
+import { usePendingFileCount } from './queries/attachments';
 import { SYNCED_TABLES } from './schema';
 
 // Estado de sincronización para la UI: Sincronizado / Sincronizando / Sin conexión / Error.
@@ -67,7 +68,8 @@ export function useHasSynced(): boolean {
 export function useSyncState(): SyncState {
   const status = useStatus();
   const online = useOnline();
-  const pending = usePendingCount();
+  // Los archivos adjuntos sin subir también cuentan como cambios pendientes.
+  const pending = usePendingCount() + usePendingFileCount();
   const flow = status.dataFlowStatus;
 
   let kind: SyncKind;

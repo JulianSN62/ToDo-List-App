@@ -12,6 +12,17 @@ export interface LinkDraft {
   label: string;
 }
 
+// Archivo de la ventana. "id" es null mientras no se guardó; "data" solo existe en los
+// nuevos (todavía no están en el dispositivo).
+export interface FileDraft {
+  key: string;
+  id: string | null;
+  name: string;
+  mimeType: string;
+  size: number;
+  data: Blob | null;
+}
+
 export interface TaskFormValues {
   folderId: string;
   title: string;
@@ -21,6 +32,7 @@ export interface TaskFormValues {
   color: ColorToken | null;
   tagIds: string[];
   links: LinkDraft[];
+  files: FileDraft[];
 }
 
 // Forma mínima de una tarea guardada (evita depender de la capa de datos).
@@ -37,6 +49,20 @@ export interface SavedLink {
   id: string;
   url: string;
   label: string | null;
+}
+
+export interface SavedFile {
+  id: string;
+  name: string;
+  mimeType: string;
+  size: number;
+}
+
+export interface NewFileDraft {
+  name: string;
+  mimeType: string;
+  size: number;
+  data: Blob;
 }
 
 export interface TaskFormPatch {
@@ -58,6 +84,7 @@ export interface TaskFormChanges {
   folderId: string | null;
   tags: { add: string[]; remove: string[] };
   links: { add: NewLinkInput[]; update: SavedLink[]; remove: string[] };
+  files: { add: NewFileDraft[]; remove: string[] };
 }
 
 export type TaskFormError = 'titleRequired' | 'titleTooLong';
@@ -107,12 +134,17 @@ export function emptyTaskForm(folderId: string): TaskFormValues {
     color: null,
     tagIds: [],
     links: [],
+    files: [],
   };
 }
 
 export function taskToForm(
   task: TaskFormSource,
-  extras: { tagIds: readonly string[]; links: readonly SavedLink[] } = { tagIds: [], links: [] },
+  extras: {
+    tagIds: readonly string[];
+    links: readonly SavedLink[];
+    files?: readonly SavedFile[];
+  } = { tagIds: [], links: [] },
 ): TaskFormValues {
   return {
     folderId: task.folderId,
@@ -128,6 +160,14 @@ export function taskToForm(
       url: link.url,
       label: link.label ?? '',
     })),
+    files: (extras.files ?? []).map((file) => ({
+      key: file.id,
+      id: file.id,
+      name: file.name,
+      mimeType: file.mimeType,
+      size: file.size,
+      data: null,
+    })),
   };
 }
 
@@ -141,6 +181,23 @@ export function validateTaskForm(values: TaskFormValues): TaskFormError | null {
 // Links listos para guardar al crear una tarea.
 export function linksToCreate(links: readonly LinkDraft[]): NewLinkInput[] {
   return links.map((link) => ({ url: link.url, label: normalizeLinkLabel(link.label) }));
+}
+
+// Archivos nuevos listos para guardar.
+export function filesToCreate(files: readonly FileDraft[]): NewFileDraft[] {
+  return files.flatMap((file) =>
+    file.id === null && file.data
+      ? [{ name: file.name, mimeType: file.mimeType, size: file.size, data: file.data }]
+      : [],
+  );
+}
+
+function diffFiles(initial: readonly FileDraft[], current: readonly FileDraft[]) {
+  const kept = new Set(current.flatMap((file) => (file.id === null ? [] : [file.id])));
+  return {
+    add: filesToCreate(current),
+    remove: initial.flatMap((file) => (file.id !== null && !kept.has(file.id) ? [file.id] : [])),
+  };
 }
 
 function diffLinks(initial: readonly LinkDraft[], current: readonly LinkDraft[]) {
@@ -193,6 +250,7 @@ export function diffTaskForm(initial: TaskFormValues, current: TaskFormValues): 
       remove: [...beforeTags].filter((id) => !afterTags.has(id)),
     },
     links: diffLinks(initial.links, current.links),
+    files: diffFiles(initial.files, current.files),
   };
 }
 
@@ -204,7 +262,9 @@ export function hasTaskFormChanges(changes: TaskFormChanges): boolean {
     changes.tags.remove.length > 0 ||
     changes.links.add.length > 0 ||
     changes.links.update.length > 0 ||
-    changes.links.remove.length > 0
+    changes.links.remove.length > 0 ||
+    changes.files.add.length > 0 ||
+    changes.files.remove.length > 0
   );
 }
 
@@ -229,6 +289,10 @@ function sameLinks(a: readonly LinkDraft[], b: readonly LinkDraft[]): boolean {
   );
 }
 
+function sameFiles(a: readonly FileDraft[], b: readonly FileDraft[]): boolean {
+  return a.length === b.length && a.every((file, index) => file.key === b[index]?.key);
+}
+
 // Hay cambios sin guardar (se pide confirmación antes de descartarlos).
 export function isTaskFormDirty(initial: TaskFormValues, current: TaskFormValues): boolean {
   return (
@@ -239,6 +303,7 @@ export function isTaskFormDirty(initial: TaskFormValues, current: TaskFormValues
     current.color !== initial.color ||
     current.folderId !== initial.folderId ||
     !sameTagSet(initial.tagIds, current.tagIds) ||
-    !sameLinks(initial.links, current.links)
+    !sameLinks(initial.links, current.links) ||
+    !sameFiles(initial.files, current.files)
   );
 }

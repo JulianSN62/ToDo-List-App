@@ -8,11 +8,15 @@ import type {
   AppLifecycle,
   ExternalLinkService,
   FileService,
+  ImageService,
   KeyValueStorage,
+  LocalFileStore,
   NotificationService,
   PlatformInfo,
 } from './types';
+import { webFileStore } from './web/fileStore';
 import { webFiles } from './web/files';
+import { webImages } from './web/images';
 import { webLifecycle } from './web/lifecycle';
 import { webLinks } from './web/links';
 import { webNotifications } from './web/notifications';
@@ -35,5 +39,10 @@ export const notifications: NotificationService = isNative
   : webNotifications;
 
 export const files: FileService = isNative ? capacitorFiles : webFiles;
+
+// Android usa por ahora lo mismo que la web (el WebView tiene IndexedDB y canvas).
+// Si hiciera falta, se pueden pasar a @capacitor/filesystem sin tocar la app.
+export const images: ImageService = webImages;
+export const localFiles: LocalFileStore = webFileStore;
 
 export type * from './types';

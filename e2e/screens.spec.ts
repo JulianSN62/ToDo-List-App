@@ -1,4 +1,5 @@
 import type { Page, TestInfo } from '@playwright/test';
+import sharp from 'sharp';
 import {
   createFolder,
   createTask,
@@ -8,6 +9,7 @@ import {
   folderLink,
   localDate,
   openApp,
+  openNewTask,
   test,
 } from './fixtures';
 
@@ -57,6 +59,43 @@ for (const colorScheme of ['light', 'dark'] as const) {
         .click();
       await capture(page, testInfo, 'tareas');
 
+      // Ventana con archivos: miniatura, PDF, uno que supera el límite y el estado.
+      const form = await openNewTask(page);
+      await form
+        .getByRole('textbox', { name: es.tasks.titleLabel })
+        .fill('Presentar documentación');
+      const chooser = page.waitForEvent('filechooser');
+      await form.getByRole('button', { name: es.files.addLabel }).click();
+      const photo = await sharp({
+        create: { width: 640, height: 480, channels: 3, background: { r: 60, g: 140, b: 90 } },
+      })
+        .jpeg()
+        .toBuffer();
+      await (
+        await chooser
+      ).setFiles([
+        { name: 'frente del DNI.jpg', mimeType: 'image/jpeg', buffer: photo },
+        {
+          name: 'constancia de domicilio.pdf',
+          mimeType: 'application/pdf',
+          buffer: Buffer.from('%PDF-1.4'),
+        },
+        { name: 'video.mp4', mimeType: 'video/mp4', buffer: Buffer.alloc(11 * 1024 * 1024) },
+      ]);
+      await expect(form.getByRole('alert')).toBeVisible();
+      // La ventana tiene su propio scroll: se muestra la sección de adjuntos.
+      await form.getByRole('button', { name: es.files.addLabel }).scrollIntoViewIfNeeded();
+      await capture(page, testInfo, 'ventana-archivos');
+      await form.getByRole('button', { name: es.common.create, exact: true }).click();
+      await expect(form).toBeHidden();
+      await page
+        .getByRole('button', { name: es.tasks.showDetails('Presentar documentación') })
+        .click();
+      await expect(
+        page.getByRole('button', { name: es.files.open('frente del DNI.jpg') }).locator('img'),
+      ).toBeVisible();
+      await capture(page, testInfo, 'tareas-archivos');
+
       await page.getByRole('link', { name: es.nav.today }).click();
       await expect(page.getByRole('heading', { name: es.today.title })).toBeVisible();
       await capture(page, testInfo, 'hoy');
@@ -68,6 +107,8 @@ for (const colorScheme of ['light', 'dark'] as const) {
       await page.getByRole('link', { name: es.nav.settings }).click();
       await expect(page.getByRole('heading', { name: es.settings.title })).toBeVisible();
       await capture(page, testInfo, 'ajustes');
+      await page.getByRole('heading', { name: es.files.storage.title }).scrollIntoViewIfNeeded();
+      await capture(page, testInfo, 'ajustes-datos');
 
       await page.getByRole('button', { name: new RegExp(es.dueAlerts.title) }).click();
       await expect(page.getByRole('heading', { name: es.dueAlerts.title })).toBeVisible();

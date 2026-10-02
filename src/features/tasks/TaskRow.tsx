@@ -12,7 +12,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useTaskLinks, type Tag, type Task } from '@/data';
+import { useTaskFiles, useTaskLinks, type Tag, type Task } from '@/data';
 import { es } from '@/i18n/es';
 import { cn } from '@/lib/cn';
 import { colorVar } from '@/lib/colors';
@@ -23,6 +23,8 @@ import { Button } from '@/ui/button';
 import { ColorDot } from '@/ui/color-swatch-picker';
 import { DragHandle, type DragHandleBinding } from '@/ui/sortable-list';
 import { TagChip } from '@/ui/tag-chip';
+import { toFileListItem } from '../attachments/fileItems';
+import { FileList } from '../attachments/FileList';
 import { LinkList } from '../attachments/LinkList';
 import { useSwipeActions } from './useSwipeActions';
 
@@ -135,6 +137,7 @@ function TaskRowDetails({
   onGoToFolder?: () => void;
 }) {
   const { links } = useTaskLinks(task.id);
+  const { files } = useTaskFiles(task.id);
   const due = task.dueDate ? relativeDueLabel(task.dueDate, today) : null;
   // La etiqueta relativa solo aporta para fechas cercanas o vencidas.
   const showRelative = task.dueDate !== null && diffInLocalDays(task.dueDate, today) <= 1;
@@ -144,7 +147,8 @@ function TaskRowDetails({
     task.isPriority ||
     task.color ||
     tags.length > 0 ||
-    links.length > 0;
+    links.length > 0 ||
+    files.length > 0;
 
   return (
     <div
@@ -199,6 +203,7 @@ function TaskRowDetails({
         </ul>
       ) : null}
       <LinkList links={links} />
+      <FileList items={files.map(toFileListItem)} />
       {hasDetails ? null : <p className="text-body-sm text-muted">{es.tasks.noDetails}</p>}
       <div className="flex flex-wrap gap-2">
         <Button variant="secondary" size="sm" onClick={onEdit}>

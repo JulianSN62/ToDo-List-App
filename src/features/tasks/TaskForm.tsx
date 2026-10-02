@@ -17,7 +17,14 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
-import { taskRepo, useFolderTree, type Task, type TaskLink } from '@/data';
+import {
+  taskRepo,
+  useFolderTree,
+  useTaskFiles,
+  type Task,
+  type TaskFile,
+  type TaskLink,
+} from '@/data';
 import { es } from '@/i18n/es';
 import { newId } from '@/lib/ids';
 import { errorMeta, logger } from '@/lib/logger';
@@ -25,6 +32,7 @@ import {
   applyLinkDraft,
   diffTaskForm,
   emptyTaskForm,
+  filesToCreate,
   hasTaskFormChanges,
   isLinkDraftDirty,
   isTaskFormDirty,
@@ -44,7 +52,8 @@ import { SheetBody, SheetFooter } from '@/ui/sheet';
 import { Switch } from '@/ui/switch';
 import { AutoTextarea } from '@/ui/textarea';
 import { showErrorToast, showToast } from '@/ui/toast';
-import { LinksField } from '../attachments/LinksField';
+import { AttachmentsField } from '../attachments/AttachmentsField';
+import { draftsToFileItems } from '../attachments/fileItems';
 import { FolderPickerSheet } from '../folders/FolderPickerSheet';
 import { TagsField } from '../tags/TagsField';
 import { DatePicker } from './DatePicker';
@@ -55,7 +64,7 @@ import { deleteTaskWithUndo } from './useTaskActions';
 
 export type TaskFormMode =
   | { kind: 'create'; folderId: string }
-  | { kind: 'edit'; task: Task; tagIds: string[]; links: TaskLink[] };
+  | { kind: 'edit'; task: Task; tagIds: string[]; links: TaskLink[]; files: TaskFile[] };
 
 function report(error: unknown) {
   logger.error('No se pudo guardar la tarea', errorMeta(error));
@@ -123,7 +132,7 @@ export function TaskForm({
   const [baseline, setBaseline] = useState<TaskFormValues>(() =>
     mode.kind === 'create'
       ? emptyTaskForm(mode.folderId)
-      : taskToForm(mode.task, { tagIds: mode.tagIds, links: mode.links }),
+      : taskToForm(mode.task, { tagIds: mode.tagIds, links: mode.links, files: mode.files }),
   );
   const [values, setValues] = useState<TaskFormValues>(baseline);
   const [error, setError] = useState<string | null>(null);
@@ -132,6 +141,10 @@ export function TaskForm({
   // Link que se está escribiendo (todavía no forma parte de la lista).
   const [linkDraft, setLinkDraft] = useState<LinkEditorDraft | null>(null);
   const [linkError, setLinkError] = useState<string | null>(null);
+  // Mientras se preparan (comprimen) archivos no se guarda.
+  const [filesBusy, setFilesBusy] = useState(false);
+  // Estado actual (subida, guardado en el dispositivo) de los archivos ya guardados.
+  const { files: savedFiles } = useTaskFiles(mode.kind === 'edit' ? mode.task.id : null);
 
   const dirty = isTaskFormDirty(baseline, values) || isLinkDraftDirty(values.links, linkDraft);
   useEffect(() => {
@@ -194,6 +207,7 @@ export function TaskForm({
       color: submitted.color,
       tagIds: submitted.tagIds,
       links: linksToCreate(submitted.links),
+      files: filesToCreate(submitted.files),
     };
   }
 
@@ -213,13 +227,14 @@ export function TaskForm({
     }
   }
 
-  // Guarda y deja la ventana lista para la siguiente. Título, descripción y links se vacían
-  // enseguida para seguir escribiendo; fecha, prioridad, color, etiquetas y carpeta se mantienen.
+  // Guarda y deja la ventana lista para la siguiente. Título, descripción, links y archivos se
+  // vacían enseguida para seguir escribiendo; fecha, prioridad, color, etiquetas y carpeta se
+  // mantienen.
   async function createAndContinue() {
     if (mode.kind !== 'create') return;
     const submitted = resolveValues();
     if (!submitted) return;
-    const next = { ...submitted, title: '', description: '', links: [] };
+    const next = { ...submitted, title: '', description: '', links: [], files: [] };
     setValues(next);
     setBaseline(next);
     setError(null);
@@ -231,13 +246,14 @@ export function TaskForm({
       report(caught);
       // Si no se empezó a escribir otra, se recupera lo que no se pudo guardar.
       setValues((current) =>
-        current.title || current.description || current.links.length > 0
+        current.title || current.description || current.links.length > 0 || current.files.length > 0
           ? current
           : {
               ...current,
               title: submitted.title,
               description: submitted.description,
               links: submitted.links,
+              files: submitted.files,
             },
       );
     }
@@ -260,7 +276,10 @@ export function TaskForm({
     }
   }
 
-  const submitPrimary = () => void (isCreate ? createAndClose() : saveChanges());
+  const submitPrimary = () => {
+    if (filesBusy) return;
+    void (isCreate ? createAndClose() : saveChanges());
+  };
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -376,13 +395,24 @@ export function TaskForm({
             </Button>
           </div>
 
-          <LinksField
+          <AttachmentsField
             links={values.links}
             draft={linkDraft}
             error={linkError}
             onDraftChange={changeLinkDraft}
             onCommitDraft={commitLinkDraft}
             onRemove={(key) => change({ links: values.links.filter((link) => link.key !== key) })}
+            files={draftsToFileItems(values.files, savedFiles)}
+            onAddFiles={(added) =>
+              setValues((current) => ({ ...current, files: [...current.files, ...added] }))
+            }
+            onRemoveFile={(key) =>
+              setValues((current) => ({
+                ...current,
+                files: current.files.filter((file) => file.key !== key),
+              }))
+            }
+            onBusyChange={setFilesBusy}
           />
 
           <div className="flex flex-col border-t border-line pt-2">
@@ -412,7 +442,7 @@ export function TaskForm({
             <Button
               variant="secondary"
               className="flex-1 md:flex-none"
-              disabled={saving}
+              disabled={saving || filesBusy}
               onClick={() => void createAndContinue()}
             >
               {es.tasks.createAndAddAnother}
@@ -421,7 +451,7 @@ export function TaskForm({
               type="submit"
               form={`${id}-form`}
               className="flex-1 md:flex-none"
-              disabled={saving}
+              disabled={saving || filesBusy}
             >
               {es.common.create}
             </Button>
@@ -435,7 +465,7 @@ export function TaskForm({
               type="submit"
               form={`${id}-form`}
               className="flex-1 md:flex-none"
-              disabled={saving}
+              disabled={saving || filesBusy}
             >
               {es.common.save}
             </Button>

@@ -6,9 +6,17 @@ import { normalizeLinkLabel, normalizeLinkUrl } from '@/lib/links';
 import { keyBetween } from '@/lib/ordering';
 import { isRetentionExpired } from '@/lib/retention';
 import { normalizeDescription, normalizeTitle } from '@/lib/validation';
+import { localFiles } from '@/platform';
 import { requireUserId } from '../currentUser';
 import { getDb } from '../db';
 import { boolToInt } from '../mappers';
+import {
+  discardStagedFiles,
+  insertFileRows,
+  lastAttachmentPosition,
+  stageFiles,
+  type NewFileInput,
+} from './attachmentRepo';
 
 // Escrituras de tareas. Solo el título es obligatorio.
 
@@ -40,6 +48,7 @@ export interface NewTaskInput {
   color?: ColorToken | null;
   tagIds?: string[];
   links?: LinkInput[];
+  files?: NewFileInput[];
 }
 
 export interface TaskPatch {
@@ -57,6 +66,8 @@ export interface TaskEdits {
   folderId?: string | null;
   tags?: { add: string[]; remove: string[] };
   links?: { add: LinkInput[]; update: (LinkInput & { id: string })[]; remove: string[] };
+  /** Archivos nuevos y los que se quitan (borrado lógico, como los links). */
+  files?: { add: NewFileInput[]; remove: string[] };
 }
 
 // Arma el UPDATE con solo los campos indicados (así se sube solo lo que cambió).
@@ -103,13 +114,7 @@ async function insertLinks(
   now: string,
 ): Promise<void> {
   if (links.length === 0) return;
-  const last = await tx.getOptional<{ position: string }>(
-    `SELECT position FROM attachments
-      WHERE deleted_at IS NULL AND task_id = ?
-      ORDER BY position DESC, id DESC LIMIT 1`,
-    [taskId],
-  );
-  let position = last?.position ?? null;
+  let position = await lastAttachmentPosition(tx, taskId);
   for (const link of links) {
     const { url, label } = validLink(link);
     position = keyBetween(position, null);
@@ -156,7 +161,7 @@ async function withTaskTagIds(
 }
 
 export const taskRepo = {
-  // Crea la tarea al final de la carpeta, con sus etiquetas y links.
+  // Crea la tarea al final de la carpeta, con sus etiquetas, links y archivos.
   async create(input: NewTaskInput): Promise<string> {
     const title = normalizeTitle(input.title);
     if (!title) throw new Error('Título inválido');
@@ -165,29 +170,37 @@ export const taskRepo = {
     const now = nowIso();
     const links = (input.links ?? []).map(validLink);
     const tags = await withTaskTagIds(id, input.tagIds ?? []);
-    await getDb().writeTransaction(async (tx) => {
-      const position = keyBetween(await lastPositionInFolder(tx, input.folderId), null);
-      await tx.execute(
-        `INSERT INTO tasks (id, owner_id, folder_id, title, description, due_date, is_priority,
-                            color, position, is_done, is_pinned, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?)`,
-        [
-          id,
-          ownerId,
-          input.folderId,
-          title,
-          input.description ? normalizeDescription(input.description) : null,
-          input.dueDate ?? null,
-          boolToInt(input.isPriority ?? false),
-          input.color ?? null,
-          position,
-          now,
-          now,
-        ],
-      );
-      await insertLinks(tx, id, ownerId, links, now);
-      await insertTaskTags(tx, id, ownerId, tags, now);
-    });
+    // Los archivos se guardan en el dispositivo antes de crear las filas.
+    const files = await stageFiles(ownerId, id, input.files ?? []);
+    try {
+      await getDb().writeTransaction(async (tx) => {
+        const position = keyBetween(await lastPositionInFolder(tx, input.folderId), null);
+        await tx.execute(
+          `INSERT INTO tasks (id, owner_id, folder_id, title, description, due_date, is_priority,
+                              color, position, is_done, is_pinned, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?)`,
+          [
+            id,
+            ownerId,
+            input.folderId,
+            title,
+            input.description ? normalizeDescription(input.description) : null,
+            input.dueDate ?? null,
+            boolToInt(input.isPriority ?? false),
+            input.color ?? null,
+            position,
+            now,
+            now,
+          ],
+        );
+        await insertLinks(tx, id, ownerId, links, now);
+        await insertFileRows(tx, id, ownerId, files, now);
+        await insertTaskTags(tx, id, ownerId, tags, now);
+      });
+    } catch (error) {
+      await discardStagedFiles(files);
+      throw error;
+    }
     return id;
   },
 
@@ -201,8 +214,8 @@ export const taskRepo = {
   },
 
   // Guarda todos los cambios de la ventana de edición en una sola transacción.
-  // Orden: campos, carpeta, links y etiquetas (agregar etiquetas va al final porque es
-  // lo único que el servidor podría rechazar, y así no arrastra al resto).
+  // Orden: campos, carpeta, links, archivos y etiquetas (agregar etiquetas va al final
+  // porque es lo único que el servidor podría rechazar, y así no arrastra al resto).
   async applyEdits(id: string, edits: TaskEdits): Promise<void> {
     const ownerId = requireUserId();
     const now = nowIso();
@@ -213,39 +226,48 @@ export const taskRepo = {
       ...validLink(link),
     }));
     const tagsToAdd = await withTaskTagIds(id, edits.tags?.add ?? []);
+    const filesToAdd = await stageFiles(ownerId, id, edits.files?.add ?? []);
+    // Links y archivos que se quitan: borrado lógico.
+    const attachmentsToRemove = [...(edits.links?.remove ?? []), ...(edits.files?.remove ?? [])];
 
-    await getDb().writeTransaction(async (tx) => {
-      if (sets.length > 0) {
-        await tx.execute(
-          `UPDATE tasks SET ${[...sets, 'updated_at = ?'].join(', ')} WHERE id = ?`,
-          [...values, now, id],
-        );
-      }
-      if (edits.folderId) {
-        const position = keyBetween(await lastPositionInFolder(tx, edits.folderId), null);
-        await tx.execute(
-          'UPDATE tasks SET folder_id = ?, position = ?, updated_at = ? WHERE id = ?',
-          [edits.folderId, position, now, id],
-        );
-      }
-      for (const linkId of edits.links?.remove ?? []) {
-        await tx.execute(
-          'UPDATE attachments SET deleted_at = ?, updated_at = ? WHERE id = ? AND task_id = ?',
-          [now, now, linkId, id],
-        );
-      }
-      for (const link of linksToUpdate) {
-        await tx.execute(
-          'UPDATE attachments SET url = ?, label = ?, updated_at = ? WHERE id = ? AND task_id = ?',
-          [link.url, link.label, now, link.id, id],
-        );
-      }
-      await insertLinks(tx, id, ownerId, linksToAdd, now);
-      for (const tagId of edits.tags?.remove ?? []) {
-        await tx.execute('DELETE FROM task_tags WHERE task_id = ? AND tag_id = ?', [id, tagId]);
-      }
-      await insertTaskTags(tx, id, ownerId, tagsToAdd, now);
-    });
+    try {
+      await getDb().writeTransaction(async (tx) => {
+        if (sets.length > 0) {
+          await tx.execute(
+            `UPDATE tasks SET ${[...sets, 'updated_at = ?'].join(', ')} WHERE id = ?`,
+            [...values, now, id],
+          );
+        }
+        if (edits.folderId) {
+          const position = keyBetween(await lastPositionInFolder(tx, edits.folderId), null);
+          await tx.execute(
+            'UPDATE tasks SET folder_id = ?, position = ?, updated_at = ? WHERE id = ?',
+            [edits.folderId, position, now, id],
+          );
+        }
+        for (const attachmentId of attachmentsToRemove) {
+          await tx.execute(
+            'UPDATE attachments SET deleted_at = ?, updated_at = ? WHERE id = ? AND task_id = ?',
+            [now, now, attachmentId, id],
+          );
+        }
+        for (const link of linksToUpdate) {
+          await tx.execute(
+            'UPDATE attachments SET url = ?, label = ?, updated_at = ? WHERE id = ? AND task_id = ?',
+            [link.url, link.label, now, link.id, id],
+          );
+        }
+        await insertLinks(tx, id, ownerId, linksToAdd, now);
+        await insertFileRows(tx, id, ownerId, filesToAdd, now);
+        for (const tagId of edits.tags?.remove ?? []) {
+          await tx.execute('DELETE FROM task_tags WHERE task_id = ? AND tag_id = ?', [id, tagId]);
+        }
+        await insertTaskTags(tx, id, ownerId, tagsToAdd, now);
+      });
+    } catch (error) {
+      await discardStagedFiles(filesToAdd);
+      throw error;
+    }
   },
 
   // Completar desancla la tarea. Desmarcar la devuelve a su posición original (no se tocó).
@@ -301,7 +323,8 @@ export const taskRepo = {
   },
 
   // Borra definitivamente las completadas que superaron la retención, con sus etiquetas
-  // y links locales (en el servidor se borran en cascada). Es idempotente.
+  // y adjuntos locales (en el servidor se borran en cascada y los archivos quedan en la
+  // papelera de Storage para la limpieza diaria). Es idempotente.
   async purgeExpiredCompleted(retentionDays: number, now: Date = new Date()): Promise<number> {
     const db = getDb();
     const done = await db.getAll<{ id: string; done_at: string | null }>(
@@ -312,16 +335,26 @@ export const taskRepo = {
       .map((row) => row.id);
     if (expired.length === 0) return 0;
     const idsJson = JSON.stringify(expired);
+    const files = await db.getAll<{ id: string }>(
+      "SELECT id FROM attachments WHERE kind = 'file' AND task_id IN (SELECT value FROM json_each(?))",
+      [idsJson],
+    );
+    const fileIds = files.map((file) => file.id);
     await db.writeTransaction(async (tx) => {
       await tx.execute('DELETE FROM task_tags WHERE task_id IN (SELECT value FROM json_each(?))', [
         idsJson,
       ]);
       await tx.execute(
-        "DELETE FROM attachments WHERE kind = 'link' AND task_id IN (SELECT value FROM json_each(?))",
+        'DELETE FROM attachment_local_state WHERE id IN (SELECT value FROM json_each(?))',
+        [JSON.stringify(fileIds)],
+      );
+      await tx.execute(
+        'DELETE FROM attachments WHERE task_id IN (SELECT value FROM json_each(?))',
         [idsJson],
       );
       await tx.execute('DELETE FROM tasks WHERE id IN (SELECT value FROM json_each(?))', [idsJson]);
     });
+    await localFiles.remove(fileIds).catch(() => undefined);
     return expired.length;
   },
 };

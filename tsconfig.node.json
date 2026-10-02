@@ -29,5 +29,8 @@
     "supabase/tests/**/*.ts"
   ],
   // Usa código de src (alias @/): se revisa con tsconfig.e2e.json.
-  "exclude": ["supabase/tests/settingsChecks.test.ts"]
+  "exclude": [
+    "supabase/tests/settingsChecks.test.ts",
+    "supabase/tests/attachmentFilesSql.test.ts"
+  ]
 }

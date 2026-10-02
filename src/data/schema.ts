@@ -118,6 +118,21 @@ const user_settings = new Table(
   tableOptions,
 );
 
+// Solo local (spec 5.5): estado de cada archivo adjunto en este dispositivo. El id es
+// el del adjunto. upload_status: pending | uploading | uploaded | failed, o null si el
+// archivo vino de otro dispositivo. cached = 1 si el archivo está guardado acá.
+const attachment_local_state = new Table(
+  {
+    upload_status: column.text,
+    attempts: column.integer,
+    next_attempt_at: column.text,
+    last_error: column.text,
+    cached: column.integer,
+    updated_at: column.text,
+  },
+  { localOnly: true },
+);
+
 export const AppSchema = new Schema({
   folders,
   tasks,
@@ -127,6 +142,7 @@ export const AppSchema = new Schema({
   reminders,
   reminder_times,
   user_settings,
+  attachment_local_state,
 });
 
 export type Database = (typeof AppSchema)['types'];
@@ -136,6 +152,7 @@ export type TagRow = Database['tags'];
 export type TaskTagRow = Database['task_tags'];
 export type AttachmentRow = Database['attachments'];
 export type UserSettingsRow = Database['user_settings'];
+export type AttachmentLocalStateRow = Database['attachment_local_state'];
 
 // Tablas que se sincronizan y columnas booleanas de cada una (para convertir 0/1 al subir).
 export const SYNCED_TABLES = [

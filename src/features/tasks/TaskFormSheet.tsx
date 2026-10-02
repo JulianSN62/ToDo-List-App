@@ -2,7 +2,7 @@ import { FolderOpen, X } from 'lucide-react';
 import { useCallback, useState, type ReactNode } from 'react';
 import { useToday } from '@/app/hooks/useToday';
 import { useUiStore } from '@/app/uiStore';
-import { useTask, useTaskLinks, useTaskTagIds } from '@/data';
+import { useTask, useTaskFiles, useTaskLinks, useTaskTagIds } from '@/data';
 import { es } from '@/i18n/es';
 import { IconButton } from '@/ui/button';
 import { ConfirmDialog } from '@/ui/confirm-dialog';
@@ -157,10 +157,11 @@ export function EditTaskSheet({
   const result = useTask(session.taskId);
   const tagIds = useTaskTagIds(session.taskId);
   const links = useTaskLinks(session.taskId);
+  const files = useTaskFiles(session.taskId);
   // Mientras la consulta se actualiza puede devolver la tarea anterior: se ignora.
   const task = result.task?.id === session.taskId ? result.task : null;
-  // El formulario se arma una sola vez, con etiquetas y links ya cargados.
-  const ready = task !== null && !tagIds.isLoading && !links.isLoading;
+  // El formulario se arma una sola vez, con etiquetas, links y archivos ya cargados.
+  const ready = task !== null && !tagIds.isLoading && !links.isLoading && !files.isLoading;
   const today = useToday();
 
   return (
@@ -182,7 +183,13 @@ export function EditTaskSheet({
         ready ? (
           <TaskForm
             key={session.key}
-            mode={{ kind: 'edit', task, tagIds: tagIds.tagIds, links: links.links }}
+            mode={{
+              kind: 'edit',
+              task,
+              tagIds: tagIds.tagIds,
+              links: links.links,
+              files: files.files,
+            }}
             today={today}
             onClose={controls.close}
             onCancel={controls.requestClose}

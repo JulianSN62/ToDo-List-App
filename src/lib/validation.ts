@@ -10,6 +10,8 @@ export const LIMITS = {
   tagName: 50,
   linkUrl: 2048,
   linkLabel: 200,
+  fileName: 255,
+  mimeType: 255,
 } as const;
 
 export const folderNameSchema = z.string().trim().min(1).max(LIMITS.folderName);

@@ -224,6 +224,9 @@ En **SQL Editor → New query**, de a una y en este orden (pegar todo el archivo
 
 1. `supabase/migrations/20261002120000_cleanup_functions.sql` — funciones de limpieza (solo las puede ejecutar la secret key).
 2. `supabase/migrations/20261002120100_cleanup_schedule.sql` — activa `pg_cron` y `pg_net` y programa la tarea `cleanup-daily` (06:30 UTC = 03:30 en Argentina).
+3. `supabase/migrations/20261003120000_attachment_files.sql` — archivos adjuntos (Bloque 5): restricciones de las filas de archivos y una **papelera de Storage**. Cuando un adjunto se borra de verdad (por ejemplo, al limpiarse una tarea completada), su ruta queda anotada y la limpieza diaria borra el archivo. Actualiza las dos funciones del punto 1; la Edge Function no cambia.
+
+Si ya habías corrido las dos primeras, alcanza con correr la 3. Hace falta **antes de adjuntar archivos con tu cuenta**: sin ella el servidor no conoce las restricciones nuevas y los archivos de tareas borradas quedarían en Storage.
 
 ### 12.3 Desplegar la Edge Function
 

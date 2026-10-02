@@ -1,12 +1,15 @@
 import { toColorToken } from '@/lib/colors';
 import { isValidAlertTime, parseOffsets } from '@/lib/dueAlerts';
+import { normalizeMimeType } from '@/lib/files';
 import { clampRetentionDays } from '@/lib/retention';
 import type { AttachmentRow, FolderRow, TagRow, TaskRow, UserSettingsRow } from './schema';
 import {
   DEFAULT_SETTINGS,
+  type FileStatus,
   type Folder,
   type Tag,
   type Task,
+  type TaskFile,
   type TaskLink,
   type UserSettings,
 } from './types';
@@ -62,6 +65,30 @@ export function toTaskLink(row: WithId<AttachmentRow>): TaskLink {
     url: row.url ?? '',
     label: row.label ?? null,
     position: row.position ?? '',
+  };
+}
+
+export type AttachmentFileRow = WithId<AttachmentRow> & {
+  upload_status: string | null;
+  cached: number | null;
+};
+
+const LOCAL_STATUSES: readonly FileStatus[] = ['pending', 'uploading', 'failed', 'uploaded'];
+
+export function toFileStatus(value: string | null | undefined): FileStatus {
+  return LOCAL_STATUSES.find((status) => status === value) ?? 'remote';
+}
+
+export function toTaskFile(row: AttachmentFileRow): TaskFile {
+  return {
+    id: row.id,
+    taskId: row.task_id ?? '',
+    name: row.file_name ?? '',
+    mimeType: normalizeMimeType(row.mime_type),
+    size: row.size_bytes ?? 0,
+    position: row.position ?? '',
+    status: toFileStatus(row.upload_status),
+    cached: row.cached === 1,
   };
 }
 

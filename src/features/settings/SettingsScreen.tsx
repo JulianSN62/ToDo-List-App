@@ -26,10 +26,11 @@ import { ScreenHeader, ScreenTitle } from '@/ui/screen-header';
 import { useCurrentUser, useAuth } from '../auth/authContext';
 import { SyncIndicator } from '../sync/SyncIndicator';
 import { BackupSetting } from './BackupSetting';
+import { FilesStorageSetting } from './FilesStorageSetting';
 import { RetentionSetting } from './RetentionSetting';
 
 // Ajustes (spec 7.7): tema, retención, alertas de vencimiento, etiquetas, respaldo,
-// sincronización, cuenta y versión. El diagnóstico de notificaciones llega con la Fase 8
+// espacio de los archivos adjuntos, sincronización, cuenta y versión. El diagnóstico de notificaciones llega con la Fase 8
 // (solo Android).
 
 function Group({ title, icon, children }: { title: string; icon: ReactNode; children: ReactNode }) {
@@ -167,6 +168,7 @@ export function SettingsScreen() {
 
           <Group title={es.settings.groupData} icon={<Database aria-hidden />}>
             <BackupSetting />
+            <FilesStorageSetting />
             <h3 className="mt-4 flex items-center gap-2 text-body font-medium text-fg [&_svg]:size-5 [&_svg]:text-muted">
               <Cloud aria-hidden />
               {es.settings.sync}

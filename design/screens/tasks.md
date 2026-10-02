@@ -83,6 +83,25 @@ Altura dinámica según contenido (`auto`, máx. 50% de la pantalla), sube con e
 
 Atajos de fecha: Hoy / Mañana / Próxima semana / Sin fecha — chips de 40px alto, uno seleccionado en `accent`.
 
+## Adjuntos: archivos (cambio del 2026-10-02, X97–X104)
+
+En "Adjuntos", debajo de los links, va la lista de archivos y la fila de botones **[+ Link] [+ Archivo]** (este último permite elegir varios; mientras comprime fotos muestra un spinner y "Preparando…").
+
+```
+┌──────────────────────────────────────────────┐
+│ [miniatura 40px] frente del DNI.jpg       [x] │  tocar la fila abre el archivo
+│                  2 KB · Pendiente de subir     │  caption text-muted
+│ [ícono PDF]      contrato.pdf  [Reintentar][x] │  error: estado en text-danger
+│                  8 B · No se pudo subir        │
+└──────────────────────────────────────────────┘
+```
+
+- **Fila:** alto mínimo 56px. Miniatura o ícono de 40×40 (`radius-sm`, borde `line`, fondo `app`): foto recortada (`object-cover`), `FileText` para PDF y `File` para el resto. Nombre en `body-sm` truncado, debajo `caption` con tamaño y estado. La X (40×40) solo aparece en la ventana; en los detalles desplegados de la fila la lista es de solo lectura.
+- **Estados:** "Se adjunta al guardar" (todavía no se guardó), "Pendiente de subir" / "Se sube cuando haya conexión", "Subiendo…", "No se pudo subir" (en `danger`, con botón **Reintentar**), "En la nube" (no está en este dispositivo) o nada (listo).
+- **Abrir:** foto → visor (ventana con la imagen grande, "Cerrar" y "Descargar"); PDF → pestaña nueva; resto → descarga.
+- **Error de tamaño:** debajo de la lista, en `caption` `danger`: "«x» pesa 10,5 MB. El límite es 10 MB por archivo."
+- **Ajustes → Datos:** bloque "Archivos adjuntos" (ícono clip) con el espacio en la nube y en el dispositivo, una ayuda y el botón secundario **Liberar espacio** (con confirmación).
+
 ## Menú contextual
 
 ```
