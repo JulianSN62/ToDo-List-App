@@ -3,6 +3,7 @@ node_modules/
 
 # ---------- Builds y salidas generadas ----------
 dist/
+dist-e2e/
 dev-dist/
 coverage/
 .vite/

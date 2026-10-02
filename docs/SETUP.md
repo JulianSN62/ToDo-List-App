@@ -15,6 +15,7 @@ Guía paso a paso para crear la base de datos, conectar la sincronización, corr
 | Cuenta de PowerSync | Plan gratuito alcanza | Sincronización offline |
 | Android Studio + **JDK 21** | Android SDK 36 | Compilar el APK |
 | Cuenta de Netlify | — | Publicar la web (más adelante) |
+| Microsoft Edge | El que trae Windows | Tests E2E (`npm run e2e`) |
 
 ---
 
@@ -265,3 +266,18 @@ select status_code, content from net._http_response order by created desc limit 
 También se ve en **Edge Functions → cleanup → Logs** (solo cantidades, nunca datos de tareas).
 
 Historial de las ejecuciones diarias: `select * from cron.job_run_details order by start_time desc limit 10;`
+
+## 13. Tests
+
+```bash
+npm test        # unitarios, de componentes y de las funciones SQL (PGlite)
+npm run e2e     # de punta a punta en el navegador (Playwright + Microsoft Edge)
+```
+
+- `npm test` no necesita nada externo.
+- `npm run e2e`:
+  - Compila un build aparte en `dist-e2e/` con URLs ficticias: **no usa tu `.env`** ni se conecta a Supabase o PowerSync.
+  - Lo sirve en http://localhost:4174 y prueba la app en tamaño celular (390px) y escritorio (1280px), con una sesión ficticia y sin red.
+  - Usa el Microsoft Edge instalado, así que no descarga navegadores.
+  - Si un test falla: `npx playwright show-report`.
+- Detalle de qué cubre cada prueba: `docs/progress/e2e-tests.md`.

@@ -1,4 +1,5 @@
 import { toColorToken } from '@/lib/colors';
+import { isValidAlertTime, parseOffsets } from '@/lib/dueAlerts';
 import { clampRetentionDays } from '@/lib/retention';
 import type { AttachmentRow, FolderRow, TagRow, TaskRow, UserSettingsRow } from './schema';
 import {
@@ -64,28 +65,21 @@ export function toTaskLink(row: WithId<AttachmentRow>): TaskLink {
   };
 }
 
-function parseOffsets(raw: string | null): number[] {
-  if (!raw) return DEFAULT_SETTINGS.dueAlertOffsets;
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.every((value) => Number.isInteger(value) && value >= 0)) {
-      return parsed as number[];
-    }
-  } catch {
-    // Valor inválido: se usan los valores por defecto.
-  }
-  return DEFAULT_SETTINGS.dueAlertOffsets;
-}
-
 export function toSettings(row: UserSettingsRow | null | undefined): UserSettings {
   if (!row) return DEFAULT_SETTINGS;
   return {
     completedRetentionDays: clampRetentionDays(
       row.completed_retention_days ?? DEFAULT_SETTINGS.completedRetentionDays,
     ),
-    dueAlertsEnabled: row.due_alerts_enabled === null ? true : row.due_alerts_enabled === 1,
-    dueAlertOffsets: parseOffsets(row.due_alert_offsets),
-    dueAlertTime: row.due_alert_time ?? DEFAULT_SETTINGS.dueAlertTime,
+    dueAlertsEnabled:
+      row.due_alerts_enabled === null
+        ? DEFAULT_SETTINGS.dueAlertsEnabled
+        : row.due_alerts_enabled === 1,
+    dueAlertOffsets: parseOffsets(row.due_alert_offsets) ?? DEFAULT_SETTINGS.dueAlertOffsets,
+    dueAlertTime:
+      row.due_alert_time && isValidAlertTime(row.due_alert_time)
+        ? row.due_alert_time
+        : DEFAULT_SETTINGS.dueAlertTime,
   };
 }
 

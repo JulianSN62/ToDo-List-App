@@ -8,7 +8,10 @@ import tseslint from 'typescript-eslint';
 export default defineConfig([
   globalIgnores([
     'dist',
+    'dist-e2e',
     'dev-dist',
+    'playwright-report',
+    'test-results',
     'coverage',
     'android',
     'design',
@@ -41,6 +44,18 @@ export default defineConfig([
     },
     rules: {
       'no-console': 'off',
+    },
+  },
+  {
+    // Tests E2E (Playwright): corren en Node y manejan el navegador.
+    files: ['e2e/**/*.ts'],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
+    },
+    rules: {
+      'no-console': 'off',
+      // El "use()" de los fixtures de Playwright no es el hook de React.
+      'react-hooks/rules-of-hooks': 'off',
     },
   },
   {

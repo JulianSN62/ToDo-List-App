@@ -43,8 +43,10 @@ export function Toaster() {
   return (
     <SonnerToaster
       position={isSidebarLayout ? 'bottom-left' : 'bottom-center'}
-      // En mobile queda por encima de la barra inferior de navegación
-      mobileOffset={{ bottom: 'calc(64px + 16px + env(safe-area-inset-bottom, 0px))' }}
+      // En mobile queda por encima de la barra inferior y del botón "+" (56px), para no taparlo
+      mobileOffset={{
+        bottom: 'calc(64px + 16px + 56px + 8px + env(safe-area-inset-bottom, 0px))',
+      }}
       toastOptions={{
         unstyled: true,
         classNames: {

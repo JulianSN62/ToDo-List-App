@@ -31,10 +31,14 @@ function contentSecurityPolicy(env: Record<string, string>): Plugin {
 }
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), 'VITE_');
+  // En el modo e2e no se lee ningún .env: las variables (ficticias) llegan desde
+  // playwright.config.ts, así los tests nunca usan ni tocan el proyecto real.
+  const envDir = mode === 'e2e' ? false : process.cwd();
+  const env = loadEnv(mode, envDir, 'VITE_');
   assertNoSecretsInPublicEnv(env);
 
   return {
+    envDir,
     plugins: [
       react(),
       tailwindcss(),

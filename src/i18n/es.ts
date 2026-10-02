@@ -6,6 +6,19 @@ import type { ColorToken } from '@/lib/colors';
 const plural = (count: number, singular: string, pluralForm: string) =>
   `${count} ${count === 1 ? singular : pluralForm}`;
 
+// "a, b y c"
+const joinWithAnd = (items: readonly string[]) =>
+  items.length <= 1 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} y ${items.at(-1)}`;
+
+// Anticipación de una alerta de vencimiento: "el mismo día", "2 días antes", "1 semana antes".
+const alertOffset = (days: number) => {
+  if (days === 0) return 'el mismo día';
+  if (days === 7) return '1 semana antes';
+  return `${plural(days, 'día', 'días')} antes`;
+};
+
+const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+
 export const es = {
   common: {
     cancel: 'Cancelar',
@@ -334,7 +347,7 @@ export const es = {
     retentionDecrease: 'Un día menos',
     retentionIncrease: 'Un día más',
     retentionUnavailable: 'Vas a poder cambiarla cuando termine la primera sincronización.',
-    retentionSaveError: 'No se pudo guardar el cambio. Probá de nuevo.',
+    saveError: 'No se pudo guardar el cambio. Probá de nuevo.',
     theme: 'Tema',
     themeSystem: 'Sistema',
     themeLight: 'Claro',
@@ -352,6 +365,22 @@ export const es = {
     about: 'Acerca de',
     version: (version: string) => `Versión ${version}`,
     email: 'Email',
+  },
+
+  dueAlerts: {
+    title: 'Alertas de vencimiento',
+    enable: 'Activar alertas',
+    enableHelp: 'Avisos antes de que venza una tarea con fecha límite.',
+    notifyOn: 'Avisar:',
+    offset: (days: number) => capitalize(alertOffset(days)),
+    time: 'Hora del aviso',
+    keepOne:
+      'Tiene que quedar al menos un día marcado. Para no recibir avisos, desactivá las alertas.',
+    androidOnly: 'Los avisos llegan en la app de Android.',
+    unavailable: 'Vas a poder cambiarlas cuando termine la primera sincronización.',
+    summary: (offsets: readonly number[], time: string) =>
+      `${capitalize(joinWithAnd(offsets.map(alertOffset)))} · ${time}`,
+    summaryOff: 'Desactivadas',
   },
 
   shortcuts: {

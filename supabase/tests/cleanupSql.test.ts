@@ -3,35 +3,9 @@
 // (PGlite): se aplica la migración inicial y la de limpieza, con stubs mínimos de lo
 // que Supabase trae de fábrica (auth, storage y roles).
 
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { PGlite } from '@electric-sql/pglite';
-import { pgcrypto } from '@electric-sql/pglite/contrib/pgcrypto';
+import type { PGlite } from '@electric-sql/pglite';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-
-const migration = (name: string) =>
-  readFileSync(fileURLToPath(new URL(`../migrations/${name}`, import.meta.url)), 'utf8');
-
-const SUPABASE_STUBS = `
-  create schema if not exists extensions;
-  create schema if not exists auth;
-  create schema if not exists storage;
-  create role anon nologin;
-  create role authenticated nologin;
-  create role service_role nologin bypassrls;
-  create table auth.users (id uuid primary key);
-  create function auth.uid() returns uuid language sql stable as
-    $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
-  create table storage.buckets (
-    id text primary key, name text not null, public boolean, file_size_limit bigint
-  );
-  create table storage.objects (
-    id uuid primary key default gen_random_uuid(), bucket_id text, name text
-  );
-  alter table storage.objects enable row level security;
-  create function storage.foldername(name text) returns text[] language sql immutable as
-    $$ select (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'), 1) - 1] $$;
-`;
+import { createDatabase } from './pglite.ts';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const ago = (days: number) => new Date(Date.now() - days * DAY_MS).toISOString();
@@ -128,10 +102,10 @@ async function reminder(
 }
 
 beforeAll(async () => {
-  db = new PGlite({ extensions: { pgcrypto } });
-  await db.exec(SUPABASE_STUBS);
-  await db.exec(migration('20261001000000_initial_schema.sql'));
-  await db.exec(migration('20261002120000_cleanup_functions.sql'));
+  db = await createDatabase([
+    '20261001000000_initial_schema.sql',
+    '20261002120000_cleanup_functions.sql',
+  ]);
 
   // Dos usuarios: u1 conserva las completadas 7 días y u2, 30 días.
   await db.query('insert into auth.users (id) values ($1), ($2)', [id('u1'), id('u2')]);

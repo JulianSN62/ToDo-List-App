@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router';
 import { FolderScreen } from '../features/folders/FolderScreen';
 import { SearchScreen } from '../features/search/SearchScreen';
+import { DueAlertsScreen } from '../features/settings/DueAlertsScreen';
 import { SettingsScreen } from '../features/settings/SettingsScreen';
 import { TagsScreen } from '../features/tags/TagsScreen';
 import { TaskRoute } from '../features/tasks/TaskRoute';
@@ -20,6 +21,7 @@ export const router = createBrowserRouter([
       { path: 'today', element: <TodayScreen /> },
       { path: 'search', element: <SearchScreen /> },
       { path: 'settings', element: <SettingsScreen /> },
+      { path: 'settings/alerts', element: <DueAlertsScreen /> },
       { path: 'settings/tags', element: <TagsScreen /> },
       { path: '*', element: <NotFound /> },
     ],

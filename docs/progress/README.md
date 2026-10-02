@@ -2,7 +2,9 @@
 
 Estado del desarrollo por fase (según la sección 14 de `docs/specs-and-design.md`), con lo hecho, lo pendiente y por dónde seguir. Se actualiza al terminar cada fase o funcionalidad.
 
-**Última actualización:** 2026-10-03 · Versión de la app: 0.1.0 · Git: repositorio público en GitHub ([JulianSN62/ToDo-List-App](https://github.com/JulianSN62/ToDo-List-App)) desde el 2026-10-03 (X88). Push solo cuando se pide explícitamente (X89).
+**Última actualización:** 2026-10-02 (Bloque 4) · Versión de la app: 0.1.0 · Git: repositorio público en GitHub ([JulianSN62/ToDo-List-App](https://github.com/JulianSN62/ToDo-List-App)) desde el 2026-10-02 (X88). Push solo cuando se pide explícitamente (X89).
+
+**Avance estimado: ~72 % de la v1** (≈ 82 % de la parte web/PWA). Faltan 3 fases del spec: la 8 (notificaciones de Android), la 9 (archivos) y la 10 (pulido y entrega). Son unos 4 bloques: el 5 y el 6 para web, y unos 2 para Android.
 
 **Prioridad actual (X84):** web y PWA. El proyecto Android se mantiene compilando, pero no se prueba hasta nuevo aviso.
 
@@ -16,29 +18,52 @@ Estado del desarrollo por fase (según la sección 14 de `docs/specs-and-design.
 | 3 — Carpetas | ✅ Hecha | [phase-03-folders.md](./phase-03-folders.md) |
 | 4 — Tareas (núcleo) | ✅ Hecha · ajustada tras tus pruebas (ventana de tarea, filas expandibles) | [phase-04-tasks.md](./phase-04-tasks.md) |
 | 5 — Etiquetas, Hoy, búsqueda, links | ✅ Hecha (+ Ajustes → Etiquetas) · falta probar sync real y links en el celular | [phase-05-tags-today-search.md](./phase-05-tags-today-search.md) |
-| 6 — Configuración, respaldo, limpieza programada | ✅ Hecha (Bloque 3) · falta que despliegues la limpieza en Supabase · alertas de vencimiento configurables en web → Bloque 4 (X85) | [phase-06-settings-backup-cleanup.md](./phase-06-settings-backup-cleanup.md) |
+| 6 — Configuración, respaldo, limpieza programada | ✅ Hecha (Bloques 3 y 4: alertas de vencimiento también en web) · falta que despliegues la limpieza en Supabase | [phase-06-settings-backup-cleanup.md](./phase-06-settings-backup-cleanup.md) |
 | 7 — PWA y desktop | ✅ Hecha en código (Bloque 3) · falta que publiques la web en Netlify | [phase-07-pwa.md](./phase-07-pwa.md) |
-| 8 — Android y notificaciones | 🟡 Base Android lista y APK compilado · notificaciones **pospuestas** hasta probar el celular (X84) | [phase-08-android-base.md](./phase-08-android-base.md) |
+| 8 — Android y notificaciones | 🟡 Base Android lista y APK compilado · notificaciones **pospuestas** hasta probar el celular (X84) · cálculo de avisos adelantado (Bloque 4) | [phase-08-android-base.md](./phase-08-android-base.md) |
 | 9 — Archivos y fotos | ⏳ Pendiente | — |
 | 10 — Pulido y entrega | ⏳ Pendiente | — |
+| Tests E2E (spec 15.1) | ✅ En el repo (Bloque 4): `npm run e2e`, 54 tests | [e2e-tests.md](./e2e-tests.md) |
 
 ## Plan vigente (2026-10-02, decisiones X84–X87)
 
 Bloques chicos, cada uno cerrado con lint, typecheck, tests y build en verde, documentación al día, **un commit** y tu confirmación.
 
-- **Bloque 3 — ✅ hecho:** resto de las Fases 6 y 7 (detalle abajo).
-- **Bloque 4 — siguiente sesión: red de seguridad + alertas en web.**
-  - **Tests E2E en el repo** (spec 15.1): `@playwright/test` con el Edge del sistema, `npm run e2e` aparte de `npm test`; build + `vite preview`; sesión ficticia y red bloqueada; pasar las pruebas de la Fase 5 y del Bloque 3 (hoy en una carpeta temporal) y sumar el modo sin conexión.
-  - **Ajustes → Alertas de vencimiento** también en web (X85): activar, días 0/1/2/3/7, hora y la nota "Los avisos llegan en la app de Android"; deshabilitado antes de la primera sincronización (como la retención); lógica de validación en `src/lib` con tests, igual a los CHECK de la base.
-- **Bloque 5 — archivos adjuntos (Fase 9, web):** elegir archivos desde la PC, límite de 10 MB, compresión de imágenes, cola de subida sin conexión con estado y "Reintentar", URL firmada, caché para ver sin conexión y borrado del archivo al eliminar. La cámara (Android) queda para cuando se pruebe el celular.
+- **Bloque 3 — ✅ hecho:** resto de las Fases 6 y 7.
+- **Bloque 4 — ✅ hecho:** tests E2E en el repo y Ajustes → Alertas de vencimiento en web (detalle abajo).
+- **Bloque 5 — siguiente sesión: archivos adjuntos (Fase 9, web):** elegir archivos desde la PC, límite de 10 MB, compresión de imágenes, cola de subida sin conexión con estado y "Reintentar", URL firmada, caché para ver sin conexión y borrado del archivo al eliminar. La cámara (Android) queda para cuando se pruebe el celular.
 - **Bloque 6 — pulido web (Fase 10, web):** carga diferida (bundle de ~1,2 MB), accesibilidad (avisos con una ventana abierta, contraste, foco), errores, estados vacíos, textos finales, `SETUP.md` completo y endurecer `file_paths.xml` de Android (sin probar en el celular).
 - **Pospuesto — notificaciones Android (resto de la Fase 8, X84).** Se retoma cuando quieras probar el celular; hace falta el **modelo y la versión de Android** (Spike B). Plan ya armado:
   - **8A Base:** `@capacitor/local-notifications`, canales (`due_alerts`, `reminders`, `pinned`), permisos (notificaciones y alarmas exactas), tabla local `notif_registry`, tocar una notificación abre `/task/:id`, cerrar sesión las cancela.
-  - **8B Lógica pura con tests:** cálculo de avisos (6.6), conjunto deseado (ventana de 60 días, máx. 200) y diferencias para `reconcile()`.
-  - **8C** Avisos de vencimiento programados con la configuración de Ajustes (la pantalla llega antes, en el Bloque 4).
+  - **8B Lógica pura con tests:** ~~cálculo de avisos (6.6)~~ (hecho en el Bloque 4: `dueAlertFireTimes`), conjunto deseado (ventana de 60 días, máx. 200) y diferencias para `reconcile()`.
+  - **8C** Avisos de vencimiento programados con la configuración de Ajustes (la pantalla ya está, Bloque 4).
   - **8D Recordatorios personalizados (9.7)**, **8E Tareas ancladas (9.6)** y **8F Diagnóstico (SET-6)** con notificación de prueba.
 
-## Última tanda: Bloque 3 — Fases 6 y 7 (2026-10-02)
+## Última tanda: Bloque 4 — Tests E2E y alertas de vencimiento (2026-10-02)
+
+Plan de la sesión en 5 fases (X90): 4A infraestructura E2E, 4B pruebas pasadas al repo + modo sin conexión, 4C lógica pura de las alertas, 4D pantalla de Alertas y 4E cierre.
+
+- **Tests E2E en el repo** (X93–X94). Detalle en [e2e-tests.md](./e2e-tests.md).
+  - `npm run e2e` corre 54 pruebas con Playwright y el Edge de la PC, en mobile (390px) y desktop (1280px).
+  - Usa un build propio con variables ficticias, así que no lee tu `.env` ni toca tu proyecto.
+  - Incluye todo lo que antes se probaba con scripts temporales, el **modo sin conexión** (spec 15.1) y una pasada por las pantallas en tema claro y oscuro.
+  - Desde ahora forma parte del cierre de cada bloque.
+- **Ajustes → Alertas de vencimiento** (SET-3, X85 y X91–X92), en la subpantalla `/settings/alerts`.
+  - Se configuran: activar, el mismo día / 1, 2 o 3 días / 1 semana antes (siempre al menos uno) y la hora.
+  - En web aparece la nota de que los avisos llegan en la app de Android.
+  - En Ajustes, la fila muestra un resumen.
+  - El cálculo de los avisos (spec 6.6) quedó listo en `src/lib/dueAlerts.ts` para cuando se hagan las notificaciones de Android.
+  - Detalle en [phase-06-settings-backup-cleanup.md](./phase-06-settings-backup-cleanup.md#alertas-de-vencimiento-set-3-bloque-4-x85-y-x91x92).
+- **Corrección encontrada por los E2E** (X95): en mobile los avisos tapaban el botón "+" mientras duraban. Ahora van por encima.
+
+**Verificación:**
+- `npm run lint`, `npm run typecheck`, `npm test` (**173 tests**, 28 archivos) y `npm run build`: sin errores.
+- `npm run e2e`: 54 de 54 en verde con el código final. Una segunda corrida falló en 4 tests porque la PC se suspendió en el medio (verificado en el registro de Windows: de 19:04 a 19:18). Una tercera se cortó por falta de memoria antes de empezar los tests.
+- `npm run android:build`: el APK de debug sigue compilando (no se probó en el celular, X84).
+- Capturas de Ajustes y Alertas revisadas a 390px y 1280px, en claro y oscuro.
+- **Sin probar todavía (necesita tu cuenta):** cambiar las alertas con datos reales y verlas en otro navegador.
+
+## Tanda anterior: Bloque 3 — Fases 6 y 7 (2026-10-02)
 
 Ajustes reorganizados con **retención** (stepper 1–90), **exportar respaldo JSON** (descarga en web, menú de compartir en Android), **limpieza diaria en el servidor** (funciones SQL + Edge Function + pg_cron, secretos en Vault), **atajos de teclado** (`N`, `/`, `Ctrl+K`), **búsqueda flotante** en desktop, **ayuda de atajos**, **clic derecho** y guía de **deploy en Netlify** (corregido después: ahora también sirve arrastrar `dist`, X83). Además: "Deshacer" se puede tocar con una ventana abierta y se quitó un parpadeo de "Esta tarea no existe" al abrir tareas desde Hoy/Buscar. Detalle en [phase-06-settings-backup-cleanup.md](./phase-06-settings-backup-cleanup.md) y [phase-07-pwa.md](./phase-07-pwa.md); decisiones X72–X82.
 
@@ -67,8 +92,12 @@ Pedidos del usuario después de probar el login en el navegador (detalle en [pha
 
 ## Próximo paso recomendado
 
-1. **Vos — probar el Bloque 3 en la PC** (`npm run dev`): Ajustes → Retención y exportar respaldo; en desktop, atajos `N`, `/`, `Ctrl+K`, el ícono "?" y el clic derecho (pasos en [phase-07-pwa.md](./phase-07-pwa.md#cómo-probar)).
-2. **Vos — Supabase (cuando quieras):** desplegar la limpieza programada (`docs/SETUP.md` paso 12: secret key `cleanup`, 2 migraciones, deploy de la función y 2 secretos en Vault) y probarla una vez a mano.
-3. **Vos — Netlify (cuando quieras):** `npm run build` y arrastrar la carpeta `dist` (`docs/SETUP.md` paso 10). Después de publicar, recargar `/today` para confirmar que no da 404.
-4. **Pendiente de antes (web):** probar la sincronización real entre dos navegadores o perfiles con tu cuenta.
-5. **Siguiente sesión: Bloque 4** (tests E2E en el repo + Alertas de vencimiento en web).
+1. **Vos — probar el Bloque 4 en la PC** (`npm run dev`, con tu cuenta y después de sincronizar):
+   1. Ajustes → Alertas de vencimiento.
+   2. Cambiá los días y la hora, recargá y miralo en otro navegador.
+   3. Opcional: `npm run e2e` para ver correr las pruebas (necesita Edge).
+2. **Vos — pendientes de antes:**
+   - Desplegar la limpieza programada en Supabase (`docs/SETUP.md` paso 12).
+   - Publicar en Netlify (paso 10).
+   - Probar la sincronización real entre dos navegadores con tu cuenta.
+3. **Siguiente sesión: Bloque 5** (archivos adjuntos en web, Fase 9).

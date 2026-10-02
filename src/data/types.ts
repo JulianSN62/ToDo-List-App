@@ -1,4 +1,5 @@
 import type { ColorToken } from '@/lib/colors';
+import { DUE_ALERT_DEFAULTS } from '@/lib/dueAlerts';
 
 // Modelos que usa la UI. Los repositorios convierten desde/hacia las filas locales.
 
@@ -54,9 +55,9 @@ export interface UserSettings {
 
 export const DEFAULT_SETTINGS: UserSettings = {
   completedRetentionDays: 7,
-  dueAlertsEnabled: true,
-  dueAlertOffsets: [1, 0],
-  dueAlertTime: '09:00',
+  dueAlertsEnabled: DUE_ALERT_DEFAULTS.enabled,
+  dueAlertOffsets: [...DUE_ALERT_DEFAULTS.offsets],
+  dueAlertTime: DUE_ALERT_DEFAULTS.time,
 };
 
 export interface CurrentUser {

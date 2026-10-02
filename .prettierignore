@@ -1,5 +1,8 @@
 dist
+dist-e2e
 dev-dist
+playwright-report
+test-results
 coverage
 android
 node_modules

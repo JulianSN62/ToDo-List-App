@@ -1,6 +1,7 @@
 import { formatDistanceToNow } from 'date-fns';
 import { es as esLocale } from 'date-fns/locale';
 import {
+  Bell,
   ChevronRight,
   Cloud,
   Database,
@@ -16,7 +17,7 @@ import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { setThemePreference, useThemePreference, type ThemePreference } from '@/app/theme';
 import { APP_VERSION } from '@/config/app';
-import { getPendingUploadCount, syncNow, useSyncState, useTags } from '@/data';
+import { getPendingUploadCount, syncNow, useSettings, useSyncState, useTags } from '@/data';
 import { es } from '@/i18n/es';
 import { Button } from '@/ui/button';
 import { ConfirmDialog } from '@/ui/confirm-dialog';
@@ -27,8 +28,9 @@ import { SyncIndicator } from '../sync/SyncIndicator';
 import { BackupSetting } from './BackupSetting';
 import { RetentionSetting } from './RetentionSetting';
 
-// Ajustes (spec 7.7): tema, retención, etiquetas, respaldo, sincronización, cuenta y versión.
-// Avisos de vencimiento y diagnóstico de notificaciones llegan con la Fase 8 (solo Android).
+// Ajustes (spec 7.7): tema, retención, alertas de vencimiento, etiquetas, respaldo,
+// sincronización, cuenta y versión. El diagnóstico de notificaciones llega con la Fase 8
+// (solo Android).
 
 function Group({ title, icon, children }: { title: string; icon: ReactNode; children: ReactNode }) {
   return (
@@ -42,6 +44,37 @@ function Group({ title, icon, children }: { title: string; icon: ReactNode; chil
   );
 }
 
+// Fila que abre una subpantalla: ícono, título, valor actual (a la derecha o debajo) y flecha.
+function LinkRow({
+  icon,
+  label,
+  value,
+  description,
+  onClick,
+}: {
+  icon: ReactNode;
+  label: string;
+  value?: string;
+  description?: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="-mx-2 flex min-h-12 items-center gap-3 rounded-sm px-2 py-1 text-left hover:bg-panel [&>svg:first-child]:size-5 [&>svg:first-child]:shrink-0 [&>svg:first-child]:text-muted"
+    >
+      {icon}
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="text-body text-fg">{label}</span>
+        {description ? <span className="text-body-sm text-muted">{description}</span> : null}
+      </span>
+      {value ? <span className="shrink-0 text-body-sm text-muted">{value}</span> : null}
+      <ChevronRight aria-hidden className="size-4 shrink-0 text-muted" />
+    </button>
+  );
+}
+
 export function SettingsScreen() {
   const navigate = useNavigate();
   const user = useCurrentUser();
@@ -49,6 +82,7 @@ export function SettingsScreen() {
   const theme = useThemePreference();
   const sync = useSyncState();
   const { tags } = useTags();
+  const settings = useSettings();
   const [syncing, setSyncing] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const [pendingAtSignOut, setPendingAtSignOut] = useState(0);
@@ -113,16 +147,22 @@ export function SettingsScreen() {
 
           <Group title={es.settings.groupTasks} icon={<ListTodo aria-hidden />}>
             <RetentionSetting />
-            <button
-              type="button"
+            <LinkRow
+              icon={<Bell aria-hidden />}
+              label={es.dueAlerts.title}
+              description={
+                settings.dueAlertsEnabled
+                  ? es.dueAlerts.summary(settings.dueAlertOffsets, settings.dueAlertTime)
+                  : es.dueAlerts.summaryOff
+              }
+              onClick={() => navigate('/settings/alerts')}
+            />
+            <LinkRow
+              icon={<TagIcon aria-hidden />}
+              label={es.settings.tags}
+              value={es.tags.count(tags.length)}
               onClick={() => navigate('/settings/tags')}
-              className="-mx-2 flex min-h-12 items-center gap-3 rounded-sm px-2 text-left hover:bg-panel"
-            >
-              <TagIcon aria-hidden className="size-5 shrink-0 text-muted" />
-              <span className="flex-1 text-body text-fg">{es.settings.tags}</span>
-              <span className="text-body-sm text-muted">{es.tags.count(tags.length)}</span>
-              <ChevronRight aria-hidden className="size-4 shrink-0 text-muted" />
-            </button>
+            />
           </Group>
 
           <Group title={es.settings.groupData} icon={<Database aria-hidden />}>

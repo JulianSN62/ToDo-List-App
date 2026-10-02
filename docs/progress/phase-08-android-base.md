@@ -22,4 +22,4 @@
 - Diagnóstico de notificaciones en Ajustes y guía de optimización de batería.
 - Deep link desde la notificación a `/task/:id` (la ruta ya existe).
 - ~~Exportar JSON con compartir nativo~~ → hecho en el Bloque 3 (`@capacitor/filesystem` + `@capacitor/share`, ver [phase-06](./phase-06-settings-backup-cleanup.md)).
-- Plan detallado de las notificaciones (8A–8F) en [README.md](./README.md#plan-vigente-2026-10-02-decisiones-x84x87). La pantalla de configuración de las alertas se adelanta al Bloque 4 (X85).
+- Plan detallado de las notificaciones (8A–8F) en [README.md](./README.md#plan-vigente-2026-10-02-decisiones-x84x87). Adelantado en el Bloque 4: la pantalla de configuración de las alertas (Ajustes → Alertas de vencimiento, X85) y el cálculo de los avisos de la spec 6.6 (`dueAlertFireTimes` en `src/lib/dueAlerts.ts`, con tests), que es parte de 8B.

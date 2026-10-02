@@ -1,68 +1,30 @@
 import { Minus, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import { settingsRepo, useStoredSettings } from '@/data';
 import { es } from '@/i18n/es';
 import { clampRetentionDays, RETENTION_LIMITS } from '@/lib/retention';
 import { IconButton } from '@/ui/button';
-import { showErrorToast } from '@/ui/toast';
+import { useSettingDraft } from './useSettingDraft';
 
 // Días que se conservan las tareas completadas (1 a 90). Cada toque se ve al instante;
 // el valor se guarda tras una pausa corta para no encolar un cambio por cada toque.
 
 const SAVE_DELAY_MS = 400;
 
-interface Draft {
-  value: number;
-  saved: boolean;
-}
+const saveRetention = (days: number) => settingsRepo.updateRetentionDays(days);
 
 export function RetentionSetting() {
   const stored = useStoredSettings();
-  const [draft, setDraft] = useState<Draft | null>(null);
-  const pending = useRef<{ timer: number | undefined; value: number | null }>({
-    timer: undefined,
-    value: null,
+  const { value, change: setValue } = useSettingDraft({
+    stored: stored?.completedRetentionDays,
+    fallback: RETENTION_LIMITS.default,
+    save: saveRetention,
+    delayMs: SAVE_DELAY_MS,
   });
-
-  // Cuando la base ya refleja lo guardado, se deja de mostrar el borrador.
-  if (draft?.saved && stored?.completedRetentionDays === draft.value) {
-    setDraft(null);
-  }
-
-  // Si se sale de la pantalla antes de la pausa, se guarda igual.
-  useEffect(() => {
-    const state = pending.current;
-    return () => {
-      if (state.timer === undefined || state.value === null) return;
-      window.clearTimeout(state.timer);
-      void settingsRepo.updateRetentionDays(state.value).catch(() => showErrorToast());
-    };
-  }, []);
-
   const available = stored !== null;
-  const value = draft?.value ?? stored?.completedRetentionDays ?? RETENTION_LIMITS.default;
-
-  function save(next: number) {
-    pending.current.timer = undefined;
-    pending.current.value = null;
-    settingsRepo
-      .updateRetentionDays(next)
-      .then(() =>
-        setDraft((current) => (current?.value === next ? { ...current, saved: true } : current)),
-      )
-      .catch(() => {
-        setDraft(null);
-        showErrorToast(es.settings.retentionSaveError);
-      });
-  }
 
   function change(step: number) {
     const next = clampRetentionDays(value + step);
-    if (next === value) return;
-    setDraft({ value: next, saved: false });
-    window.clearTimeout(pending.current.timer);
-    pending.current.value = next;
-    pending.current.timer = window.setTimeout(() => save(next), SAVE_DELAY_MS);
+    if (next !== value) setValue(next);
   }
 
   return (

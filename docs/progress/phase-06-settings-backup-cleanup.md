@@ -1,9 +1,9 @@
 # Fase 6 — Configuración, respaldo y limpieza programada
 
-**Estado:** ✅ Hecha (2026-10-02), dentro del **Bloque 3** (X72). Decisiones X73–X77.
+**Estado:** ✅ Hecha (2026-10-02), dentro del **Bloque 3** (X72). Decisiones X73–X77. La pantalla de **alertas de vencimiento** (SET-3) se sumó en el **Bloque 4** (X85, X91–X92; ver más abajo).
 
 - **Ya estaban de antes:** el tema, la cuenta, la sincronización, "Acerca de" y Ajustes → Etiquetas (Fase 5).
-- **Quedan para después:** la pantalla de alertas de vencimiento (SET-3) llega en el Bloque 4, configurable también en web (X85, reemplaza a X73). El diagnóstico de notificaciones (SET-6) queda con las notificaciones de Android, pospuestas (X84).
+- **Queda para después:** el diagnóstico de notificaciones (SET-6), con las notificaciones de Android, pospuestas (X84).
 - **Lo que tenés que hacer vos:** la parte del servidor (pasos abajo).
 
 ## Qué se hizo
@@ -61,6 +61,34 @@ Siguen los grupos de `design/screens/settings.md`:
   - Solo acepta la secret key llamada `cleanup` (`withSupabase({ auth: 'secret:cleanup' })` de `@supabase/server`).
   - En los registros solo escribe cantidades.
 
+### Alertas de vencimiento (SET-3, Bloque 4, X85 y X91–X92)
+- **Dónde:** Ajustes → Tareas → **Alertas de vencimiento** abre la subpantalla `/settings/alerts`. En Ajustes la fila muestra el resumen debajo del título, por ejemplo "1 día antes y el mismo día · 09:00" o "Desactivadas".
+- **Qué se configura:**
+  - Interruptor **Activar alertas**.
+  - **Avisar:** el mismo día, 1, 2 o 3 días antes y 1 semana antes. Siempre queda al menos uno marcado: el último no se desmarca, y una ayuda explica que para no recibir avisos se usa el interruptor.
+  - **Hora del aviso**, con el selector de hora del sistema.
+- **Cuándo se guarda:**
+  - El interruptor y los días, al instante.
+  - La hora, tras 400 ms sin cambios o al salir de la pantalla, y solo si está completa.
+  - Todo se sincroniza con los otros dispositivos.
+- **En web** aparece la nota "Los avisos llegan en la app de Android". Las notificaciones las va a programar la app de Android (Fase 8, pospuesta).
+- **Antes de la primera sincronización** todo está deshabilitado, igual que la retención: la fila la crea el servidor.
+- **Código:**
+  - `src/lib/dueAlerts.ts`: días permitidos, normalización, "al menos uno", formato igual a los CHECK de la base y cálculo de los avisos de la spec 6.6 (`dueAlertFireTimes`, listo para el `reconcile()` de Android).
+  - `settingsRepo.updateDueAlerts()`: actualiza solo las columnas que cambian.
+  - `src/features/settings/DueAlertsScreen.tsx`.
+  - `src/ui/checkbox.tsx`, componente nuevo.
+  - `useSettingDraft`: hook compartido con la retención; muestra el cambio al instante y lo guarda enseguida o tras una pausa.
+- **Tests:**
+  - `src/lib/dueAlerts.test.ts` (11).
+  - `DueAlertsScreen.test.tsx` (7).
+  - `supabase/tests/settingsChecks.test.ts` (4): corre la migración real en PGlite y comprueba que todas las combinaciones de días que puede guardar la app pasan el CHECK, que las listas mal formadas no pasan, que la validación de la hora coincide con la base y que los valores por defecto son los mismos.
+- **Cómo probarlo vos:** con tu cuenta, en `npm run dev`:
+  1. Ajustes → Alertas de vencimiento.
+  2. Cambiá los días y la hora.
+  3. Recargá: tiene que quedar igual.
+  4. Abrilo en otro navegador después de sincronizar: tiene que verse lo mismo.
+
 ## Verificación
 - **Tests nuevos:** `backup.test.ts` (7), `RetentionSetting.test.tsx` (5), `supabase/tests/cleanupHandler.test.ts` (5) y `supabase/tests/cleanupSql.test.ts` (6).
 - **La prueba SQL** corre la migración inicial real y la de limpieza en **PGlite** (Postgres en WASM), con stubs mínimos de Supabase. Comprueba:
@@ -87,5 +115,5 @@ Siguen los grupos de `design/screens/settings.md`:
 2. En la app: Ajustes → Retención, cambiarla y ver que "Se borra en N días" de una completada cambia. Exportar un respaldo en la PC y en el celular.
 
 ## Pendiente
-- Alertas de vencimiento (configuración, también en web) → Bloque 4 (X85). Diagnóstico de notificaciones → con las notificaciones de Android, pospuestas (X84).
+- Diagnóstico de notificaciones (SET-6) → con las notificaciones de Android, pospuestas (X84).
 - Importar un respaldo: fuera de la v1 (spec 16).
