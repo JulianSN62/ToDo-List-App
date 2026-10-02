@@ -1,0 +1,202 @@
+/**
+ * Mis Tareas — Design Tokens
+ * Fuente de verdad: docs/specs-and-design.md §11.5 (paleta) + decisiones de diseño
+ * (tipografía, spacing, radios, sombras) tomadas en design/style-guide.md.
+ *
+ * Uso: los colores se consumen SIEMPRE por variable/token, nunca como hex
+ * suelto en componentes (requisito D20/§18 del spec). El modo oscuro se activa
+ * por `prefers-color-scheme: dark` y puede forzarse con la clase `.dark` en <html>.
+ */
+
+:root {
+  /* ---------- Color base (neutro + acento) ---------- */
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+  --color-accent: #4f46e5;
+  --color-accent-contrast: #ffffff;
+
+  /* ---------- Semántica de estado (alias de los tokens de usuario) ---------- */
+  --color-overdue: #ef4444; /* = token "red" */
+  --color-overdue-bg: #fef2f2;
+  --color-priority: #f59e0b; /* = token "amber" */
+  --color-priority-bg: #fffbeb;
+  --color-completed: #22c55e; /* = token "green" */
+  --color-completed-bg: #f0fdf4;
+
+  /* ---------- Paleta de 10 colores seleccionables (carpetas/tareas/tags) ---------- */
+  --token-slate: #64748b;
+  --token-red: #ef4444;
+  --token-orange: #f97316;
+  --token-amber: #f59e0b;
+  --token-green: #22c55e;
+  --token-teal: #14b8a6;
+  --token-blue: #3b82f6;
+  --token-indigo: #6366f1;
+  --token-purple: #a855f7;
+  --token-pink: #ec4899;
+
+  /* ---------- Tipografía (Inter) ---------- */
+  --font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-size-caption: 12px;
+  --line-height-caption: 16px;
+  --font-size-body-sm: 14px;
+  --line-height-body-sm: 20px;
+  --font-size-body: 16px;
+  --line-height-body: 24px;
+  --font-size-title-sm: 18px;
+  --line-height-title-sm: 24px;
+  --font-size-title-md: 20px;
+  --line-height-title-md: 28px;
+  --font-size-title-lg: 24px;
+  --line-height-title-lg: 32px;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ---------- Spacing (grilla de 4px) ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* ---------- Tamaños de componente ---------- */
+  --tap-target-min: 48px;
+  --row-height-task: 56px;
+  --row-height-folder: 56px;
+  --height-bottom-nav: 64px;
+  --height-fab: 56px;
+  --width-sidebar: 280px;
+  --width-sidebar-collapsed: 72px;
+  --width-detail-panel: 400px;
+  --icon-size-row: 20px;
+  --icon-size-nav: 24px;
+
+  /* ---------- Radios ---------- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-full: 9999px;
+
+  /* ---------- Elevación (solo overlays: sheet/panel/dropdown/toast/modal) ---------- */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.12);
+  --shadow-lg: 0 8px 32px rgba(15, 23, 42, 0.16);
+
+  /* ---------- Breakpoints (referencia; usar en media queries del framework) ---------- */
+  --breakpoint-sidebar: 768px; /* < 768px: bottom nav. >= 768px: sidebar colapsable */
+  --breakpoint-desktop: 1024px; /* >= 1024px: layout de 3 columnas */
+
+  /* ---------- Motion ---------- */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --easing-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #0f172a;
+    --color-surface: #1e293b;
+    --color-border: #334155;
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #94a3b8;
+    --color-accent: #818cf8;
+
+    --color-overdue: #f87171;
+    --color-overdue-bg: rgba(248, 113, 113, 0.12);
+    --color-priority: #fbbf24;
+    --color-priority-bg: rgba(251, 191, 36, 0.12);
+    --color-completed: #4ade80;
+    --color-completed-bg: rgba(74, 222, 128, 0.12);
+
+    --token-slate: #94a3b8;
+    --token-red: #f87171;
+    --token-orange: #fb923c;
+    --token-amber: #fbbf24;
+    --token-green: #4ade80;
+    --token-teal: #2dd4bf;
+    --token-blue: #60a5fa;
+    --token-indigo: #818cf8;
+    --token-purple: #c084fc;
+    --token-pink: #f472b6;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Override manual (Ajustes → Tema), tiene prioridad sobre prefers-color-scheme */
+html.dark {
+  --color-background: #0f172a;
+  --color-surface: #1e293b;
+  --color-border: #334155;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-accent: #818cf8;
+
+  --color-overdue: #f87171;
+  --color-overdue-bg: rgba(248, 113, 113, 0.12);
+  --color-priority: #fbbf24;
+  --color-priority-bg: rgba(251, 191, 36, 0.12);
+  --color-completed: #4ade80;
+  --color-completed-bg: rgba(74, 222, 128, 0.12);
+
+  --token-slate: #94a3b8;
+  --token-red: #f87171;
+  --token-orange: #fb923c;
+  --token-amber: #fbbf24;
+  --token-green: #4ade80;
+  --token-teal: #2dd4bf;
+  --token-blue: #60a5fa;
+  --token-indigo: #818cf8;
+  --token-purple: #c084fc;
+  --token-pink: #f472b6;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+html.light {
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+  --color-accent: #4f46e5;
+
+  --color-overdue: #ef4444;
+  --color-overdue-bg: #fef2f2;
+  --color-priority: #f59e0b;
+  --color-priority-bg: #fffbeb;
+  --color-completed: #22c55e;
+  --color-completed-bg: #f0fdf4;
+
+  --token-slate: #64748b;
+  --token-red: #ef4444;
+  --token-orange: #f97316;
+  --token-amber: #f59e0b;
+  --token-green: #22c55e;
+  --token-teal: #14b8a6;
+  --token-blue: #3b82f6;
+  --token-indigo: #6366f1;
+  --token-purple: #a855f7;
+  --token-pink: #ec4899;
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.12);
+  --shadow-lg: 0 8px 32px rgba(15, 23, 42, 0.16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+  }
+}

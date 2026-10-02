@@ -1,0 +1,4 @@
+# Netlify: la app es una SPA, todas las rutas sirven index.html (200, no redirección).
+# Vive en public/ para que Vite lo copie a dist/ y funcione con cualquier forma de
+# publicar: arrastrar dist (Netlify Drop), la CLI o un repositorio conectado.
+/*    /index.html    200

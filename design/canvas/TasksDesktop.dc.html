@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Tareas — desktop</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0; font-family:'Inter',system-ui,-apple-system,sans-serif; background:#F8FAFC;}
+  .panel{width:680px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;box-sizing:border-box;}
+  .row{display:flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-bottom:1px solid #E2E8F0;box-sizing:border-box;}
+  .stripe{width:4px;align-self:stretch;border-radius:2px;}
+  .chip{font-size:11px;color:#64748B;background:#F1F5F9;border-radius:999px;padding:2px 8px;white-space:nowrap;display:inline-flex;align-items:center;}
+  .frame-label{font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;}
+  .caption{font-size:12px;color:#64748B;line-height:1.5;margin-top:10px;max-width:680px;}
+  .check{width:16px;height:16px;border:2px solid #CBD5E1;border-radius:4px;flex:none;}
+  .icon{width:16px;height:16px;display:inline-block;vertical-align:middle;flex:none;}
+</style>
+</helmet>
+
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+<defs>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21 12 17.77 5.82 21 7 14.14 2 9.27 8.91 8.26" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4 13 21a2 2 0 0 1-2.8 0L2 12.8V4a2 2 0 0 1 2-2h8.8a2 2 0 0 1 1.4.6l6.4 6.4a2 2 0 0 1 0 2.4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7" cy="7" r="1.2" fill="currentColor"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 2.5 2.5 0 0 0 1.8-4.3 2 2 0 0 1 1.4-3.4H17a5 5 0 0 0 5-5 9.2 9.2 0 0 0-10-7.3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7.2" cy="12" r="1.3" fill="currentColor"/><circle cx="9.5" cy="7.3" r="1.3" fill="currentColor"/><circle cx="14.8" cy="7" r="1.3" fill="currentColor"/></symbol>
+  <symbol id="i-paperclip" viewBox="0 0 24 24"><path d="M21.4 11 12.2 20.2a5.5 5.5 0 0 1-7.8-7.8l9.2-9.2a3.5 3.5 0 0 1 5 4.9L9.9 16.7a1.5 1.5 0 0 1-2.1-2.1l8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></symbol>
+  <symbol id="i-more-vertical" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="19" r="1.3" fill="currentColor"/></symbol>
+  <symbol id="i-arrow-up" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><polyline points="5 12 12 5 19 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-arrow-down" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><polyline points="19 12 12 19 5 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-7.6-7-12a7 7 0 0 1 14 0c0 4.4-7 12-7 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="9" r="2.3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="10" y1="11" x2="10" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="11" x2="14" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.7 21a2 2 0 0 1-3.4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+</defs>
+</svg>
+
+<div style="max-width:1500px;margin:0 auto;padding:56px 40px 120px;box-sizing:border-box;">
+  <header style="margin-bottom:40px;">
+    <div style="font-size:14px;font-weight:600;color:#4F46E5;text-transform:uppercase;letter-spacing:.04em;">Tareas — desktop</div>
+    <h1 style="margin:4px 0 0;font-size:28px;font-weight:700;">Filas más densas, panel fijo, atajos de teclado</h1>
+  </header>
+
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,680px));gap:48px;">
+
+    <!-- Crear tarea rápida inline -->
+    <div>
+      <div class="frame-label">Crear tarea rápida — fila inline (no sheet)</div>
+      <div class="panel" style="padding:0;">
+        <div style="height:56px;display:flex;align-items:center;gap:14px;padding:0 20px;background:#F8FAFC;border-bottom:1px solid #E2E8F0;">
+          <div style="flex-grow:1;font-size:14px;color:#94A3B8;">+ Nombre de la tarea... (Enter para crear y seguir)</div>
+          <div class="chip"><svg class="icon" width="14" height="14"><use href="#i-calendar"></use></svg></div>
+          <div class="chip"><svg class="icon" width="14" height="14"><use href="#i-star"></use></svg></div>
+          <div class="chip"><svg class="icon" width="14" height="14"><use href="#i-tag"></use></svg></div>
+          <div class="chip"><svg class="icon" width="14" height="14"><use href="#i-palette"></use></svg></div>
+        </div>
+        <div class="row"><div class="check"></div><div style="flex-grow:1;font-size:14px;">Revisar contrato</div></div>
+      </div>
+      <div class="caption">Aparece como fila fija arriba de la lista (no bottom sheet). Enter crea y mantiene el foco para cargar varias tareas seguidas.</div>
+    </div>
+
+    <!-- Estados de fila -->
+    <div>
+      <div class="frame-label">Fila de tarea — densidad desktop (48px)</div>
+      <div class="panel">
+        <div class="row"><div class="stripe" style="background:#A855F7;"></div><div class="check"></div><div style="flex-grow:1;font-size:14px;">Con color</div></div>
+        <div class="row" style="background:#EEF2FF;"><div class="stripe" style="background:transparent;"></div><div class="check"></div><div style="flex-grow:1;font-size:14px;display:flex;align-items:center;gap:6px;"><svg class="icon" width="14" height="14" style="color:#F59E0B;"><use href="#i-star"></use></svg>Prioritaria</div></div>
+        <div class="row"><div class="stripe" style="background:transparent;"></div><div class="check"></div><div style="flex-grow:1;font-size:14px;">Con tags/adjuntos</div><div class="chip">Urgente</div><div class="chip"><svg class="icon" width="12" height="12"><use href="#i-paperclip"></use></svg>1</div></div>
+        <div class="row" style="opacity:.55;"><div class="stripe" style="background:transparent;"></div><div style="width:16px;height:16px;border-radius:4px;background:#22C55E;flex:none;"></div><div style="flex-grow:1;font-size:14px;text-decoration:line-through;">Completada</div></div>
+      </div>
+      <div class="caption">Hover revela drag handle (<svg class="icon" width="12" height="12" style="vertical-align:text-bottom;"><use href="#i-grip"></use></svg>) a la izquierda y menú (<svg class="icon" width="12" height="12" style="vertical-align:text-bottom;"><use href="#i-more-vertical"></use></svg>) a la derecha, ocultos en reposo para no agregar ruido visual.</div>
+    </div>
+
+    <!-- Menú contextual dropdown -->
+    <div>
+      <div class="frame-label">Menú contextual — dropdown anclado</div>
+      <div class="panel" style="padding:40px;background:#F1F5F9;display:flex;justify-content:flex-end;">
+        <div style="width:220px;background:#FFFFFF;border-radius:10px;box-shadow:0 4px 16px rgba(15,23,42,.12);padding:6px 0;font-size:14px;">
+          <div style="padding:9px 16px;">Editar</div>
+          <div style="padding:9px 16px;display:flex;align-items:center;gap:8px;"><svg class="icon" width="14" height="14"><use href="#i-star"></use></svg>Prioridad</div>
+          <div style="padding:9px 16px;">Mover a…</div>
+          <div style="padding:9px 16px;display:flex;align-items:center;gap:14px;"><span style="display:flex;align-items:center;gap:6px;"><svg class="icon" width="14" height="14"><use href="#i-arrow-up"></use></svg>Subir</span><span style="display:flex;align-items:center;gap:6px;"><svg class="icon" width="14" height="14"><use href="#i-arrow-down"></use></svg>Bajar</span></div>
+          <div style="padding:9px 16px;color:#94A3B8;display:flex;align-items:center;gap:8px;"><svg class="icon" width="14" height="14"><use href="#i-pin"></use></svg>Anclar — solo Android</div>
+          <div style="padding:9px 16px;color:#EF4444;display:flex;align-items:center;gap:8px;"><svg class="icon" width="14" height="14"><use href="#i-trash"></use></svg>Eliminar</div>
+        </div>
+      </div>
+      <div class="caption">Dropdown ancla al botón de más opciones (vs. bottom sheet en mobile). Ítems de pin/recordatorio se ven pero deshabilitados si no hay uno ya creado desde el teléfono.</div>
+    </div>
+
+    <!-- Detalle panel -->
+    <div>
+      <div class="frame-label">Detalle de tarea — panel lateral 400px</div>
+      <div class="panel" style="width:400px;padding:20px;display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748B;"><svg class="icon" width="14" height="14"><use href="#i-x"></use></svg><span>Mover · Eliminar</span></div>
+        <div style="font-size:20px;font-weight:600;">Revisar contrato</div>
+        <div style="font-size:13px;color:#94A3B8;">Agregar descripción...</div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="display:flex;align-items:center;gap:8px;"><svg class="icon" width="14" height="14" style="color:#64748B;"><use href="#i-calendar"></use></svg>Fecha</span><span style="color:#4F46E5;font-weight:600;">Hoy</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="display:flex;align-items:center;gap:8px;"><svg class="icon" width="14" height="14" style="color:#64748B;"><use href="#i-tag"></use></svg>Tags</span><span style="color:#94A3B8;">+ Agregar tag</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding-top:8px;border-top:1px solid #E2E8F0;"><span style="display:flex;align-items:center;gap:8px;"><svg class="icon" width="14" height="14" style="color:#64748B;"><use href="#i-bell"></use></svg>Recordatorios</span><span style="font-size:11px;color:#94A3B8;display:flex;align-items:center;gap:4px;"><svg class="icon" width="12" height="12"><use href="#i-lock"></use></svg>Solo lectura</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span style="display:flex;align-items:center;gap:8px;"><svg class="icon" width="14" height="14" style="color:#64748B;"><use href="#i-pin"></use></svg>Pin</span><span style="font-size:11px;color:#94A3B8;display:flex;align-items:center;gap:4px;"><svg class="icon" width="12" height="12"><use href="#i-lock"></use></svg>Solo lectura</span></div>
+      </div>
+      <div class="caption">Siempre visible en el layout de 3 columnas (≥1024px); drawer superpuesto en el rango 768–1023px. Recordatorios/Pin solo lectura (S10).</div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:56px;">
+    <div class="frame-label">Atajos de teclado (overlay)</div>
+    <div style="width:320px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:16px 20px;font-size:13px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-weight:600;margin-bottom:4px;">Atajos de teclado</div>
+      <div style="display:flex;justify-content:space-between;"><kbd style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:4px;padding:1px 8px;font-size:12px;">N</kbd><span>Nueva tarea</span></div>
+      <div style="display:flex;justify-content:space-between;"><kbd style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:4px;padding:1px 8px;font-size:12px;">/ o Ctrl+K</kbd><span>Buscar</span></div>
+      <div style="display:flex;justify-content:space-between;"><kbd style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:4px;padding:1px 8px;font-size:12px;">Esc</kbd><span>Cerrar panel</span></div>
+      <div style="display:flex;justify-content:space-between;"><kbd style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:4px;padding:1px 8px;font-size:12px;">Enter</kbd><span>Crear/Confirmar</span></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1500,"height":2700}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

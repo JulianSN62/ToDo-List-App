@@ -1,0 +1,25 @@
+# =====================================================================
+#  ToDo List - Configuración de sincronización de PowerSync (Sync Streams)
+#
+#  Cómo usarla: dashboard de PowerSync -> tu instancia -> Sync Streams
+#  (o "Sync Config") -> pegar este contenido -> Validate -> Deploy.
+#
+#  Cada usuario recibe únicamente sus propias filas (owner_id = usuario
+#  autenticado). Se sincronizan todas las tablas del modelo, incluidas
+#  las filas con borrado lógico (deleted_at), necesarias para "Deshacer".
+# =====================================================================
+config:
+  edition: 3
+
+streams:
+  user_data:
+    auto_subscribe: true
+    queries:
+      - SELECT * FROM folders WHERE owner_id = auth.user_id()
+      - SELECT * FROM tasks WHERE owner_id = auth.user_id()
+      - SELECT * FROM tags WHERE owner_id = auth.user_id()
+      - SELECT * FROM task_tags WHERE owner_id = auth.user_id()
+      - SELECT * FROM attachments WHERE owner_id = auth.user_id()
+      - SELECT * FROM reminders WHERE owner_id = auth.user_id()
+      - SELECT * FROM reminder_times WHERE owner_id = auth.user_id()
+      - SELECT * FROM user_settings WHERE owner_id = auth.user_id()

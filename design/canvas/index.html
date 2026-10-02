@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mis Tareas — Canvas de diseño</title>
+<style>
+  :root{
+    --bg:#F8FAFC; --surface:#FFFFFF; --border:#E2E8F0; --text:#0F172A; --text2:#64748B; --accent:#4F46E5;
+  }
+  body{margin:0; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text);}
+  header{padding:40px 24px 24px; max-width:1100px; margin:0 auto;}
+  header p{color:var(--text2); font-size:15px; line-height:1.5; max-width:680px;}
+  main{max-width:1100px; margin:0 auto; padding:0 24px 80px;}
+  h2{font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text2); margin:36px 0 12px;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px;}
+  a.card{display:block; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; text-decoration:none; color:var(--text);}
+  a.card:hover{border-color:var(--accent);}
+  a.card .label{font-size:11px; color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:.04em;}
+  a.card .title{font-size:15px; font-weight:600; margin-top:4px;}
+</style>
+</head>
+<body>
+<header>
+  <div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;">Mis Tareas</div>
+  <h1 style="margin:4px 0 8px;font-size:28px;">Canvas de diseño (copia local)</h1>
+  <p>Copia estática de los 13 artboards del Artifact de diseño, para abrir directamente en el navegador sin conexión mientras se desarrolla. Cada archivo es standalone (abrilo directo con doble clic o "Abrir con navegador"). La versión editable en vivo sigue en el Artifact — ver <code>../README.md</code> para el link.</p>
+</header>
+<main>
+
+  <h2>Fundamentos</h2>
+  <div class="grid">
+    <a class="card" href="./Main.dc.html"><div class="label">Base</div><div class="title">Tokens y estilo</div></a>
+    <a class="card" href="./Auth.dc.html"><div class="label">Auth</div><div class="title">Email + código</div></a>
+  </div>
+
+  <h2>Navegación</h2>
+  <div class="grid">
+    <a class="card" href="./NavigationMobile.dc.html"><div class="label">Mobile</div><div class="title">Bottom nav + FAB</div></a>
+    <a class="card" href="./NavigationDesktop.dc.html"><div class="label">Desktop</div><div class="title">Sidebar / 3 columnas</div></a>
+  </div>
+
+  <h2>Carpetas</h2>
+  <div class="grid">
+    <a class="card" href="./FoldersMobile.dc.html"><div class="label">Mobile</div><div class="title">Carpetas</div></a>
+    <a class="card" href="./FoldersDesktop.dc.html"><div class="label">Desktop</div><div class="title">Carpetas</div></a>
+  </div>
+
+  <h2>Tareas</h2>
+  <div class="grid">
+    <a class="card" href="./TasksMobile.dc.html"><div class="label">Mobile</div><div class="title">Tareas</div></a>
+    <a class="card" href="./TasksDesktop.dc.html"><div class="label">Desktop</div><div class="title">Tareas</div></a>
+  </div>
+
+  <h2>Hoy / Buscar</h2>
+  <div class="grid">
+    <a class="card" href="./TodaySearchMobile.dc.html"><div class="label">Mobile</div><div class="title">Hoy / Buscar</div></a>
+    <a class="card" href="./TodaySearchDesktop.dc.html"><div class="label">Desktop</div><div class="title">Hoy / Buscar</div></a>
+  </div>
+
+  <h2>Ajustes</h2>
+  <div class="grid">
+    <a class="card" href="./SettingsMobile.dc.html"><div class="label">Mobile</div><div class="title">Ajustes</div></a>
+    <a class="card" href="./SettingsDesktop.dc.html"><div class="label">Desktop</div><div class="title">Ajustes</div></a>
+  </div>
+
+  <h2>Transversal</h2>
+  <div class="grid">
+    <a class="card" href="./Components.dc.html"><div class="label">Todas las plataformas</div><div class="title">Componentes</div></a>
+  </div>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Carpetas — desktop</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0; font-family:'Inter',system-ui,-apple-system,sans-serif; background:#F8FAFC;}
+  .panel{width:680px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;box-sizing:border-box;}
+  .row{display:flex;align-items:center;gap:10px;height:48px;padding:0 20px;border-bottom:1px solid #E2E8F0;box-sizing:border-box;}
+  .stripe{width:4px;align-self:stretch;border-radius:2px;}
+  .frame-label{font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;}
+  .caption{font-size:12px;color:#64748B;line-height:1.5;margin-top:10px;max-width:680px;}
+  .btn{height:40px;border-radius:8px;font-size:14px;font-weight:600;border:none;padding:0 18px;}
+  .icon{width:16px;height:16px;display:inline-block;vertical-align:middle;flex:none;}
+  .tree-row{display:flex;align-items:center;gap:8px;}
+</style>
+</helmet>
+
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+<defs>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.6" y2="16.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4.5l1.5 2H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+</defs>
+</svg>
+
+<div style="max-width:1500px;margin:0 auto;padding:56px 40px 120px;box-sizing:border-box;">
+  <header style="margin-bottom:40px;">
+    <div style="font-size:14px;font-weight:600;color:#4F46E5;text-transform:uppercase;letter-spacing:.04em;">Carpetas — desktop</div>
+    <h1 style="margin:4px 0 0;font-size:28px;font-weight:700;">Mismas pantallas, chrome de mouse/teclado</h1>
+  </header>
+
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,680px));gap:48px;">
+
+    <!-- Vista de carpeta -->
+    <div>
+      <div class="frame-label">Vista de carpeta (columna central del layout de 3 col)</div>
+      <div class="panel">
+        <div style="height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid #E2E8F0;">
+          <div style="font-size:14px;font-weight:600;">… › Cliente X › Proyecto</div>
+          <div style="font-size:12px;color:#64748B;">+ Subcarpeta &nbsp; + Tarea</div>
+        </div>
+        <div style="padding:10px 20px 4px;font-size:11px;font-weight:600;color:#64748B;text-transform:uppercase;">Subcarpetas (2)</div>
+        <div class="row"><div class="stripe" style="background:#3B82F6;"></div><div style="width:8px;height:8px;border-radius:999px;background:#3B82F6;"></div><div style="flex-grow:1;font-size:14px;">Frontend</div><div style="font-size:12px;color:#64748B;">3 pend.</div></div>
+        <div style="padding:10px 20px 4px;font-size:11px;font-weight:600;color:#64748B;text-transform:uppercase;">Tareas</div>
+        <div class="row" style="background:#EEF2FF;"><div class="stripe" style="background:#A855F7;"></div><div style="width:16px;height:16px;border:2px solid #CBD5E1;border-radius:4px;"></div><div style="flex-grow:1;font-size:14px;">Revisar contrato</div><div style="font-size:12px;color:#64748B;display:flex;align-items:center;gap:4px;"><svg class="icon"><use href="#i-calendar"></use></svg>Hoy</div></div>
+      </div>
+      <div class="caption">Fila 48px (vs 56px mobile): mayor densidad porque el mouse apunta con precisión. Hover muestra drag handle y menú ⋯.</div>
+    </div>
+
+    <!-- Crear/editar carpeta -->
+    <div>
+      <div class="frame-label">Crear / editar carpeta (modal 420px)</div>
+      <div class="panel" style="display:flex;align-items:center;justify-content:center;padding:40px;background:#F1F5F9;">
+        <div style="width:380px;background:#FFFFFF;border-radius:12px;box-shadow:0 8px 32px rgba(15,23,42,.16);padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;justify-content:space-between;"><div style="font-size:16px;font-weight:600;">Nueva carpeta</div><svg class="icon"><use href="#i-x"></use></svg></div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:12px;color:#64748B;">Nombre *</label>
+            <div style="height:40px;border:1px solid #E2E8F0;border-radius:8px;"></div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <span style="width:26px;height:26px;border-radius:999px;background:#64748B;"></span>
+            <span style="width:26px;height:26px;border-radius:999px;background:#3B82F6;box-shadow:0 0 0 2px #4F46E5;"></span>
+            <span style="width:26px;height:26px;border-radius:999px;background:#A855F7;"></span>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
+            <button class="btn" style="background:#F1F5F9;color:#334155;">Cancelar</button>
+            <button class="btn" style="background:#4F46E5;color:#fff;">Crear</button>
+          </div>
+        </div>
+      </div>
+      <div class="caption">Modal centrado (vs. bottom sheet en mobile), 420px de ancho, mismo contenido.</div>
+    </div>
+
+    <!-- Mover carpeta -->
+    <div>
+      <div class="frame-label">Mover carpeta — árbol con búsqueda</div>
+      <div class="panel" style="padding:20px;">
+        <div style="font-size:16px;font-weight:600;margin-bottom:10px;">Mover "Frontend" a…</div>
+        <div style="height:36px;border:1px solid #E2E8F0;border-radius:8px;margin-bottom:10px;display:flex;align-items:center;gap:6px;padding:0 10px;font-size:13px;color:#94A3B8;"><svg class="icon"><use href="#i-search"></use></svg>Buscar carpeta...</div>
+        <div style="font-size:14px;display:flex;flex-direction:column;">
+          <div class="tree-row" style="padding:8px 0;"><svg class="icon" style="color:#94A3B8;"><use href="#i-folder"></use></svg>Raíz</div>
+          <div class="tree-row" style="padding:8px 0 8px 16px;"><svg class="icon" style="color:#94A3B8;"><use href="#i-folder"></use></svg>Cliente X</div>
+          <div class="tree-row" style="padding:8px 0 8px 32px;color:#94A3B8;"><svg class="icon"><use href="#i-folder"></use></svg>Proyecto (actual)</div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px;">
+          <button class="btn" style="background:#F1F5F9;color:#334155;">Cancelar</button>
+          <button class="btn" style="background:#4F46E5;color:#fff;">Mover</button>
+        </div>
+      </div>
+      <div class="caption">También disponible con drag-and-drop de mouse directamente sobre el árbol del sidebar.</div>
+    </div>
+
+    <!-- Confirmar borrado -->
+    <div>
+      <div class="frame-label">Confirmar borrado (modal)</div>
+      <div class="panel" style="display:flex;align-items:center;justify-content:center;padding:40px;background:#F1F5F9;">
+        <div style="width:380px;background:#FFFFFF;border-radius:12px;box-shadow:0 8px 32px rgba(15,23,42,.16);padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px;">
+          <div style="font-size:16px;font-weight:600;">¿Eliminar "Cliente X"?</div>
+          <div style="font-size:14px;color:#334155;line-height:1.5;">Esto borrará 3 subcarpetas y 12 tareas.</div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button class="btn" style="background:#F1F5F9;color:#334155;">Cancelar</button>
+            <button class="btn" style="background:#EF4444;color:#fff;">Eliminar</button>
+          </div>
+        </div>
+      </div>
+      <div class="caption">Mismo contenido que mobile; en desktop además responde a Esc para cancelar.</div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1500,"height":2300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

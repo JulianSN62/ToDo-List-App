@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Hoy y Buscar — mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0; font-family:'Inter',system-ui,-apple-system,sans-serif; background:#F8FAFC;}
+  .phone{width:375px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:20px;overflow:hidden;box-sizing:border-box;}
+  .row{display:flex;flex-direction:column;justify-content:center;gap:2px;height:56px;padding:0 16px;border-bottom:1px solid #E2E8F0;box-sizing:border-box;}
+  .toprow{display:flex;align-items:center;gap:8px;}
+  .stripe{width:4px;align-self:stretch;border-radius:2px;}
+  .chip{font-size:11px;color:#64748B;background:#F1F5F9;border-radius:999px;padding:2px 8px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;}
+  .frame-label{font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;}
+  .caption{font-size:12px;color:#64748B;line-height:1.5;margin-top:10px;max-width:375px;}
+  .check{width:18px;height:18px;border:2px solid #CBD5E1;border-radius:5px;flex:none;}
+  .icon{width:16px;height:16px;display:inline-block;vertical-align:middle;flex:none;}
+</style>
+</helmet>
+
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+<defs>
+  <symbol id="i-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21 12 17.77 5.82 21 7 14.14 2 9.27 8.91 8.26" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.6" y2="16.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4 13 21a2 2 0 0 1-2.8 0L2 12.8V4a2 2 0 0 1 2-2h8.8a2 2 0 0 1 1.4.6l6.4 6.4a2 2 0 0 1 0 2.4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7" cy="7" r="1.2" fill="currentColor"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</defs>
+</svg>
+
+<div style="max-width:900px;margin:0 auto;padding:56px 40px 120px;box-sizing:border-box;">
+  <header style="margin-bottom:40px;">
+    <div style="font-size:14px;font-weight:600;color:#4F46E5;text-transform:uppercase;letter-spacing:.04em;">Hoy / Buscar — mobile</div>
+    <h1 style="margin:4px 0 0;font-size:28px;font-weight:700;">Vistas globales (cruzan carpetas)</h1>
+  </header>
+
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,375px));gap:40px;">
+
+    <div>
+      <div class="frame-label">Hoy / Upcoming</div>
+      <div class="phone">
+        <div style="height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid #E2E8F0;">
+          <div style="font-size:20px;font-weight:600;">Hoy</div>
+          <div class="chip" style="height:26px;"><svg class="icon" width="12" height="12"><use href="#i-star"></use></svg>Solo</div>
+        </div>
+        <div style="padding:10px 16px 2px;font-size:12px;font-weight:600;color:#EF4444;text-transform:uppercase;">Vencidas (2)</div>
+        <div class="row"><div class="toprow"><div class="check"></div><div style="font-size:14px;">Pagar hosting</div></div><div style="font-size:11px;color:#94A3B8;padding-left:26px;">Cliente X › Proyecto</div></div>
+        <div style="padding:10px 16px 2px;font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;">Hoy (1)</div>
+        <div class="row"><div class="toprow"><div class="check"></div><div style="font-size:14px;display:flex;align-items:center;gap:6px;"><svg class="icon" width="14" height="14" style="color:#F59E0B;"><use href="#i-star"></use></svg>Enviar factura</div></div><div style="font-size:11px;color:#94A3B8;padding-left:26px;">Cliente X</div></div>
+        <div style="padding:10px 16px;font-size:12px;color:#64748B;">Mañana (1) · Esta semana (3) · Más adelante (5)</div>
+      </div>
+      <div class="caption">Grupos fijos: Vencidas → Hoy → Mañana → Esta semana → Más adelante. Cada fila muestra el path de carpeta en una segunda línea.</div>
+    </div>
+
+    <div>
+      <div class="frame-label">Buscar</div>
+      <div class="phone">
+        <div style="margin:16px;height:44px;border:1px solid #E2E8F0;border-radius:8px;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:14px;color:#334155;"><svg class="icon"><use href="#i-search"></use></svg>contrato</div>
+        <div class="row"><div class="toprow"><div class="check"></div><div style="font-size:14px;">Revisar contrato con client.</div></div><div style="font-size:11px;color:#94A3B8;padding-left:26px;display:flex;align-items:center;gap:4px;">Cliente X › Proyecto · <svg class="icon" width="12" height="12"><use href="#i-tag"></use></svg>Urgente</div></div>
+        <div class="row" style="opacity:.6;"><div class="toprow"><div style="width:18px;height:18px;border-radius:5px;background:#22C55E;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;"><svg class="icon" width="12" height="12"><use href="#i-check"></use></svg></div><div style="font-size:14px;text-decoration:line-through;">Factura de marzo</div></div><div style="font-size:11px;color:#94A3B8;padding-left:26px;">Cliente X</div></div>
+      </div>
+      <div class="caption">Autofocus al entrar. Busca título, descripción y tags, sin distinguir mayúsculas/acentos, local e instantáneo (sin spinner).</div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":900,"height":1900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

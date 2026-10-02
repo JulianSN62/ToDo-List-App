@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Tokens y estilo</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0; font-family:'Inter',system-ui,-apple-system,sans-serif; background:#F8FAFC; color:#0F172A;}
+  a{color:#4F46E5} a:hover{color:#4338CA}
+  .swatch{border-radius:12px;border:1px solid #E2E8F0}
+  table{border-collapse:collapse;width:100%}
+  td,th{padding:10px 12px;text-align:left;border-bottom:1px solid #E2E8F0;font-size:14px}
+  th{color:#64748B;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  .icon{width:22px;height:22px;display:inline-block;color:#4F46E5;}
+</style>
+</helmet>
+
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+<defs>
+  <symbol id="i-smartphone" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="11" y1="18" x2="13" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-layout" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-droplet" viewBox="0 0 24 24"><path d="M12 2.7 17.7 9a8 8 0 1 1-11.4 0z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="8.5 12.5 11 15 15.5 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</defs>
+</svg>
+
+<div style="max-width:1200px;margin:0 auto;padding:56px 48px 120px;display:flex;flex-direction:column;gap:56px;box-sizing:border-box;">
+
+  <header style="display:flex;flex-direction:column;gap:8px;">
+    <div style="font-size:14px;font-weight:600;color:#4F46E5;letter-spacing:.04em;text-transform:uppercase;">Mis Tareas — Design System</div>
+    <h1 style="margin:0;font-size:40px;line-height:1.15;font-weight:700;">Tokens y guía de estilo</h1>
+    <p style="margin:0;font-size:16px;line-height:24px;color:#64748B;max-width:720px;">
+      Paleta neutra con un solo acento, tipografía Inter, grilla de 4px. "El color informa, no decora":
+      se reserva para estados (vencida/prioridad/completada) y para lo que el usuario elige (carpetas, tareas, tags).
+    </p>
+  </header>
+
+  <section style="display:flex;flex-direction:column;gap:20px;">
+    <h2 style="margin:0;font-size:24px;font-weight:700;">Principios</h2>
+    <div style="display:grid;grid-template-columns:repeat(5, minmax(0,1fr));gap:16px;">
+      <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;">
+        <svg class="icon"><use href="#i-smartphone"></use></svg>
+        <div style="font-size:14px;font-weight:600;">Mobile-first, a una mano</div>
+        <div style="font-size:13px;color:#64748B;line-height:1.4;">Acciones primarias al alcance del pulgar.</div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;">
+        <svg class="icon"><use href="#i-layout"></use></svg>
+        <div style="font-size:14px;font-weight:600;">Pocos elementos</div>
+        <div style="font-size:13px;color:#64748B;line-height:1.4;">Lo opcional aparece solo cuando se pide.</div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;">
+        <svg class="icon"><use href="#i-droplet"></use></svg>
+        <div style="font-size:14px;font-weight:600;">El color informa</div>
+        <div style="font-size:13px;color:#64748B;line-height:1.4;">Nunca decora: base neutra + 1 acento.</div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;">
+        <svg class="icon"><use href="#i-zap"></use></svg>
+        <div style="font-size:14px;font-weight:600;">Rápido</div>
+        <div style="font-size:13px;color:#64748B;line-height:1.4;">Crear tarea en segundos, sin spinners locales.</div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;">
+        <svg class="icon"><use href="#i-check-circle"></use></svg>
+        <div style="font-size:14px;font-weight:600;">Feedback inmediato</div>
+        <div style="font-size:13px;color:#64748B;line-height:1.4;">Consistencia visual en cada acción.</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px;">
+    <h2 style="margin:0;font-size:24px;font-weight:700;">Color base</h2>
+    <div style="display:grid;grid-template-columns:repeat(3, minmax(0,1fr));gap:16px;">
+      <div>
+        <div class="swatch" style="height:72px;background:#F8FAFC;"></div>
+        <div style="margin-top:8px;font-size:14px;font-weight:600;">Background</div>
+        <div style="font-size:13px;color:#64748B;">Claro #F8FAFC · Oscuro #0F172A</div>
+      </div>
+      <div>
+        <div class="swatch" style="height:72px;background:#FFFFFF;"></div>
+        <div style="margin-top:8px;font-size:14px;font-weight:600;">Surface</div>
+        <div style="font-size:13px;color:#64748B;">Claro #FFFFFF · Oscuro #1E293B</div>
+      </div>
+      <div>
+        <div class="swatch" style="height:72px;background:#E2E8F0;"></div>
+        <div style="margin-top:8px;font-size:14px;font-weight:600;">Border</div>
+        <div style="font-size:13px;color:#64748B;">Claro #E2E8F0 · Oscuro #334155</div>
+      </div>
+      <div>
+        <div class="swatch" style="height:72px;background:#0F172A;"></div>
+        <div style="margin-top:8px;font-size:14px;font-weight:600;">Texto primario</div>
+        <div style="font-size:13px;color:#64748B;">Claro #0F172A · Oscuro #F1F5F9</div>
+      </div>
+      <div>
+        <div class="swatch" style="height:72px;background:#64748B;"></div>
+        <div style="margin-top:8px;font-size:14px;font-weight:600;">Texto secundario</div>
+        <div style="font-size:13px;color:#64748B;">Claro #64748B · Oscuro #94A3B8</div>
+      </div>
+      <div>
+        <div class="swatch" style="height:72px;background:#4F46E5;"></div>
+        <div style="margin-top:8px;font-size:14px;font-weight:600;">Acento</div>
+        <div style="font-size:13px;color:#64748B;">Claro #4F46E5 · Oscuro #818CF8</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px;">
+    <h2 style="margin:0;font-size:24px;font-weight:700;">Color semántico (estados)</h2>
+    <div style="display:grid;grid-template-columns:repeat(3, minmax(0,1fr));gap:16px;">
+      <div style="background:#FEF2F2;border:1px solid #E2E8F0;border-radius:12px;padding:16px;display:flex;align-items:center;gap:10px;">
+        <div style="width:14px;height:14px;border-radius:999px;background:#EF4444;"></div>
+        <div><div style="font-size:14px;font-weight:600;color:#EF4444;">Vencida</div><div style="font-size:12px;color:#64748B;">#EF4444 / #F87171 (dark)</div></div>
+      </div>
+      <div style="background:#FFFBEB;border:1px solid #E2E8F0;border-radius:12px;padding:16px;display:flex;align-items:center;gap:10px;">
+        <div style="width:14px;height:14px;border-radius:999px;background:#F59E0B;"></div>
+        <div><div style="font-size:14px;font-weight:600;color:#B45309;">Prioridad</div><div style="font-size:12px;color:#64748B;">#F59E0B / #FBBF24 (dark)</div></div>
+      </div>
+      <div style="background:#F0FDF4;border:1px solid #E2E8F0;border-radius:12px;padding:16px;display:flex;align-items:center;gap:10px;">
+        <div style="width:14px;height:14px;border-radius:999px;background:#22C55E;"></div>
+        <div><div style="font-size:14px;font-weight:600;color:#15803D;">Completada</div><div style="font-size:12px;color:#64748B;">#22C55E / #4ADE80 (dark)</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px;">
+    <h2 style="margin:0;font-size:24px;font-weight:700;">Paleta de 10 colores (carpetas, tareas, tags)</h2>
+    <p style="margin:0;font-size:13px;color:#64748B;">Se guarda el nombre del token, nunca el hex. Convención: carpeta → punto de color; tarea → franja lateral 4px; tag → chip con fondo al 12%.</p>
+    <div style="display:grid;grid-template-columns:repeat(5, minmax(0,1fr));gap:14px;">
+      <div style="text-align:center;"><div class="swatch" style="height:48px;background:#64748B;"></div><div style="margin-top:6px;font-size:12px;font-weight:600;">slate</div></div>
+      <div style="text-align:center;"><div class="swatch" style="height:48px;background:#EF4444;"></div><div style="margin-top:6px;font-size:12px;font-weight:600;">red</div></div>
+      <div style="text-align:center;"><div class="swatch" style="height:48px;background:#F97316;"></div><div style="margin-top:6px;font-size:12px;font-weight:600;">orange</div></div>
+      <div style="text-align:center;"><div class="swatch" style="height:48px;background:#F59E0B;"></div><div style="margin-top:6px;font-size:12px;font-weight:600;">amber</div></div>
+      <div style="text-align:center;"><div class="swatch" style="height:48px;background:#22C55E;"></div><div style="margin-top:6px;font-size:12px;font-weight:600;">green</div></div>
+      <div style="text-align:center;"><div class="swatch" style="height:48px;background:#14B8A6;"></div><div style="margin-top:6px;font-size:12px;font-weight:600;">teal</div></div>
+      <div style="text-align:center;"><div class="swatch" style="height:48px;background:#3B82F6;"></div><div style="margin-top:6px;font-size:12px;font-weight:600;">blue</div></div>
+      <div style="text-align:center;"><div class="swatch" style="height:48px;background:#6366F1;"></div><div style="margin-top:6px;font-size:12px;font-weight:600;">indigo</div></div>
+      <div style="text-align:center;"><div class="swatch" style="height:48px;background:#A855F7;"></div><div style="margin-top:6px;font-size:12px;font-weight:600;">purple</div></div>
+      <div style="text-align:center;"><div class="swatch" style="height:48px;background:#EC4899;"></div><div style="margin-top:6px;font-size:12px;font-weight:600;">pink</div></div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px;">
+    <h2 style="margin:0;font-size:24px;font-weight:700;">Tipografía — Inter</h2>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;align-items:baseline;gap:16px;"><div style="width:110px;font-size:12px;color:#64748B;">caption 12/16</div><div style="font-size:12px;line-height:16px;">Se borra en 7 días</div></div>
+      <div style="display:flex;align-items:baseline;gap:16px;"><div style="width:110px;font-size:12px;color:#64748B;">body-sm 14/20</div><div style="font-size:14px;line-height:20px;">Cliente X › Proyecto</div></div>
+      <div style="display:flex;align-items:baseline;gap:16px;"><div style="width:110px;font-size:12px;color:#64748B;">body 16/24</div><div style="font-size:16px;line-height:24px;">Revisar contrato con el cliente</div></div>
+      <div style="display:flex;align-items:baseline;gap:16px;"><div style="width:110px;font-size:12px;color:#64748B;">title-sm 18/24 · 600</div><div style="font-size:18px;line-height:24px;font-weight:600;">Universidad</div></div>
+      <div style="display:flex;align-items:baseline;gap:16px;"><div style="width:110px;font-size:12px;color:#64748B;">title-md 20/28 · 600</div><div style="font-size:20px;line-height:28px;font-weight:600;">Hoy</div></div>
+      <div style="display:flex;align-items:baseline;gap:16px;"><div style="width:110px;font-size:12px;color:#64748B;">title-lg 24/32 · 700</div><div style="font-size:24px;line-height:32px;font-weight:700;">Ajustes</div></div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px;">
+    <h2 style="margin:0;font-size:24px;font-weight:700;">Spacing (grilla 4px) y radios</h2>
+    <div style="display:flex;align-items:flex-end;gap:10px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div style="width:4px;height:4px;background:#4F46E5;"></div><div style="font-size:11px;color:#64748B;">4</div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div style="width:8px;height:8px;background:#4F46E5;"></div><div style="font-size:11px;color:#64748B;">8</div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div style="width:12px;height:12px;background:#4F46E5;"></div><div style="font-size:11px;color:#64748B;">12</div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div style="width:16px;height:16px;background:#4F46E5;"></div><div style="font-size:11px;color:#64748B;">16</div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div style="width:24px;height:24px;background:#4F46E5;"></div><div style="font-size:11px;color:#64748B;">24</div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div style="width:32px;height:32px;background:#4F46E5;"></div><div style="font-size:11px;color:#64748B;">32</div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div style="width:48px;height:48px;background:#4F46E5;"></div><div style="font-size:11px;color:#64748B;">48 (tap target)</div></div>
+    </div>
+    <div style="display:flex;gap:24px;align-items:flex-end;margin-top:8px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div style="width:64px;height:64px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;"></div><div style="font-size:12px;color:#64748B;">radius-sm 8</div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div style="width:64px;height:64px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;"></div><div style="font-size:12px;color:#64748B;">radius-md 12</div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div style="width:64px;height:64px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:999px;"></div><div style="font-size:12px;color:#64748B;">radius-full</div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div style="width:64px;height:64px;background:#FFFFFF;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.08);"></div><div style="font-size:12px;color:#64748B;">shadow-sm</div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div style="width:64px;height:64px;background:#FFFFFF;border-radius:12px;box-shadow:0 4px 16px rgba(15,23,42,.12);"></div><div style="font-size:12px;color:#64748B;">shadow-md</div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><div style="width:64px;height:64px;background:#FFFFFF;border-radius:12px;box-shadow:0 8px 32px rgba(15,23,42,.16);"></div><div style="font-size:12px;color:#64748B;">shadow-lg</div></div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:16px;">
+    <h2 style="margin:0;font-size:24px;font-weight:700;">Breakpoints responsive</h2>
+    <table>
+      <tr><th>Rango</th><th>Navegación</th><th>Layout</th></tr>
+      <tr><td>&lt; 768px</td><td>Bottom nav + FAB</td><td>Una columna, detalle como bottom sheet</td></tr>
+      <tr><td>768–1023px</td><td>Sidebar colapsable</td><td>Sidebar + lista/detalle superpuesto</td></tr>
+      <tr><td>≥ 1024px</td><td>Sidebar expandida</td><td>3 columnas: árbol · lista · detalle fijo</td></tr>
+    </table>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1400,"height":1700}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+# Despliegue de la versión web / PWA en Netlify (solo se usa con la CLI o con un
+# repositorio conectado; al arrastrar dist este archivo no viaja).
+# Las variables VITE_* se toman del .env local al compilar, o del panel de Netlify
+# (Site configuration -> Environment variables) si compila Netlify. Nunca van acá.
+#
+# Las redirecciones y las cabeceras NO están acá: están en public/_redirects y
+# public/_headers, que Vite copia a dist/. Así funcionan también al arrastrar dist.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "24"

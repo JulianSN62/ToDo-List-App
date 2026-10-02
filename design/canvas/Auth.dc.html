@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Auth — email + código</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0; font-family:'Inter',system-ui,-apple-system,sans-serif; background:#F8FAFC; color:#0F172A;}
+  a{color:#4F46E5} a:hover{color:#4338CA}
+  input{font-family:inherit;font-size:16px;height:48px;border-radius:8px;border:1px solid #E2E8F0;padding:0 14px 0 42px;box-sizing:border-box;width:100%;background:#FFFFFF;color:#0F172A;}
+  input:focus{outline:2px solid #4F46E5;outline-offset:1px;border-color:transparent;}
+  label{font-size:13px;color:#64748B;font-weight:500;}
+  .field{position:relative;}
+  .field .icon{position:absolute;left:12px;top:14px;color:#94A3B8;}
+  .btn-primary{height:48px;border-radius:8px;border:none;background:#4F46E5;color:#FFFFFF;font-size:15px;font-weight:600;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .frame-label{font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;}
+  .caption{font-size:12px;color:#64748B;line-height:1.5;margin-top:10px;max-width:375px;}
+  .icon{width:20px;height:20px;display:inline-block;vertical-align:middle;}
+</style>
+</helmet>
+
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+<defs>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="22 6 12 13 2 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-hash" viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="4" y1="15" x2="20" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="10" y1="3" x2="8" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="3" x2="14" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2 11 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2 15 22l-4-9-9-4 20-9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="8.5 12.5 11 15 15.5 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</defs>
+</svg>
+
+<div style="max-width:1300px;margin:0 auto;padding:56px 48px 120px;display:flex;flex-direction:column;gap:48px;box-sizing:border-box;">
+
+  <header style="display:flex;flex-direction:column;gap:8px;">
+    <div style="font-size:14px;font-weight:600;color:#4F46E5;letter-spacing:.04em;text-transform:uppercase;">Auth</div>
+    <h1 style="margin:0;font-size:32px;font-weight:700;">Ingreso con email + código</h1>
+    <p style="margin:0;font-size:15px;color:#64748B;max-width:720px;line-height:1.5;">
+      Sin contraseña, sin pestañas de login/registro/recuperación. Un solo campo que pide el email, y luego el <strong>mismo espacio</strong>
+      se convierte en el campo para el código de verificación que llega por correo. Mismo layout en mobile y desktop (contenedor máx. 400px).
+      Sin nombre de app ni logo en pantalla.
+    </p>
+  </header>
+
+  <div style="display:flex;gap:64px;flex-wrap:wrap;align-items:flex-start;">
+
+    <div>
+      <div class="frame-label">Paso 1 — Pedir código</div>
+      <div style="width:375px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:40px 28px;box-sizing:border-box;box-shadow:0 1px 2px rgba(15,23,42,.08);display:flex;flex-direction:column;gap:20px;">
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <label for="email">Email</label>
+          <div class="field">
+            <svg class="icon"><use href="#i-mail"></use></svg>
+            <input id="email" type="email" placeholder="vos@email.com">
+          </div>
+        </div>
+        <button class="btn-primary"><svg class="icon" width="16" height="16"><use href="#i-send"></use></svg> Enviar código</button>
+      </div>
+      <div class="caption">Un solo campo, sin contraseña. El botón queda deshabilitado hasta que el email tiene formato válido.</div>
+    </div>
+
+    <div style="display:flex;align-items:center;color:#CBD5E1;padding-top:120px;">
+      <svg width="28" height="28" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+
+    <div>
+      <div class="frame-label">Paso 2 — Mismo espacio, ahora para el código</div>
+      <div style="width:375px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:40px 28px;box-sizing:border-box;box-shadow:0 1px 2px rgba(15,23,42,.08);display:flex;flex-direction:column;gap:20px;">
+        <div style="font-size:13px;color:#64748B;line-height:1.5;display:flex;align-items:center;gap:6px;">
+          <svg class="icon" width="16" height="16" style="color:#94A3B8;flex:none;"><use href="#i-check-circle"></use></svg>
+          Te enviamos un código a <strong style="color:#0F172A;">vos@email.com</strong>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <label for="code">Código de verificación</label>
+          <div class="field">
+            <svg class="icon"><use href="#i-hash"></use></svg>
+            <input id="code" type="text" inputmode="numeric" placeholder="123456" style="letter-spacing:4px;font-weight:600;">
+          </div>
+        </div>
+        <button class="btn-primary"><svg class="icon" width="16" height="16"><use href="#i-check"></use></svg> Verificar</button>
+        <div style="display:flex;justify-content:space-between;font-size:13px;">
+          <a href="#" style="display:flex;align-items:center;gap:4px;"><svg class="icon" width="14" height="14"><use href="#i-chevron-left"></use></svg> Cambiar email</a>
+          <a href="#">Reenviar código</a>
+        </div>
+      </div>
+      <div class="caption">El campo de email se reemplaza por el de código en el mismo lugar de la tarjeta — no es una pantalla nueva. Código de 6 dígitos, numérico.</div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1400,"height":820}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

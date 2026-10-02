@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Componentes transversales</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0; font-family:'Inter',system-ui,-apple-system,sans-serif; background:#F8FAFC;}
+  .card{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:20px;box-sizing:border-box;}
+  .frame-label{font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px;}
+  .caption{font-size:12px;color:#64748B;line-height:1.5;margin-top:10px;}
+  .icon{width:18px;height:18px;display:inline-block;vertical-align:middle;flex:none;}
+</style>
+</helmet>
+
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+<defs>
+  <symbol id="i-folder-open" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4.5l1.5 2H19a2 2 0 0 1 2 2H9l-2.5 9H3V7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6.5 18 9 9h12l-2.5 9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21 12 17.77 5.82 21 7 14.14 2 9.27 8.91 8.26" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.7 21a2 2 0 0 1-3.4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="12 7 12 12 16 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-7.6-7-12a7 7 0 0 1 14 0c0 4.4-7 12-7 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="9" r="2.3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+</defs>
+</svg>
+
+<div style="max-width:1300px;margin:0 auto;padding:56px 48px 120px;box-sizing:border-box;display:flex;flex-direction:column;gap:48px;">
+  <header>
+    <div style="font-size:14px;font-weight:600;color:#4F46E5;text-transform:uppercase;letter-spacing:.04em;">Componentes transversales</div>
+    <h1 style="margin:4px 0 0;font-size:28px;font-weight:700;">Reutilizados en varias pantallas</h1>
+  </header>
+
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;">
+
+    <div class="card">
+      <div class="frame-label">Toast de Undo</div>
+      <div style="width:100%;height:48px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 4px 16px rgba(15,23,42,.12);display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:14px;">
+        <span>Tarea eliminada</span><span style="color:#4F46E5;font-weight:600;">Deshacer</span>
+      </div>
+      <div class="caption">~6 segundos. Se usa al borrar tareas (no carpetas, que usan confirmación modal).</div>
+    </div>
+
+    <div class="card">
+      <div class="frame-label">Chips</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:12px;padding:4px 10px;border-radius:999px;background:rgba(168,85,247,.12);color:#A855F7;font-weight:600;">Urgente</span>
+        <span style="font-size:12px;padding:4px 10px;border-radius:999px;background:#FFFFFF;border:1px solid #E2E8F0;color:#64748B;display:inline-flex;align-items:center;gap:4px;"><svg class="icon" width="12" height="12"><use href="#i-star"></use></svg>Solo</span>
+        <span style="font-size:12px;padding:4px 10px;border-radius:999px;background:rgba(79,70,229,.12);color:#4F46E5;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><svg class="icon" width="12" height="12"><use href="#i-star"></use></svg>Solo (activo)</span>
+      </div>
+      <div class="caption">Tag: fondo al 12% + texto sólido. Filtro: borde neutro inactivo, acento al 12% activo.</div>
+    </div>
+
+    <div class="card">
+      <div class="frame-label">Swatches de color (10 tokens)</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span style="width:28px;height:28px;border-radius:999px;background:#64748B;"></span>
+        <span style="width:28px;height:28px;border-radius:999px;background:#EF4444;"></span>
+        <span style="width:28px;height:28px;border-radius:999px;background:#F97316;"></span>
+        <span style="width:28px;height:28px;border-radius:999px;background:#F59E0B;"></span>
+        <span style="width:28px;height:28px;border-radius:999px;background:#22C55E;box-shadow:0 0 0 2px #4F46E5;"></span>
+        <span style="width:28px;height:28px;border-radius:999px;background:#14B8A6;"></span>
+        <span style="width:28px;height:28px;border-radius:999px;background:#3B82F6;"></span>
+        <span style="width:28px;height:28px;border-radius:999px;background:#6366F1;"></span>
+        <span style="width:28px;height:28px;border-radius:999px;background:#A855F7;"></span>
+        <span style="width:28px;height:28px;border-radius:999px;background:#EC4899;"></span>
+      </div>
+      <div class="caption">Círculo 32px visual en tap target 48×48. Seleccionado: anillo de 2px en acento.</div>
+    </div>
+
+    <div class="card">
+      <div class="frame-label">Breadcrumb</div>
+      <div style="font-size:14px;">… <span style="color:#64748B;">›</span> Cliente X <span style="color:#64748B;">›</span> <strong>Proyecto</strong></div>
+      <div class="caption">Abreviado en mobile (primer nivel + … + últimos 2). Último segmento no es tocable (carpeta actual).</div>
+    </div>
+
+    <div class="card">
+      <div class="frame-label">Overlay de atajos (desktop)</div>
+      <div style="font-size:13px;display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;justify-content:space-between;"><kbd style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:4px;padding:1px 8px;">N</kbd><span>Nueva tarea</span></div>
+        <div style="display:flex;justify-content:space-between;"><kbd style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:4px;padding:1px 8px;">Esc</kbd><span>Cerrar panel</span></div>
+      </div>
+      <div class="caption">Popover anclado a un ícono de ayuda en el header de la columna central.</div>
+    </div>
+
+    <div class="card">
+      <div class="frame-label">Estado vacío (patrón general)</div>
+      <div style="text-align:center;padding:12px 0;">
+        <svg width="30" height="30" viewBox="0 0 24 24" style="color:#CBD5E1;"><use href="#i-folder-open"></use></svg>
+        <div style="font-size:13px;color:#64748B;margin-top:8px;">Todavía no hay nada acá.</div>
+      </div>
+      <div class="caption">Mismo patrón en carpetas vacías, búsqueda sin resultados, detalle sin selección (desktop).</div>
+    </div>
+
+    <div class="card" style="grid-column:span 1;">
+      <div class="frame-label">Confirmación modal (patrón general)</div>
+      <div style="background:#F1F5F9;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:14px;font-weight:600;">¿Eliminar "X"?</div>
+        <div style="font-size:12px;color:#334155;">Texto con el impacto concreto.</div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <span style="font-size:12px;padding:6px 12px;border-radius:6px;background:#E2E8F0;">Cancelar</span>
+          <span style="font-size:12px;padding:6px 12px;border-radius:6px;background:#EF4444;color:#fff;">Eliminar</span>
+        </div>
+      </div>
+      <div class="caption">Solo para acciones destructivas de alto impacto (borrar carpeta).</div>
+    </div>
+
+    <div class="card" style="grid-column:span 2;">
+      <div class="frame-label">Notificaciones Android (mockup conceptual — no es UI de la app)</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;background:#F8FAFC;border-radius:8px;padding:10px 14px;">
+          <svg class="icon" style="color:#4F46E5;"><use href="#i-bell"></use></svg><div style="font-size:12px;color:#64748B;">Vence hoy: Enviar factura <span style="color:#94A3B8;">· canal due_alerts, alta</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;background:#F8FAFC;border-radius:8px;padding:10px 14px;">
+          <svg class="icon" style="color:#4F46E5;"><use href="#i-clock"></use></svg><div style="font-size:12px;color:#64748B;">Recordatorio: Llamar al cliente <span style="color:#94A3B8;">· canal reminders, alta</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;background:#F8FAFC;border-radius:8px;padding:10px 14px;">
+          <svg class="icon" style="color:#4F46E5;"><use href="#i-pin"></use></svg><div style="font-size:12px;color:#64748B;">Revisar contrato (fijada) <span style="color:#94A3B8;">· canal pinned, baja/silenciosa</span></div>
+        </div>
+      </div>
+      <div class="caption">Tocar cualquiera abre /task/:id. "pinned" debe resistir el deslizar-para-cerrar (riesgo Android 14+ documentado en el spec).</div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1400,"height":2500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Auth.dc.html": {
+      "expand": "fill",
+      "h": 820,
+      "title": "Auth — Email + código",
+      "w": 1400,
+      "x": 1480,
+      "y": 0
+    },
+    "Components.dc.html": {
+      "expand": "fill",
+      "h": 2500,
+      "title": "Componentes transversales",
+      "w": 1400,
+      "x": 0,
+      "y": 13664
+    },
+    "FoldersDesktop.dc.html": {
+      "expand": "fill",
+      "h": 2300,
+      "title": "Carpetas — desktop",
+      "w": 1500,
+      "x": 980,
+      "y": 2784
+    },
+    "FoldersMobile.dc.html": {
+      "expand": "fill",
+      "h": 2700,
+      "title": "Carpetas — mobile",
+      "w": 900,
+      "x": 0,
+      "y": 2784
+    },
+    "Main.dc.html": {
+      "expand": "fill",
+      "h": 1700,
+      "title": "Tokens & estilo",
+      "w": 1400,
+      "x": 0,
+      "y": 0
+    },
+    "NavigationDesktop.dc.html": {
+      "h": 900,
+      "title": "Navegación — desktop (sidebar / 3 col)",
+      "w": 1440,
+      "x": 470,
+      "y": 1820
+    },
+    "NavigationMobile.dc.html": {
+      "h": 844,
+      "title": "Navegación — mobile",
+      "w": 390,
+      "x": 0,
+      "y": 1820
+    },
+    "SettingsDesktop.dc.html": {
+      "expand": "fill",
+      "h": 1900,
+      "title": "Ajustes — desktop",
+      "w": 1500,
+      "x": 980,
+      "y": 10844
+    },
+    "SettingsMobile.dc.html": {
+      "expand": "fill",
+      "h": 2700,
+      "title": "Ajustes — mobile",
+      "w": 900,
+      "x": 0,
+      "y": 10844
+    },
+    "TasksDesktop.dc.html": {
+      "expand": "fill",
+      "h": 2700,
+      "title": "Tareas — desktop",
+      "w": 1500,
+      "x": 980,
+      "y": 5604
+    },
+    "TasksMobile.dc.html": {
+      "expand": "fill",
+      "h": 3100,
+      "title": "Tareas — mobile",
+      "w": 900,
+      "x": 0,
+      "y": 5604
+    },
+    "TodaySearchDesktop.dc.html": {
+      "expand": "fill",
+      "h": 1700,
+      "title": "Hoy / Buscar — desktop",
+      "w": 1500,
+      "x": 980,
+      "y": 8824
+    },
+    "TodaySearchMobile.dc.html": {
+      "expand": "fill",
+      "h": 1900,
+      "title": "Hoy / Buscar — mobile",
+      "w": 900,
+      "x": 0,
+      "y": 8824
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-01T00:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "n1": {
+      "kind": "title1",
+      "maxW": 2880,
+      "text": "Mis Tareas — Diseño completo (mobile + web/desktop)",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "n2": {
+      "kind": "title1",
+      "maxW": 1910,
+      "text": "Navegación",
+      "w": 240,
+      "x": 0,
+      "y": 1560
+    },
+    "n3": {
+      "kind": "title1",
+      "maxW": 2480,
+      "text": "Carpetas",
+      "w": 240,
+      "x": 0,
+      "y": 2524
+    },
+    "n4": {
+      "kind": "title1",
+      "maxW": 2480,
+      "text": "Tareas",
+      "w": 240,
+      "x": 0,
+      "y": 5344
+    },
+    "n5": {
+      "kind": "title1",
+      "maxW": 2480,
+      "text": "Hoy / Buscar",
+      "w": 240,
+      "x": 0,
+      "y": 8564
+    },
+    "n6": {
+      "kind": "title1",
+      "maxW": 2480,
+      "text": "Ajustes",
+      "w": 240,
+      "x": 0,
+      "y": 10584
+    },
+    "n7": {
+      "kind": "title1",
+      "maxW": 1400,
+      "text": "Componentes transversales",
+      "w": 240,
+      "x": 0,
+      "y": 13404
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Auth.dc.html",
+    "NavigationMobile.dc.html",
+    "NavigationDesktop.dc.html",
+    "FoldersMobile.dc.html",
+    "FoldersDesktop.dc.html",
+    "TasksMobile.dc.html",
+    "TasksDesktop.dc.html",
+    "TodaySearchMobile.dc.html",
+    "TodaySearchDesktop.dc.html",
+    "SettingsMobile.dc.html",
+    "SettingsDesktop.dc.html",
+    "Components.dc.html"
+  ],
+  "pages": [],
+  "title": "Mis Tareas — Diseño"
+}

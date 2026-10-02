@@ -1,0 +1,72 @@
+# ---------- Dependencias ----------
+node_modules/
+
+# ---------- Builds y salidas generadas ----------
+dist/
+dev-dist/
+coverage/
+.vite/
+*.tsbuildinfo
+playwright-report/
+test-results/
+
+# ---------- Variables de entorno y secretos ----------
+# Nunca se versionan: contienen las credenciales reales.
+.env
+.env.*
+!.env.example
+*.local
+*.pem
+*.p12
+
+# ---------- Android (Capacitor) ----------
+android/.gradle/
+android/build/
+android/app/build/
+android/captures/
+android/local.properties
+android/.idea/
+android/*.iml
+android/app/release/
+android/app/debug/
+# Copias generadas por `cap sync` a partir de dist/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+android/app/src/main/res/xml/config.xml
+android/capacitor-cordova-android-plugins/
+# Firma del APK: keystore y sus contraseñas
+*.jks
+*.keystore
+keystore.properties
+android/keystore.properties
+google-services.json
+
+# ---------- Supabase CLI ----------
+supabase/.temp/
+supabase/.branches/
+supabase/functions/.env
+supabase/.env
+
+# ---------- Editores e IDE ----------
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+
+# ---------- Sistema operativo ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- Logs ----------
+logs/
+*.log
+npm-debug.log*
+
+# ---------- Claude Code (configuración local) ----------
+.claude/settings.local.json
+
+# Netlify CLI (vínculo local con el sitio)
+.netlify/

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Carpetas — mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0; font-family:'Inter',system-ui,-apple-system,sans-serif; background:#F8FAFC;}
+  .phone{width:375px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:20px;overflow:hidden;box-sizing:border-box;}
+  .row{display:flex;align-items:center;gap:10px;height:56px;padding:0 16px;border-bottom:1px solid #E2E8F0;box-sizing:border-box;}
+  .stripe{width:4px;align-self:stretch;border-radius:2px;}
+  .frame-label{font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;}
+  .caption{font-size:12px;color:#64748B;line-height:1.5;margin-top:10px;max-width:375px;}
+  .btn{height:44px;border-radius:8px;font-size:14px;font-weight:600;border:none;flex:1;}
+  .sheet-handle{width:32px;height:4px;border-radius:999px;background:#E2E8F0;margin:8px auto;}
+  .icon{width:18px;height:18px;display:inline-block;vertical-align:middle;flex:none;}
+  .tree-row{display:flex;align-items:center;gap:8px;padding:10px 0;}
+</style>
+</helmet>
+
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+<defs>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-more-vertical" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="19" r="1.3" fill="currentColor"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4 13 21a2 2 0 0 1-2.8 0L2 12.8V4a2 2 0 0 1 2-2h8.8a2 2 0 0 1 1.4.6l6.4 6.4a2 2 0 0 1 0 2.4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7" cy="7" r="1.2" fill="currentColor"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4.5l1.5 2H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-folder-open" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4.5l1.5 2H19a2 2 0 0 1 2 2H9l-2.5 9H3V7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6.5 18 9 9h12l-2.5 9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.6" y2="16.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+</defs>
+</svg>
+
+<div style="max-width:900px;margin:0 auto;padding:56px 40px 120px;box-sizing:border-box;">
+  <header style="margin-bottom:40px;">
+    <div style="font-size:14px;font-weight:600;color:#4F46E5;text-transform:uppercase;letter-spacing:.04em;">Carpetas — mobile</div>
+    <h1 style="margin:4px 0 0;font-size:28px;font-weight:700;">FOL-1 a FOL-8</h1>
+  </header>
+
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,375px));gap:40px;">
+
+    <!-- Vista de carpeta -->
+    <div>
+      <div class="frame-label">Vista de carpeta</div>
+      <div class="phone">
+        <div style="height:56px;display:flex;align-items:center;padding:0 12px;gap:8px;border-bottom:1px solid #E2E8F0;">
+          <svg class="icon"><use href="#i-chevron-left"></use></svg>
+          <div style="flex-grow:1;font-size:14px;font-weight:600;">… › Cliente X › Proyecto</div>
+          <svg class="icon" style="color:#64748B;"><use href="#i-more-vertical"></use></svg>
+        </div>
+        <div style="padding:10px 16px 4px;font-size:11px;font-weight:600;color:#64748B;text-transform:uppercase;">Subcarpetas <span style="float:right;color:#4F46E5;">+ Sub</span></div>
+        <div class="row"><div class="stripe" style="background:#3B82F6;"></div><div style="width:9px;height:9px;border-radius:999px;background:#3B82F6;"></div><div style="flex-grow:1;font-size:14px;">Frontend</div><div style="font-size:12px;color:#64748B;">3 pend.</div></div>
+        <div style="padding:10px 16px 4px;font-size:11px;font-weight:600;color:#64748B;text-transform:uppercase;">Tareas</div>
+        <div class="row"><div class="stripe" style="background:#A855F7;"></div><div style="width:18px;height:18px;border:2px solid #CBD5E1;border-radius:5px;"></div><div style="flex-grow:1;font-size:14px;">Revisar contrato</div><div style="font-size:12px;color:#64748B;display:flex;align-items:center;gap:6px;"><svg class="icon" width="14" height="14"><use href="#i-calendar"></use></svg>Hoy<svg class="icon" width="14" height="14"><use href="#i-tag"></use></svg>2</div></div>
+        <div style="padding:10px 16px;font-size:12px;color:#64748B;display:flex;align-items:center;gap:6px;"><svg class="icon" width="14" height="14"><use href="#i-chevron-down"></use></svg>Completadas (4) · se borran en 7d</div>
+      </div>
+      <div class="caption">Fila 56px. Franja de color 4px. "+ Subcarpeta" en el header de la sección, FAB abajo crea tarea.</div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div>
+      <div class="frame-label">Estado vacío</div>
+      <div class="phone" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:360px;gap:10px;padding:0 32px;text-align:center;">
+        <svg width="36" height="36" viewBox="0 0 24 24" style="color:#CBD5E1;"><use href="#i-folder-open"></use></svg>
+        <div style="font-size:14px;color:#64748B;line-height:1.5;">Todavía no hay nada acá.<br>Tocá + para crear una tarea.</div>
+      </div>
+      <div class="caption">Centrado vertical y horizontal. Sin botón extra: refuerza el FAB ya visible.</div>
+    </div>
+
+    <!-- Crear/editar carpeta -->
+    <div>
+      <div class="frame-label">Crear / editar carpeta (sheet)</div>
+      <div class="phone">
+        <div class="sheet-handle"></div>
+        <div style="padding:4px 20px 20px;display:flex;flex-direction:column;gap:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:16px;font-weight:600;">Nueva carpeta</div><svg class="icon"><use href="#i-x"></use></svg></div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:12px;color:#64748B;">Nombre *</label>
+            <div style="height:44px;border:1px solid #E2E8F0;border-radius:8px;display:flex;align-items:center;padding:0 12px;font-size:14px;color:#94A3B8;">Proyecto Beta</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label style="font-size:12px;color:#64748B;">Color (opcional)</label>
+            <div style="display:flex;gap:8px;">
+              <span style="width:28px;height:28px;border-radius:999px;background:#64748B;"></span>
+              <span style="width:28px;height:28px;border-radius:999px;background:#EF4444;"></span>
+              <span style="width:28px;height:28px;border-radius:999px;background:#F97316;"></span>
+              <span style="width:28px;height:28px;border-radius:999px;background:#3B82F6;box-shadow:0 0 0 2px #4F46E5;"></span>
+              <span style="width:28px;height:28px;border-radius:999px;background:#A855F7;"></span>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:6px;">
+            <button class="btn" style="background:#F1F5F9;color:#334155;">Cancelar</button>
+            <button class="btn" style="background:#4F46E5;color:#fff;">Crear</button>
+          </div>
+        </div>
+      </div>
+      <div class="caption">Bottom sheet, radius-md en esquinas superiores. Swatches 32px, tap target 48px.</div>
+    </div>
+
+    <!-- Mover carpeta -->
+    <div>
+      <div class="frame-label">Mover carpeta (árbol + búsqueda)</div>
+      <div class="phone">
+        <div style="padding:16px 20px 8px;font-size:16px;font-weight:600;">Mover "Frontend" a…</div>
+        <div style="margin:0 20px 10px;height:40px;border:1px solid #E2E8F0;border-radius:8px;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:13px;color:#94A3B8;"><svg class="icon" width="15" height="15"><use href="#i-search"></use></svg>Buscar carpeta...</div>
+        <div style="padding:0 20px;display:flex;flex-direction:column;font-size:14px;">
+          <div class="tree-row"><svg class="icon" width="16" height="16" style="color:#94A3B8;"><use href="#i-folder"></use></svg>Raíz</div>
+          <div class="tree-row" style="padding-left:16px;"><svg class="icon" width="16" height="16" style="color:#94A3B8;"><use href="#i-folder"></use></svg>Universidad</div>
+          <div class="tree-row" style="padding-left:16px;"><svg class="icon" width="16" height="16" style="color:#94A3B8;"><use href="#i-folder"></use></svg>Cliente X</div>
+          <div class="tree-row" style="padding-left:32px;color:#94A3B8;"><svg class="icon" width="16" height="16"><use href="#i-folder"></use></svg>Proyecto (actual)</div>
+          <div class="tree-row"><svg class="icon" width="16" height="16" style="color:#94A3B8;"><use href="#i-folder"></use></svg>Freelance</div>
+        </div>
+        <div style="display:flex;gap:10px;padding:10px 20px 20px;">
+          <button class="btn" style="background:#F1F5F9;color:#334155;">Cancelar</button>
+          <button class="btn" style="background:#4F46E5;color:#fff;">Mover</button>
+        </div>
+      </div>
+      <div class="caption">Fila de árbol 44px, indentación 16px/nivel. El destino actual/descendientes se deshabilita.</div>
+    </div>
+
+    <!-- Confirmar borrado -->
+    <div>
+      <div class="frame-label">Confirmar borrado</div>
+      <div class="phone" style="padding:24px 20px;display:flex;flex-direction:column;gap:14px;">
+        <div style="font-size:16px;font-weight:600;">¿Eliminar "Cliente X"?</div>
+        <div style="font-size:14px;color:#334155;line-height:1.5;">Esto borrará 3 subcarpetas y 12 tareas. Podés deshacerlo desde la próxima notificación.</div>
+        <div style="display:flex;gap:10px;margin-top:4px;">
+          <button class="btn" style="background:#F1F5F9;color:#334155;">Cancelar</button>
+          <button class="btn" style="background:#EF4444;color:#fff;">Eliminar</button>
+        </div>
+      </div>
+      <div class="caption">Único flujo con confirmación modal explícita: borrado de alto impacto (vs. Undo para tareas sueltas).</div>
+    </div>
+
+    <!-- Franja / contador -->
+    <div>
+      <div class="frame-label">Fila de carpeta — anatomía</div>
+      <div class="phone" style="padding:20px;">
+        <div class="row" style="border:1px solid #E2E8F0;border-radius:10px;"><div class="stripe" style="background:#14B8A6;"></div><div style="width:10px;height:10px;border-radius:999px;background:#14B8A6;"></div><div style="flex-grow:1;font-size:14px;">Documentación</div><div style="font-size:12px;color:#64748B;">2 pend.</div></div>
+      </div>
+      <div class="caption">Contador = tareas pendientes incluyendo subcarpetas. Indicador de vencidas si corresponde.</div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":900,"height":2700}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
