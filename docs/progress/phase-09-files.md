@@ -3,7 +3,7 @@
 **Estado:** ✅ Hecha la parte web (2026-10-02), en el **Bloque 5** (X96). Decisiones X97–X104.
 
 - **Queda para después:** la foto con la **cámara** y abrir archivos con otras apps en **Android**. Están armados (selector y menú de compartir), pero sin probar en el celular (X84).
-- **Lo que tenés que hacer vos:** correr la migración nueva en Supabase y probar con tu cuenta (pasos abajo).
+- **Lo que tenés que hacer vos:** probar con tu cuenta (pasos abajo). La migración ya la corriste (2026-10-02).
 
 ## Qué se hizo
 
@@ -94,7 +94,7 @@
 - `npm run android:build`: el APK de debug sigue compilando. No se probó en el celular (X84).
 
 ## Lo que tenés que hacer vos
-1. **Supabase → SQL Editor**, de a una y en este orden (`docs/SETUP.md`, paso 12.2):
+1. ✅ **Hecho (2026-10-02).** Supabase → SQL Editor, de a una y en este orden (`docs/SETUP.md`, paso 12.2):
    1. `supabase/migrations/20261002120000_cleanup_functions.sql`, si todavía no la corriste.
    2. `supabase/migrations/20261003120000_attachment_files.sql`.
 
@@ -104,4 +104,4 @@
    2. Comprobá que en Supabase → Storage → `attachments` aparecen dentro de tu carpeta.
    3. Abrí la misma tarea en otro navegador: la foto se descarga para la miniatura y el PDF se abre al tocarlo.
    4. Sin conexión (modo avión o desconectando la red), adjuntá un archivo y volvé a conectar: tiene que pasar de "Pendiente de subir" a listo.
-   5. Para ver la limpieza de Storage: poné la retención en 1 día y completá una tarea con un archivo. Pasados dos días (la app la borra al abrirse y la limpieza diaria vacía la papelera), el archivo ya no está en Storage. Una tarea **eliminada** tarda más: se purga a los 30 días, porque hasta entonces se puede recuperar.
+   5. Para ver la limpieza de Storage (necesita el paso 12 completo: Edge Function, Vault y tarea diaria): poné la retención en 1 día y completá una tarea con un archivo. Pasados dos días (la app la borra al abrirse y la limpieza diaria vacía la papelera), el archivo ya no está en Storage. Una tarea **eliminada** tarda más: se purga a los 30 días, porque hasta entonces se puede recuperar.

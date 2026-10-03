@@ -20,10 +20,10 @@ Estado del desarrollo por fase (según la sección 14 de `docs/specs-and-design.
 | 3 — Carpetas | ✅ Hecha | [phase-03-folders.md](./phase-03-folders.md) |
 | 4 — Tareas (núcleo) | ✅ Hecha · ajustada tras tus pruebas (ventana de tarea, filas expandibles) | [phase-04-tasks.md](./phase-04-tasks.md) |
 | 5 — Etiquetas, Hoy, búsqueda, links | ✅ Hecha (+ Ajustes → Etiquetas) · falta probar sync real y links en el celular | [phase-05-tags-today-search.md](./phase-05-tags-today-search.md) |
-| 6 — Configuración, respaldo, limpieza programada | ✅ Hecha (Bloques 3 y 4: alertas de vencimiento también en web) · falta que despliegues la limpieza en Supabase | [phase-06-settings-backup-cleanup.md](./phase-06-settings-backup-cleanup.md) |
+| 6 — Configuración, respaldo, limpieza programada | ✅ Hecha (Bloques 3 y 4: alertas de vencimiento también en web) · funciones SQL de limpieza ya corridas por vos · falta la tarea diaria, la Edge Function y Vault | [phase-06-settings-backup-cleanup.md](./phase-06-settings-backup-cleanup.md) |
 | 7 — PWA y desktop | ✅ Hecha en código (Bloque 3) · falta que publiques la web en Netlify | [phase-07-pwa.md](./phase-07-pwa.md) |
 | 8 — Android y notificaciones | 🟡 Base Android lista y APK compilado · notificaciones **pospuestas** hasta probar el celular (X84) · cálculo de avisos adelantado (Bloque 4) | [phase-08-android-base.md](./phase-08-android-base.md) |
-| 9 — Archivos y fotos | ✅ Hecha en web (Bloque 5) · falta que corras la migración nueva y pruebes con tu cuenta · cámara y Android sin probar (X84) | [phase-09-files.md](./phase-09-files.md) |
+| 9 — Archivos y fotos | ✅ Hecha en web (Bloque 5) · migración corrida por vos · falta probar con tu cuenta · cámara y Android sin probar (X84) | [phase-09-files.md](./phase-09-files.md) |
 | 10 — Pulido y entrega | ⏳ Pendiente | — |
 | Tests E2E (spec 15.1) | ✅ En el repo (Bloque 4): `npm run e2e`, 64 tests (10 de adjuntos en el Bloque 5) | [e2e-tests.md](./e2e-tests.md) |
 
@@ -119,14 +119,18 @@ Pedidos del usuario después de probar el login en el navegador (detalle en [pha
 
 ## Próximo paso recomendado
 
-1. **Vos — preparar y probar el Bloque 5:**
-   1. En el SQL Editor, correr primero `supabase/migrations/20261002120000_cleanup_functions.sql` y después `supabase/migrations/20261003120000_attachment_files.sql` (`docs/SETUP.md`, paso 12.2). La segunda necesita la primera.
+1. **Vos — probar el Bloque 5:**
+   1. ✅ Migraciones corridas en Supabase (2026-10-02): `20261002120000_cleanup_functions.sql` y `20261003120000_attachment_files.sql`.
    2. Con `npm run dev` y tu cuenta, seguir la lista de [phase-09-files.md](./phase-09-files.md#lo-que-tenés-que-hacer-vos):
       - adjuntar una foto y un PDF y verlos en Storage;
       - abrirlos en otro navegador;
       - adjuntar sin conexión y reconectar.
 2. **Vos — pendientes de antes:**
-   - Desplegar la limpieza programada en Supabase (`docs/SETUP.md` paso 12).
+   - Terminar la limpieza programada (`docs/SETUP.md` paso 12). Las funciones SQL ya están. Faltan:
+     - la secret key (12.1);
+     - la migración `20261002120100_cleanup_schedule.sql` (12.2, punto 2);
+     - la Edge Function (12.3);
+     - los secretos de Vault (12.4).
    - Publicar en Netlify (paso 10).
    - Probar la sincronización real entre dos navegadores.
    - Probar Ajustes → Alertas con datos reales.
