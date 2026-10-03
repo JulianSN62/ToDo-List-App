@@ -77,7 +77,7 @@
 
 ## Verificación
 - `npm run lint`, `npm run typecheck`, `npm test` y `npm run build`: sin errores.
-  - **210 tests** en 31 archivos.
+  - **211 tests** en 31 archivos.
   - Incluye la migración nueva sobre Postgres real (PGlite) en `supabase/tests/attachmentFilesSql.test.ts`.
 - `npm run e2e`: **64 de 64** en verde. Hay 10 nuevos en `e2e/attachments.spec.ts`, con Storage ficticio: los pedidos al Supabase de prueba se responden desde el test. Prueba:
   - Adjuntar al crear y ver el contador.
@@ -94,7 +94,11 @@
 - `npm run android:build`: el APK de debug sigue compilando. No se probó en el celular (X84).
 
 ## Lo que tenés que hacer vos
-1. **Supabase → SQL Editor:** correr `supabase/migrations/20261003120000_attachment_files.sql` (`docs/SETUP.md`, paso 12.2, punto 3). Si todavía no desplegaste la limpieza programada, hacé el paso 12 completo.
+1. **Supabase → SQL Editor**, de a una y en este orden (`docs/SETUP.md`, paso 12.2):
+   1. `supabase/migrations/20261002120000_cleanup_functions.sql`, si todavía no la corriste.
+   2. `supabase/migrations/20261003120000_attachment_files.sql`.
+
+   La segunda usa las funciones de la primera. Corrida sola da `schema "private" does not exist`, o ahora un aviso de qué falta; en los dos casos no cambia nada y se puede volver a correr. El resto del paso 12 (Edge Function, Vault y la tarea diaria) se puede hacer después.
 2. **Probar con tu cuenta** (`npm run dev`):
    1. Adjuntá una foto y un PDF a una tarea.
    2. Comprobá que en Supabase → Storage → `attachments` aparecen dentro de tu carpeta.

@@ -59,7 +59,7 @@ Plan de la sesión en 5 fases (X96): 5A servidor, 5B datos y plataforma, 5C inte
   - Una **migración nueva** agrega restricciones y una **papelera de Storage**. Corrige que los archivos de tareas borradas desde la app quedaban huérfanos en Storage.
 
 **Verificación:**
-- `npm run lint`, `npm run typecheck`, `npm test` (**210 tests**, 31 archivos, incluida la migración nueva sobre PGlite) y `npm run build`: sin errores.
+- `npm run lint`, `npm run typecheck`, `npm test` (**211 tests**, 31 archivos, incluida la migración nueva sobre PGlite) y `npm run build`: sin errores.
 - `npm run e2e`: **64 de 64** en verde (10 nuevos de adjuntos, con Storage ficticio).
 - Capturas de la ventana con archivos, los detalles de la fila y Ajustes → Datos, revisadas a 390px y 1280px, en claro y oscuro.
 - PDF en pestaña nueva comprobado con Edge real y la CSP de producción.
@@ -120,7 +120,7 @@ Pedidos del usuario después de probar el login en el navegador (detalle en [pha
 ## Próximo paso recomendado
 
 1. **Vos — preparar y probar el Bloque 5:**
-   1. Correr la migración `supabase/migrations/20261003120000_attachment_files.sql` en el SQL Editor (`docs/SETUP.md`, paso 12.2).
+   1. En el SQL Editor, correr primero `supabase/migrations/20261002120000_cleanup_functions.sql` y después `supabase/migrations/20261003120000_attachment_files.sql` (`docs/SETUP.md`, paso 12.2). La segunda necesita la primera.
    2. Con `npm run dev` y tu cuenta, seguir la lista de [phase-09-files.md](./phase-09-files.md#lo-que-tenés-que-hacer-vos):
       - adjuntar una foto y un PDF y verlos en Storage;
       - abrirlos en otro navegador;

@@ -6,7 +6,7 @@ import type { PGlite } from '@electric-sql/pglite';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { buildStoragePath, MAX_FILE_BYTES } from '@/lib/files';
 import { LIMITS } from '@/lib/validation';
-import { createDatabase } from './pglite.ts';
+import { createDatabase, migration } from './pglite.ts';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const ago = (days: number) => new Date(Date.now() - days * DAY_MS).toISOString();
@@ -259,5 +259,26 @@ describe('papelera de Storage', () => {
     const d = await insertFile({ taskId: await createTask() });
     await db.query('delete from public.attachments where id = $1', [d.id]);
     expect(await trash()).toEqual([d.path]);
+  });
+});
+
+describe('orden de las migraciones', () => {
+  it('sin las funciones de limpieza avisa qué falta y no aplica nada', async () => {
+    const fresh = await createDatabase(['20261001000000_initial_schema.sql']);
+    try {
+      await expect(fresh.exec(migration('20261003120000_attachment_files.sql'))).rejects.toThrow(
+        /20261002120000_cleanup_functions\.sql/,
+      );
+      await fresh.exec('rollback');
+      const { rows } = await fresh.query<{ trash: string | null; checks: number }>(`
+        select
+          to_regclass('private.storage_trash')::text as trash,
+          (select count(*)::int from pg_constraint
+            where conname = 'attachments_storage_path_check') as checks
+      `);
+      expect(rows[0]).toEqual({ trash: null, checks: 0 });
+    } finally {
+      await fresh.close();
+    }
   });
 });

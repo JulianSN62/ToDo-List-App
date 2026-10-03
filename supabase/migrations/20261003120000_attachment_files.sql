@@ -2,8 +2,9 @@
 --  ToDo List - Archivos adjuntos (spec 5.4, 8.4 y 10.2; Fase 9)
 --
 --  Cómo usarla: Supabase -> SQL Editor -> New query -> pegar TODO este
---  archivo -> Run (después de la migración inicial y de las de limpieza).
---  Ver docs/SETUP.md, paso "Limpieza programada".
+--  archivo -> Run. REQUIERE haber corrido antes la migración inicial y
+--  20261002120000_cleanup_functions.sql (usa su esquema "private" y sus
+--  funciones). Ver docs/SETUP.md, paso 12.2.
 --
 --  Incluye:
 --    1. Restricciones para los adjuntos de tipo archivo (nombre, tipo,
@@ -18,6 +19,15 @@
 -- =====================================================================
 
 begin;
+
+-- Sin las funciones de limpieza no se puede seguir: se avisa qué falta correr.
+do $$
+begin
+  if to_regprocedure('private.cleanup_plan(timestamptz)') is null then
+    raise exception 'Falta correr antes supabase/migrations/20261002120000_cleanup_functions.sql (docs/SETUP.md, paso 12.2). No se aplicó ningún cambio.';
+  end if;
+end;
+$$;
 
 -- =====================================================================
 -- 1. RESTRICCIONES
