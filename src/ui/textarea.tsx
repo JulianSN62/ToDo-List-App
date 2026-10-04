@@ -19,7 +19,7 @@ export function AutoTextarea({ className, value, ...props }: ComponentProps<'tex
       value={value}
       className={cn(
         'min-h-12 w-full resize-none overflow-hidden rounded-sm border border-transparent bg-transparent px-3 py-3 text-body text-fg outline-none',
-        'hover:border-line focus-visible:border-brand focus-visible:bg-panel focus-visible:outline-none',
+        'hover:border-line-strong focus-visible:border-brand focus-visible:bg-panel focus-visible:ring-1 focus-visible:ring-brand focus-visible:outline-none',
         className,
       )}
       {...props}

@@ -18,6 +18,8 @@
   --color-app: var(--color-background);
   --color-panel: var(--color-surface);
   --color-line: var(--color-border);
+  /* Borde de controles (campos, interruptor apagado, casillas) */
+  --color-line-strong: var(--color-border-strong);
   --color-fg: var(--color-text-primary);
   --color-muted: var(--color-text-secondary);
   --color-brand: var(--color-accent);

@@ -1,6 +1,6 @@
 # Puesta en marcha — ToDo List
 
-Guía paso a paso para crear la base de datos, conectar la sincronización, correr la app en la PC, instalarla como PWA, compilar el APK de Android y publicar la web en Netlify.
+Guía paso a paso para crear la base de datos, conectar la sincronización, correr la app en la PC, instalarla como PWA, compilar el APK de Android (de prueba y firmado) y publicar la web en Netlify. Al final: cómo [armar todo de nuevo desde cero](#14-restaurar-desde-cero-servidor-nuevo) y cómo [publicar una versión nueva](#15-publicar-una-versión-nueva).
 
 > **Regla de oro:** ninguna contraseña ni clave secreta se escribe en archivos del proyecto. En `.env` van **solo valores públicos** (URL del proyecto, publishable key y URL de PowerSync). El build se cancela solo si detecta un secreto ahí.
 
@@ -14,7 +14,7 @@ Guía paso a paso para crear la base de datos, conectar la sincronización, corr
 | Cuenta de Supabase | Plan gratuito alcanza | Base de datos, login y archivos |
 | Cuenta de PowerSync | Plan gratuito alcanza | Sincronización offline |
 | Android Studio + **JDK 21** | Android SDK 36 | Compilar el APK |
-| Cuenta de Netlify | — | Publicar la web (más adelante) |
+| Cuenta de Netlify | — | Publicar la web |
 | Microsoft Edge | El que trae Windows | Tests E2E (`npm run e2e`) |
 
 ---
@@ -162,9 +162,37 @@ Para ver la consola de la app en el celular: Chrome en la PC → `chrome://inspe
 
 Importante: el `.env` se "congela" dentro del APK al compilar. Si cambiás algún valor, volvé a correr `npm run android:build`.
 
-### APK firmado (Fase 10)
+### APK firmado (para instalar y actualizar)
 
-El APK de release se firma con un keystore propio que **nunca** se sube al repositorio (`*.jks`, `*.keystore` y `keystore.properties` ya están en el `.gitignore`).
+El APK de prueba alcanza para probar, pero se firma con una clave de depuración distinta en cada PC. Para instalar la app de verdad y poder actualizarla siempre, se usa el APK de **release**, firmado con **tu** keystore. El keystore y sus contraseñas **nunca** se suben al repositorio (`*.jks`, `*.keystore` y `keystore.properties` ya están en el `.gitignore`).
+
+1. **Crear el keystore (una sola vez).** Con el `keytool` del JDK 21 (está en `<carpeta del JDK 21>\bin`), desde PowerShell:
+
+   ```powershell
+   New-Item -ItemType Directory -Force "$HOME\keystores"
+   & "<carpeta del JDK 21>\bin\keytool.exe" -genkeypair -v -keystore "$HOME\keystores\todo-list.jks" -alias todo-list -keyalg RSA -keysize 4096 -validity 10000
+   ```
+
+   Pide una contraseña y unos datos (nombre, ciudad; pueden ser genéricos). Guardá la contraseña en tu gestor de contraseñas.
+   - Guardá el keystore **fuera del proyecto** (como arriba) y hacé una **copia de seguridad** en otro lugar (un pendrive o una nube cifrada).
+   - Si lo perdés, no se puede actualizar la app: habría que desinstalarla (se pierde lo que no se haya sincronizado) e instalar una firmada con otra clave.
+2. **Crear `android/keystore.properties`** (ignorado por git) con la ruta y los datos del keystore:
+
+   ```properties
+   storeFile=C:/Users/<tu usuario>/keystores/todo-list.jks
+   storePassword=<contraseña del keystore>
+   keyAlias=todo-list
+   keyPassword=<contraseña de la clave; con keytool suele ser la misma>
+   ```
+
+   Si preferís no dejar las contraseñas en disco, sacá esas dos líneas y definí `ANDROID_STORE_PASSWORD` y `ANDROID_KEY_PASSWORD` en la terminal antes de compilar. Para usar otro archivo: `ANDROID_KEYSTORE_PROPERTIES` con su ruta.
+3. **Compilar:** `npm run android:release`. Sin `keystore.properties` se corta con un aviso (un APK sin firmar no se puede instalar). El APK queda en `android/app/build/outputs/apk/release/app-release.apk`.
+4. **Verificar la firma** (opcional): `"%LOCALAPPDATA%\Android\Sdk\build-tools\<versión>\apksigner.bat" verify --print-certs android\app\build\outputs\apk\release\app-release.apk` muestra el certificado de tu keystore.
+5. **Instalar:** igual que el de prueba, con `app-release.apk`. Si en el celular está instalado el **de prueba**, Android no deja actualizarlo con otra firma: desinstalalo antes (se borran los datos locales; lo sincronizado vuelve al iniciar sesión).
+
+**Versión:** el APK toma la versión de `package.json` (la que se ve en Ajustes). `versionName` es la misma y `versionCode` se calcula como mayor × 10000 + menor × 100 + parche (0.9.0 → 900). Cada versión nueva tiene que subirla (ver [paso 15](#15-publicar-una-versión-nueva)) para que Android la instale encima.
+
+El identificador `com.todolistapp.app` es definitivo: si cambiara, Android la tomaría como otra app.
 
 ## 10. Netlify (publicar la web)
 
@@ -241,6 +269,8 @@ npx supabase functions deploy cleanup --project-ref <ref> --no-verify-jwt --use-
 
 `<ref>` es el identificador del proyecto (el subdominio de la URL: `https://<ref>.supabase.co`). `--no-verify-jwt` es necesario porque la secret key no es un JWT; la función valida la clave por su cuenta.
 
+El repositorio no tiene `supabase/config.toml` (no hace falta para nada más). Si la CLI dice que no encuentra el proyecto o la función, corré una vez `npx supabase init` en la carpeta del proyecto (crea ese archivo, sin secretos) y repetí el `deploy`.
+
 ### 12.4 Cargar los secretos en Vault
 
 En **Integrations → Vault → Secrets → Add new secret** (o el menú equivalente del panel), crear dos secretos con estos nombres exactos:
@@ -285,4 +315,35 @@ npm run e2e     # de punta a punta en el navegador (Playwright + Microsoft Edge)
   - Lo sirve en http://localhost:4174 y prueba la app en tamaño celular (390px) y escritorio (1280px), con una sesión ficticia y sin red.
   - Usa el Microsoft Edge instalado, así que no descarga navegadores.
   - Si un test falla: `npx playwright show-report`.
+- Incluye una revisión automática de accesibilidad con **axe** (contraste AA, nombres y roles) en tema claro y oscuro, y una prueba con 1000 tareas y 300 carpetas que anota los tiempos en la salida.
 - Detalle de qué cubre cada prueba: `docs/progress/e2e-tests.md`.
+
+## 14. Restaurar desde cero (servidor nuevo)
+
+Para armar todo de nuevo si se pierde el proyecto de Supabase o de PowerSync, o para crear una copia aparte.
+
+> **Antes de empezar:** exportá un respaldo JSON desde **Ajustes → Datos** en cada dispositivo. El servidor nuevo arranca **vacío** y **el respaldo no se puede importar en la v1** (está en las mejoras futuras): sirve para consultar y recuperar a mano. Al entrar con el usuario nuevo, la app borra los datos locales de la cuenta anterior, incluidos los cambios que no se hayan subido.
+
+1. **Supabase:** proyecto nuevo ([paso 1](#1-supabase-crear-el-proyecto)).
+2. **Migraciones**, en **SQL Editor**, de a una y en este orden (pegar el archivo completo → **Run**):
+   1. `supabase/migrations/20261001000000_initial_schema.sql`: tablas, RLS, bucket `attachments`, rol `powersync_role` y publicación `powersync`.
+   2. `supabase/migrations/20261002120000_cleanup_functions.sql`: funciones de limpieza.
+   3. `supabase/migrations/20261002120100_cleanup_schedule.sql`: tarea diaria con `pg_cron`.
+   4. `supabase/migrations/20261003120000_attachment_files.sql`: restricciones de adjuntos y papelera de Storage (necesita la 2).
+3. **Rol de PowerSync y login:** [paso 3](#3-supabase-contraseña-del-rol-de-powersync) y [paso 4](#4-supabase-autenticación-login-con-código-por-email) completos (usuario, registros cerrados, código de 8 números, SMTP con Resend y plantilla).
+4. **PowerSync:** instancia nueva conectada al proyecto nuevo, con Supabase Auth y las Sync Streams de `powersync/sync-config.yaml` ([paso 6](#6-powersync-crear-la-instancia-y-conectarla)).
+5. **Limpieza programada:** secret key `cleanup`, Edge Function y secretos de Vault ([pasos 12.1, 12.3 y 12.4](#12-limpieza-programada-supabase)).
+6. **`.env`** con la URL, la publishable key y la URL de PowerSync nuevas ([pasos 5 y 6](#5-supabase-datos-para-el-env)).
+7. **Volver a compilar y publicar todo**, porque los valores del `.env` quedan dentro de cada build:
+   - Web: `npm run build` y publicar ([paso 10](#10-netlify-publicar-la-web)).
+   - Android: `npm run android:release` e instalar ([paso 9](#9-android)).
+8. **Comprobar:** iniciar sesión, crear una carpeta en un dispositivo y verla en otro; adjuntar un archivo y verlo en Storage; la consulta de RLS del [paso 7](#comprobar-la-seguridad-rls).
+
+## 15. Publicar una versión nueva
+
+1. En la PC: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` y `npm run e2e` en verde.
+2. Subí la versión en `package.json` con `npm version <x.y.z> --no-git-tag-version`. Se ve en Ajustes y define el `versionCode` del APK.
+3. Si la versión trae migraciones nuevas en `supabase/migrations/`, corrélas en el SQL Editor **antes** de publicar (en orden, solo las nuevas).
+4. **Web:** `npm run build` y publicar `dist` ([paso 10](#10-netlify-publicar-la-web)). Quien tenga la app abierta ve "Hay una nueva versión disponible" con **Actualizar**; una pestaña con la versión anterior se recarga sola si le falta alguna parte.
+5. **Android:** `npm run android:release` e instalar encima de la anterior (se conservan los datos).
+6. Commit y, cuando quieras, push (con un repaso de que no haya secretos: el repositorio es público).

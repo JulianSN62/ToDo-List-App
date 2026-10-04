@@ -48,8 +48,11 @@ test('eliminar una carpeta con contenido pide confirmación y "Deshacer" restaur
   await createTask(page, 'Revisar contrato');
   await createFolder(page, 'Proyectos', { sub: true });
 
-  await page.locator('header').getByRole('button', { name: es.folders.folderMenu }).click();
-  await chooseMenuItem(page, es.folders.folderMenu, es.folders.delete);
+  await page
+    .locator('header')
+    .getByRole('button', { name: es.folders.folderMenu('Trabajo') })
+    .click();
+  await chooseMenuItem(page, es.folders.folderMenu('Trabajo'), es.folders.delete);
   const confirm = dialog(page, es.folders.deleteTitle('Trabajo'));
   await expect(confirm.getByText(es.folders.deleteDescription(1, 1))).toBeVisible();
   await confirm.getByRole('button', { name: es.common.delete }).click();
@@ -63,4 +66,46 @@ test('eliminar una carpeta con contenido pide confirmación y "Deshacer" restaur
   await folderLink(page, 'Trabajo').click();
   await expect(taskCheckbox(page, 'Revisar contrato')).toBeVisible();
   await expect(folderLink(page, 'Proyectos')).toBeVisible();
+});
+
+test('"Mover a…" es un árbol plegable que se usa con teclado', async ({ page }) => {
+  await createFolder(page, 'Clientes');
+  await createFolder(page, 'Archivo');
+  await folderLink(page, 'Clientes').click();
+  await createFolder(page, 'Cliente X', { sub: true });
+  await page.getByRole('button', { name: es.common.back }).click();
+  await expect(page.getByRole('heading', { name: es.nav.folders })).toBeVisible();
+
+  await page
+    .getByRole('main')
+    .getByRole('button', { name: es.folders.folderMenu('Archivo') })
+    .click();
+  await chooseMenuItem(page, es.folders.folderMenu('Archivo'), es.folders.move);
+  const picker = dialog(page, es.folders.moveTitle('Archivo'));
+  const tree = picker.getByRole('tree');
+  const clientes = tree.getByRole('treeitem', { name: /Clientes/ });
+  const clienteX = tree.getByRole('treeitem', { name: /Cliente X/ });
+
+  // Arranca plegado: la subcarpeta no se ve.
+  await expect(clientes).toHaveAttribute('aria-expanded', 'false');
+  await expect(clienteX).toHaveCount(0);
+
+  // Flecha derecha despliega, abajo entra a la subcarpeta y Enter la elige.
+  await clientes.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(clientes).toHaveAttribute('aria-expanded', 'true');
+  await page.keyboard.press('ArrowDown');
+  await expect(clienteX).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(clienteX).toHaveAttribute('aria-selected', 'true');
+  await picker.getByRole('button', { name: es.common.move, exact: true }).click();
+  await expect(picker).toBeHidden();
+
+  await expect(page.getByRole('main').getByRole('link', { name: /Archivo/ })).toHaveCount(0);
+  await folderLink(page, 'Clientes').click();
+  await page
+    .getByRole('main')
+    .getByRole('link', { name: /Cliente X/ })
+    .click();
+  await expect(page.getByRole('main').getByRole('link', { name: /Archivo/ })).toBeVisible();
 });

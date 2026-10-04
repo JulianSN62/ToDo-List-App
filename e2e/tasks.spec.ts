@@ -60,12 +60,16 @@ test('la prioritaria sube y al quitarle la prioridad vuelve a su lugar', async (
   for (const title of ['Primera', 'Segunda', 'Tercera']) await createTask(page, title);
   expect(await pendingTitles(page)).toEqual(['Primera', 'Segunda', 'Tercera']);
 
-  await taskRow(page, 'Tercera').getByRole('button', { name: es.tasks.menu }).click();
-  await chooseMenuItem(page, es.tasks.menu, es.tasks.markPriority);
+  await taskRow(page, 'Tercera')
+    .getByRole('button', { name: es.tasks.menu('Tercera') })
+    .click();
+  await chooseMenuItem(page, es.tasks.menu('Tercera'), es.tasks.markPriority);
   await expect.poll(() => pendingTitles(page)).toEqual(['Tercera', 'Primera', 'Segunda']);
 
-  await taskRow(page, 'Tercera').getByRole('button', { name: es.tasks.menu }).click();
-  await chooseMenuItem(page, es.tasks.menu, es.tasks.unmarkPriority);
+  await taskRow(page, 'Tercera')
+    .getByRole('button', { name: es.tasks.menu('Tercera') })
+    .click();
+  await chooseMenuItem(page, es.tasks.menu('Tercera'), es.tasks.unmarkPriority);
   await expect.poll(() => pendingTitles(page)).toEqual(['Primera', 'Segunda', 'Tercera']);
 });
 
@@ -82,8 +86,10 @@ test('completar, desmarcar y eliminar con "Deshacer"', async ({ page }) => {
     .click();
   await expect(taskCheckbox(page, 'Estudiar para el parcial')).toBeVisible();
 
-  await taskRow(page, 'Leer apunte').getByRole('button', { name: es.tasks.menu }).click();
-  await chooseMenuItem(page, es.tasks.menu, es.common.delete);
+  await taskRow(page, 'Leer apunte')
+    .getByRole('button', { name: es.tasks.menu('Leer apunte') })
+    .click();
+  await chooseMenuItem(page, es.tasks.menu('Leer apunte'), es.common.delete);
   await expect(page.getByText(es.tasks.deleted)).toBeVisible();
   await expect(taskCheckbox(page, 'Leer apunte')).toHaveCount(0);
   await undoButton(page).click();
@@ -121,7 +127,7 @@ test('detalles desplegables, editar con confirmación al descartar y mover de ca
   await taskButton(page, 'Revisar contrato').click();
   await form.getByRole('button', { name: es.tasks.changeFolder }).click();
   const picker = dialog(page, es.tasks.chooseFolder);
-  await picker.getByRole('option', { name: /Personal/ }).click();
+  await picker.getByRole('treeitem', { name: /Personal/ }).click();
   await picker.getByRole('button', { name: es.tasks.choose, exact: true }).click();
   await expect(picker).toBeHidden();
   await form.getByRole('button', { name: es.common.save }).click();

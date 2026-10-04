@@ -7,6 +7,7 @@ import { es } from '@/i18n/es';
 import { isValidEmail, isValidOtp } from '@/lib/validation';
 import { Button } from '@/ui/button';
 import { Input } from '@/ui/input';
+import { HiddenScreenTitle } from '@/ui/screen-header';
 import { Spinner } from '@/ui/spinner';
 import { CaptchaWidget } from './CaptchaWidget';
 
@@ -113,6 +114,7 @@ export function LoginScreen() {
   return (
     <main className="flex min-h-dvh items-center justify-center bg-app px-4 pt-safe pb-safe">
       <div className="w-full max-w-[400px] rounded-md border border-line bg-panel px-6 py-8 sm:px-10">
+        <HiddenScreenTitle>{es.auth.title}</HiddenScreenTitle>
         {step === 'email' ? (
           <form noValidate onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">

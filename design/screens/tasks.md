@@ -39,7 +39,7 @@ Orden mostrado: `is_priority DESC, position ASC` dentro de cada carpeta (regla d
 - La detección de swipe **no arranca en el borde de pantalla** (reserva ~16px) para no chocar con el gesto de "atrás" de Android.
 - Reordenar: **drag handle** dedicado (ícono de 6 puntos, 20px, a la izquierda del checkbox, no toda la fila) para no interferir con el scroll vertical — más botones Subir/Bajar disponibles en el menú contextual como alternativa accesible sin gesto.
 
-## Crear tarea rápida
+## Crear tarea rápida (referencia, reemplazado por la ventana modal de X51)
 
 **Mobile — bottom sheet:**
 ```

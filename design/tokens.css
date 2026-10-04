@@ -1,5 +1,5 @@
 /**
- * Mis Tareas — Design Tokens
+ * ToDo List — Design Tokens
  * Fuente de verdad: docs/specs-and-design.md §11.5 (paleta) + decisiones de diseño
  * (tipografía, spacing, radios, sombras) tomadas en design/style-guide.md.
  *
@@ -17,13 +17,15 @@
   --color-text-secondary: #64748B;
   --color-accent: #4F46E5;
   --color-accent-contrast: #FFFFFF;
+  /* Borde de controles (campos, interruptores, casillas): contraste >= 3:1 (WCAG 1.4.11) */
+  --color-border-strong: #7C8BA1;
 
   /* ---------- Semántica de estado (alias de los tokens de usuario) ---------- */
-  --color-overdue: #EF4444;        /* = token "red" */
+  --color-overdue: #B91C1C;        /* rojo oscuro: texto legible (AA) */
   --color-overdue-bg: #FEF2F2;
-  --color-priority: #F59E0B;       /* = token "amber" */
+  --color-priority: #D97706;       /* ámbar oscuro: ícono >= 3:1 */
   --color-priority-bg: #FFFBEB;
-  --color-completed: #22C55E;      /* = token "green" */
+  --color-completed: #15803D;      /* verde oscuro: tilde blanca legible */
   --color-completed-bg: #F0FDF4;
 
   /* ---------- Paleta de 10 colores seleccionables (carpetas/tareas/tags) ---------- */
@@ -97,9 +99,11 @@
     --color-background: #0F172A;
     --color-surface: #1E293B;
     --color-border: #334155;
+    --color-border-strong: #64748B;
     --color-text-primary: #F1F5F9;
     --color-text-secondary: #94A3B8;
     --color-accent: #818CF8;
+    --color-accent-contrast: #0F172A; /* texto oscuro sobre el acento claro */
 
     --color-overdue: #F87171;
     --color-overdue-bg: rgba(248, 113, 113, 0.12);
@@ -130,9 +134,11 @@ html.dark {
   --color-background: #0F172A;
   --color-surface: #1E293B;
   --color-border: #334155;
+  --color-border-strong: #64748B;
   --color-text-primary: #F1F5F9;
   --color-text-secondary: #94A3B8;
   --color-accent: #818CF8;
+  --color-accent-contrast: #0F172A; /* texto oscuro sobre el acento claro */
 
   --color-overdue: #F87171;
   --color-overdue-bg: rgba(248, 113, 113, 0.12);
@@ -161,15 +167,17 @@ html.light {
   --color-background: #F8FAFC;
   --color-surface: #FFFFFF;
   --color-border: #E2E8F0;
+  --color-border-strong: #7C8BA1;
   --color-text-primary: #0F172A;
   --color-text-secondary: #64748B;
   --color-accent: #4F46E5;
+  --color-accent-contrast: #FFFFFF;
 
-  --color-overdue: #EF4444;
+  --color-overdue: #B91C1C;
   --color-overdue-bg: #FEF2F2;
-  --color-priority: #F59E0B;
+  --color-priority: #D97706;
   --color-priority-bg: #FFFBEB;
-  --color-completed: #22C55E;
+  --color-completed: #15803D;
   --color-completed-bg: #F0FDF4;
 
   --token-slate: #64748B;

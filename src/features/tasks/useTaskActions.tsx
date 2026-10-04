@@ -8,11 +8,11 @@ import {
   StarOff,
   Trash2,
 } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { taskRepo, type Task } from '@/data';
 import { es } from '@/i18n/es';
 import { errorMeta, logger } from '@/lib/logger';
-import { stepKeyInGroup } from '@/lib/taskOrder';
+import type { MoveDirection } from '@/lib/ordering';
 import type { ActionItem } from '@/ui/action-menu';
 import { showErrorToast, showToast, showUndoToast } from '@/ui/toast';
 import { FolderPickerSheet } from '../folders/FolderPickerSheet';
@@ -48,96 +48,92 @@ export interface TaskActionOptions {
   open?: () => void;
   /** Vistas globales: "Ir a la carpeta". */
   goToFolder?: () => void;
+  /** Lista con orden manual: Subir/Bajar (sin esto, no se ofrecen). */
+  reorder?: {
+    canMoveUp: boolean;
+    canMoveDown: boolean;
+    move: (direction: MoveDirection) => void;
+  };
 }
 
 export function useTaskActions(): {
-  /** sortedPending = null: lista sin orden manual (sin Subir/Bajar). */
-  actionsFor: (
-    task: Task,
-    sortedPending: readonly Task[] | null,
-    options?: TaskActionOptions,
-  ) => ActionItem[];
+  /** Se arma al abrir el menú de la tarea. La función no cambia entre renders. */
+  actionsFor: (task: Task, options?: TaskActionOptions) => ActionItem[];
   dialogs: ReactNode;
 } {
   const { openTask } = useTaskNavigation();
   const [moving, setMoving] = useState<Task | null>(null);
 
-  function step(task: Task, sortedPending: readonly Task[], direction: 'up' | 'down') {
-    const key = stepKeyInGroup(sortedPending, task.id, direction);
-    if (!key) return;
-    void taskRepo.setPosition(task.id, key).catch(report('No se pudo reordenar la tarea'));
-  }
-
-  function actionsFor(
-    task: Task,
-    sortedPending: readonly Task[] | null,
-    options: TaskActionOptions = {},
-  ): ActionItem[] {
-    const items: ActionItem[] = [
-      {
-        key: 'edit',
-        label: es.common.edit,
-        icon: <Pencil />,
-        onSelect: options.open ?? (() => openTask(task.id)),
-      },
-    ];
-    if (options.goToFolder) {
-      items.push({
-        key: 'folder',
-        label: es.tasks.goToFolder,
-        icon: <FolderOpen />,
-        onSelect: options.goToFolder,
-      });
-    }
-    const move: ActionItem = {
-      key: 'move',
-      label: es.tasks.moveTo,
-      icon: <FolderInput />,
-      onSelect: () => setMoving(task),
-    };
-    if (task.isDone) {
-      items.push(move);
-    } else {
-      items.push(
+  const actionsFor = useCallback(
+    (task: Task, options: TaskActionOptions = {}): ActionItem[] => {
+      const items: ActionItem[] = [
         {
-          key: 'priority',
-          label: task.isPriority ? es.tasks.unmarkPriority : es.tasks.markPriority,
-          icon: task.isPriority ? <StarOff /> : <Star />,
-          onSelect: () =>
-            void taskRepo
-              .update(task.id, { isPriority: !task.isPriority })
-              .catch(report('No se pudo cambiar la prioridad')),
+          key: 'edit',
+          label: es.common.edit,
+          icon: <Pencil />,
+          onSelect: options.open ?? (() => openTask(task.id)),
         },
-        move,
-      );
-      if (sortedPending !== null) {
+      ];
+      if (options.goToFolder) {
+        items.push({
+          key: 'folder',
+          label: es.tasks.goToFolder,
+          icon: <FolderOpen />,
+          onSelect: options.goToFolder,
+        });
+      }
+      const move: ActionItem = {
+        key: 'move',
+        label: es.tasks.moveTo,
+        icon: <FolderInput />,
+        onSelect: () => setMoving(task),
+      };
+      if (task.isDone) {
+        items.push(move);
+      } else {
         items.push(
           {
-            key: 'up',
-            label: es.common.moveUp,
-            icon: <ArrowUp />,
-            disabled: stepKeyInGroup(sortedPending, task.id, 'up') === null,
-            onSelect: () => step(task, sortedPending, 'up'),
+            key: 'priority',
+            label: task.isPriority ? es.tasks.unmarkPriority : es.tasks.markPriority,
+            icon: task.isPriority ? <StarOff /> : <Star />,
+            onSelect: () =>
+              void taskRepo
+                .update(task.id, { isPriority: !task.isPriority })
+                .catch(report('No se pudo cambiar la prioridad')),
           },
-          {
-            key: 'down',
-            label: es.common.moveDown,
-            icon: <ArrowDown />,
-            disabled: stepKeyInGroup(sortedPending, task.id, 'down') === null,
-            onSelect: () => step(task, sortedPending, 'down'),
-          },
+          move,
         );
+        const { reorder } = options;
+        if (reorder) {
+          items.push(
+            {
+              key: 'up',
+              label: es.common.moveUp,
+              icon: <ArrowUp />,
+              disabled: !reorder.canMoveUp,
+              onSelect: () => reorder.move('up'),
+            },
+            {
+              key: 'down',
+              label: es.common.moveDown,
+              icon: <ArrowDown />,
+              disabled: !reorder.canMoveDown,
+              onSelect: () => reorder.move('down'),
+            },
+          );
+        }
       }
-    }
-    items.push({
-      key: 'delete',
-      label: es.common.delete,
-      icon: <Trash2 />,
-      danger: true,
-      onSelect: () => deleteTaskWithUndo(task),
-    });
-    return items;
-  }
+      items.push({
+        key: 'delete',
+        label: es.common.delete,
+        icon: <Trash2 />,
+        danger: true,
+        onSelect: () => deleteTaskWithUndo(task),
+      });
+      return items;
+    },
+    [openTask],
+  );
 
   const dialogs = (
     <FolderPickerSheet

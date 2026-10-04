@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   abbreviatePath,
+  ancestorIds,
   buildChildrenMap,
   canMoveFolder,
   computeRecursiveCounts,
@@ -10,6 +11,9 @@ import {
   getDescendantIds,
   getPath,
   indexById,
+  treeKeyAction,
+  visibleTreeItems,
+  type TreeKeyRow,
   type TreeNode,
 } from './tree';
 
@@ -140,5 +144,71 @@ describe('rutas y orden de carpetas', () => {
     expect(formatPath('proyecto', byId, 'clientes')).toBe('CLIENTEX › PROYECTO');
     expect(formatPath('proyecto', byId, 'proyecto')).toBe('');
     expect(formatPath('proyecto', byId, 'uni')).toBe('CLIENTES › CLIENTEX › PROYECTO');
+  });
+});
+
+describe('árbol plegable (selector "Mover a…")', () => {
+  const children = buildChildrenMap(nodes);
+  const byId = indexById(nodes);
+
+  it('muestra solo los hijos de lo desplegado', () => {
+    expect(visibleTreeItems(children, new Set()).map((item) => item.node.id)).toEqual([
+      'uni',
+      'clientes',
+    ]);
+    const items = visibleTreeItems(children, new Set(['clientes', 'clienteX']));
+    expect(items.map((item) => [item.node.id, item.depth, item.expanded])).toEqual([
+      ['uni', 0, false],
+      ['clientes', 0, true],
+      ['clienteX', 1, true],
+      ['proyecto', 2, false],
+    ]);
+    expect(items.find((item) => item.node.id === 'proyecto')?.hasChildren).toBe(true);
+    expect(items.find((item) => item.node.id === 'uni')?.hasChildren).toBe(true);
+  });
+
+  it('una carpeta sin hijas nunca figura desplegada', () => {
+    const items = visibleTreeItems(children, new Set(['taller', 'uni']));
+    expect(items.find((item) => item.node.id === 'taller')?.expanded).toBe(false);
+  });
+
+  it('despliega el camino hasta la carpeta actual', () => {
+    expect([...ancestorIds('frontend', byId)]).toEqual(['clientes', 'clienteX', 'proyecto']);
+    expect(ancestorIds('uni', byId).size).toBe(0);
+    expect(ancestorIds(null, byId).size).toBe(0);
+    // Con el camino desplegado, la carpeta actual queda visible.
+    const items = visibleTreeItems(children, ancestorIds('frontend', byId));
+    expect(items.some((item) => item.node.id === 'frontend')).toBe(true);
+  });
+
+  it('navegación con teclado', () => {
+    const rows: TreeKeyRow[] = [
+      { key: 'uni', parentKey: null, hasChildren: true, expanded: false },
+      { key: 'clientes', parentKey: null, hasChildren: true, expanded: true },
+      { key: 'clienteX', parentKey: 'clientes', hasChildren: true, expanded: false },
+    ];
+    expect(treeKeyAction(rows, 'uni', 'ArrowDown')).toEqual({ kind: 'focus', key: 'clientes' });
+    expect(treeKeyAction(rows, 'uni', 'ArrowUp')).toBeNull();
+    expect(treeKeyAction(rows, 'clienteX', 'ArrowDown')).toBeNull();
+    expect(treeKeyAction(rows, 'clienteX', 'Home')).toEqual({ kind: 'focus', key: 'uni' });
+    expect(treeKeyAction(rows, 'uni', 'End')).toEqual({ kind: 'focus', key: 'clienteX' });
+    // Derecha: despliega; si ya está desplegada, entra al primer hijo.
+    expect(treeKeyAction(rows, 'uni', 'ArrowRight')).toEqual({ kind: 'expand', key: 'uni' });
+    expect(treeKeyAction(rows, 'clientes', 'ArrowRight')).toEqual({
+      kind: 'focus',
+      key: 'clienteX',
+    });
+    // Izquierda: pliega; si ya está plegada, sube al padre.
+    expect(treeKeyAction(rows, 'clientes', 'ArrowLeft')).toEqual({
+      kind: 'collapse',
+      key: 'clientes',
+    });
+    expect(treeKeyAction(rows, 'clienteX', 'ArrowLeft')).toEqual({
+      kind: 'focus',
+      key: 'clientes',
+    });
+    expect(treeKeyAction(rows, 'uni', 'ArrowLeft')).toBeNull();
+    expect(treeKeyAction(rows, 'uni', 'x')).toBeNull();
+    expect(treeKeyAction(rows, 'nada', 'ArrowDown')).toBeNull();
   });
 });

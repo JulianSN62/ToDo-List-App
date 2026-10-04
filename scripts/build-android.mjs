@@ -1,5 +1,7 @@
-// Compila el APK de prueba (debug) de Android.
-// Uso: npm run android:build  (antes hace el build web y "cap sync").
+// Compila el APK de Android: de prueba (debug) o, con --release, el firmado para instalar.
+// Uso: npm run android:build  /  npm run android:release  (antes hacen el build web y "cap sync").
+// El release necesita android/keystore.properties (o ANDROID_KEYSTORE_PROPERTIES): ver
+// docs/SETUP.md, paso 9.
 // Gradle 8.14 (el que usa Capacitor 8) necesita un JDK entre 17 y 24: se busca un JDK 21.
 // Para forzar uno en particular: variable de entorno ANDROID_JAVA_HOME.
 
@@ -12,6 +14,7 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const androidDir = join(root, 'android');
 const isWindows = process.platform === 'win32';
+const release = process.argv.includes('--release');
 
 // Busca carpetas de JDK 21 en las ubicaciones habituales.
 function findJdk21() {
@@ -61,19 +64,31 @@ if (!existsSync(localProperties) && sdkDir) {
   writeFileSync(localProperties, `sdk.dir=${sdkDir.replaceAll('\\', '\\\\')}\n`);
 }
 
+// Sin keystore, Gradle generaría un APK sin firmar que Android no instala: se avisa antes.
+const keystoreProperties =
+  process.env.ANDROID_KEYSTORE_PROPERTIES ?? join(androidDir, 'keystore.properties');
+if (release && !existsSync(keystoreProperties)) {
+  console.error(
+    `No se encontró ${keystoreProperties}.\n` +
+      'Para firmar el APK de release hace falta un keystore: ver docs/SETUP.md, paso 9.',
+  );
+  process.exit(1);
+}
+
+const task = release ? 'assembleRelease' : 'assembleDebug';
 const gradlew = join(androidDir, isWindows ? 'gradlew.bat' : 'gradlew');
-const result = spawnSync(
-  isWindows ? `"${gradlew}" assembleDebug` : gradlew,
-  isWindows ? [] : ['assembleDebug'],
-  {
-    cwd: androidDir,
-    stdio: 'inherit',
-    shell: isWindows,
-    env: { ...process.env, ...(javaHome ? { JAVA_HOME: javaHome } : {}) },
-  },
-);
+const result = spawnSync(isWindows ? `"${gradlew}" ${task}` : gradlew, isWindows ? [] : [task], {
+  cwd: androidDir,
+  stdio: 'inherit',
+  shell: isWindows,
+  env: { ...process.env, ...(javaHome ? { JAVA_HOME: javaHome } : {}) },
+});
 
 if (result.status === 0) {
-  console.log('\nAPK listo: android/app/build/outputs/apk/debug/app-debug.apk');
+  console.log(
+    release
+      ? '\nAPK firmado listo: android/app/build/outputs/apk/release/app-release.apk'
+      : '\nAPK listo: android/app/build/outputs/apk/debug/app-debug.apk',
+  );
 }
 process.exit(result.status ?? 1);

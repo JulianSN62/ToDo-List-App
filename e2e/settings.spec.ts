@@ -67,8 +67,10 @@ test('exportar el respaldo JSON', async ({ page }) => {
   await createTask(page, 'Llamar al banco', { priority: true });
   await createTask(page, 'Preparar informe anual');
   await createTask(page, 'Tarea borrada');
-  await taskRow(page, 'Tarea borrada').getByRole('button', { name: es.tasks.menu }).click();
-  await chooseMenuItem(page, es.tasks.menu, es.common.delete);
+  await taskRow(page, 'Tarea borrada')
+    .getByRole('button', { name: es.tasks.menu('Tarea borrada') })
+    .click();
+  await chooseMenuItem(page, es.tasks.menu('Tarea borrada'), es.common.delete);
   await expect(taskCheckbox(page, 'Tarea borrada')).toHaveCount(0);
 
   await page.getByRole('link', { name: es.nav.settings }).click();

@@ -1,8 +1,8 @@
 import { ChevronRight } from 'lucide-react';
-import { Fragment } from 'react';
 import { Link } from 'react-router';
 import type { Folder } from '@/data';
 import { es } from '@/i18n/es';
+import { cn } from '@/lib/cn';
 import { abbreviatePath } from '@/lib/tree';
 import { useIsSidebarLayout } from '@/ui/useMediaQuery';
 
@@ -17,11 +17,17 @@ export function FolderBreadcrumb({ path }: { path: Folder[] }) {
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
           return (
-            <Fragment key={item.kind === 'segment' ? item.node.id : `ellipsis-${index}`}>
+            <li
+              key={item.kind === 'segment' ? item.node.id : `ellipsis-${index}`}
+              className={cn(
+                'flex min-w-0 items-center gap-1',
+                isLast ? 'shrink' : 'max-w-36 shrink',
+              )}
+            >
               {index > 0 ? (
                 <ChevronRight aria-hidden className="size-4 shrink-0 text-muted" />
               ) : null}
-              <li className={isLast ? 'min-w-0 truncate' : 'max-w-32 min-w-0 shrink truncate'}>
+              <span className="min-w-0 truncate">
                 {item.kind === 'ellipsis' ? (
                   <span className="text-muted">…</span>
                 ) : isLast ? (
@@ -33,8 +39,8 @@ export function FolderBreadcrumb({ path }: { path: Folder[] }) {
                     {item.node.name}
                   </Link>
                 )}
-              </li>
-            </Fragment>
+              </span>
+            </li>
           );
         })}
       </ol>

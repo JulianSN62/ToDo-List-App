@@ -20,6 +20,7 @@ const ROWS: { keys: ReactNode; label: string }[] = [
     ),
     label: es.shortcuts.search,
   },
+  { keys: <Kbd>Ctrl+Z</Kbd>, label: es.shortcuts.undo },
   { keys: <Kbd>Esc</Kbd>, label: es.shortcuts.close },
   { keys: <Kbd>Enter</Kbd>, label: es.shortcuts.confirm },
 ];

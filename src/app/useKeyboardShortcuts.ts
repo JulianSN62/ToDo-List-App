@@ -1,11 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router';
 import { isTypingTarget, matchShortcut, type ShortcutTarget } from '@/lib/shortcuts';
+import { undoLastAction } from '@/ui/toast';
 import { useUiStore } from './uiStore';
 
-// Atajos de teclado globales (solo desktop): N hace lo mismo que el botón "+" de la
-// pantalla; "/" y Ctrl+K abren la búsqueda. No actúan mientras se escribe ni con
-// una ventana o menú abierto (ahí Esc y Enter los manejan los propios componentes).
+// Atajos de teclado globales (desktop): N hace lo mismo que el botón "+" de la pantalla;
+// "/" y Ctrl+K abren la búsqueda. No actúan mientras se escribe ni con una ventana o menú
+// abierto (ahí Esc y Enter los manejan los propios componentes). Ctrl+Z deshace la última
+// acción con aviso de "Deshacer" (también con una ventana abierta y con cualquier ancho).
 
 const OPEN_OVERLAY_SELECTOR = ['dialog', 'alertdialog', 'menu']
   .map((role) => `[role="${role}"]:not([data-state="closed"])`)
@@ -24,8 +26,6 @@ export function useKeyboardShortcuts(enabled: boolean): void {
   }, [location.pathname]);
 
   useEffect(() => {
-    if (!enabled) return;
-
     function onKeyDown(event: KeyboardEvent) {
       if (event.defaultPrevented) return;
       const action = matchShortcut(event, {
@@ -33,6 +33,12 @@ export function useKeyboardShortcuts(enabled: boolean): void {
         overlayOpen: hasOpenOverlay(),
       });
       if (!action) return;
+
+      if (action === 'undo') {
+        if (undoLastAction()) event.preventDefault();
+        return;
+      }
+      if (!enabled) return;
 
       const state = useUiStore.getState();
       if (action === 'newItem') {

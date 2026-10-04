@@ -148,6 +148,7 @@ export function SearchPanel({
                 ? es.search.noResults(debouncedQuery.trim())
                 : es.search.noResultsTag
             }
+            hint={debouncedQuery.trim() ? es.search.noResultsHint : undefined}
           />
         ) : (
           <GlobalTaskList

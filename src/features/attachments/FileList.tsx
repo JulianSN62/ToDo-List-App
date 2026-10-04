@@ -112,7 +112,13 @@ function FileItem({
           aria-label={es.files.retryLabel(item.name)}
           onClick={() => {
             if (item.id === null) return;
-            void fileRepo.retryUpload(item.id).then(wakeFileSync);
+            void fileRepo
+              .retryUpload(item.id)
+              .then(wakeFileSync)
+              .catch((error: unknown) => {
+                logger.error('No se pudo reintentar la subida', errorMeta(error));
+                showErrorToast();
+              });
           }}
         >
           {es.files.retry}

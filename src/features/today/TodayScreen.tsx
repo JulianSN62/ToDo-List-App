@@ -120,7 +120,7 @@ export function TodayScreen() {
                     aria-expanded={!isCollapsed}
                     onClick={() => toggleGroup(group.key)}
                     className={cn(
-                      'flex h-10 w-full items-center gap-2 px-4 text-left text-title-sm font-semibold',
+                      'flex h-10 w-full items-center gap-2 px-4 text-left text-title-sm font-semibold -outline-offset-2',
                       group.key === 'overdue' ? 'text-danger' : 'text-fg',
                     )}
                   >

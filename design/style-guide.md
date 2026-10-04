@@ -1,4 +1,4 @@
-# Guía de estilo — Mis Tareas
+# Guía de estilo — ToDo List
 
 Fuente: `docs/specs-and-design.md` §11 (UX/UI) + decisiones de tipografía/spacing tomadas acá.
 Los valores concretos viven en [`tokens.css`](./tokens.css) / [`tokens.json`](./tokens.json) — este documento explica el *por qué* y cómo se usan.
@@ -54,18 +54,21 @@ Grilla de **4px**: `4 · 8 · 12 · 16 · 24 · 32 · 48`. Padding estándar de 
 
 ## Identidad de marca en la UI
 
-**Sin nombre de app ni logo visibles en ningún punto del producto** — ni en el login, ni en el sidebar/header, ni en el splash. La identidad de la interfaz se apoya solo en la paleta neutra + acento y la tipografía, no en un wordmark o ícono de marca. El nombre "Mis Tareas" (y `com.example.mistareas` como `appId`) es un identificador provisional de proyecto para config/empaquetado (ver spec, intro) — no se renderiza como copy en pantalla.
+**Sin nombre de app ni logo visibles en ningún punto del producto** — ni en el login, ni en el sidebar/header, ni en el splash. La identidad de la interfaz se apoya solo en la paleta neutra + acento y la tipografía, no en un wordmark o ícono de marca. El nombre definitivo es "ToDo List" (`com.todolistapp.app` como `appId`, decisión X4): se usa en el título de la pestaña, el manifest de la PWA y el ícono de Android, pero no se renderiza como copy dentro de las pantallas.
 
 ## Color — convención de uso (spec §11.5, literal)
 
 - **Carpeta** → punto/ícono de color sólido junto al nombre.
 - **Tarea** → **franja lateral delgada** (4px) del color, pegada al borde izquierdo de la fila — nunca relleno de fondo completo (eso rompería el contraste del texto y el principio de neutralidad).
-- **Tag** → chip con fondo del color al 12% de opacidad + texto/borde del color sólido (asegura contraste AA en ambos temas sin recurrir a texto blanco sobre colores claros como amber).
-- **Semántico** (vencida/prioridad/completada) reutiliza los tokens `red`/`amber`/`green` en vez de introducir hex nuevos — mantiene la paleta cerrada a 10 colores + acento.
+- **Tag** → chip con fondo del color al 12% de opacidad + punto del color sólido y **texto en `text-primary`**. (Cambiado en el Bloque 6: el texto en el color sólido no llega a AA en tema claro con ningún color —1,96 a 4,11— ni en oscuro con indigo y red.)
+- **Semántico** (vencida/prioridad/completada): en tema oscuro reutiliza los tokens `red`/`amber`/`green`; en tema claro usa tonos más oscuros de la misma familia (`#B91C1C`, `#D97706`, `#15803D`) para cumplir AA como texto (vencida) o como ícono/fondo con tilde blanca (prioridad y completada). Cambiado en el Bloque 6.
+- Los 10 colores del usuario no cambian: en claro, orange, amber, green y teal quedan por debajo de 3:1 como punto o franja, pero el color nunca es la única información (el nombre está en el selector y los chips usan texto `text-primary`).
 
 ## Accesibilidad (spec §11.6, checklist de diseño)
 
-- Contraste **WCAG AA** verificado para: `text-primary` y `text-secondary` sobre `background`/`surface` en claro y oscuro; texto de chip sobre su propio fondo tintado al 12%; texto del FAB (`accent-contrast` blanco) sobre `accent`.
+- Contraste **WCAG AA** verificado para: `text-primary` y `text-secondary` sobre `background`/`surface` en claro y oscuro; texto de chip sobre su propio fondo tintado al 12%; texto de los botones llenos (`accent-contrast`: blanco en claro, `#0F172A` en oscuro) sobre `accent` y sobre el rojo de peligro.
+- Bordes de controles (campos, interruptor apagado, casillas) con `border-strong` (≥ 3:1). Los estados elegidos o activos usan el fondo `accent` al 10–12% con texto `text-primary` (el texto `accent` sobre ese fondo no llega a AA en oscuro).
+- Los tests E2E pasan **axe** por las pantallas principales en ambos temas (`e2e/a11y.spec.ts`).
 - Foco visible (outline de 2px en `accent`) en todo elemento interactivo, navegación completa por teclado en desktop.
 - `aria-label` en botones de solo-ícono (FAB, checkbox, menú de más opciones, drag handle).
 - Animaciones breves y sobrias (`--duration-fast` 120ms / `--duration-base` 200ms), respetan `prefers-reduced-motion: reduce` (duración → 0).

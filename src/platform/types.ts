@@ -109,6 +109,11 @@ export interface FileService {
   /** Web: abre un PDF en una pestaña nueva; si el navegador lo bloquea, lo descarga. */
   openPdf(file: BinaryFile): Promise<void>;
   takePhoto?(): Promise<PickedFile | null>;
+  /**
+   * Borra las copias temporales que se compartieron (respaldo y adjuntos). Android las deja en
+   * la caché de la app; se borran al cerrar sesión. En la web no hay nada que borrar.
+   */
+  clearShared(): Promise<void>;
 }
 
 export interface CompressImageOptions {

@@ -197,7 +197,10 @@ export async function pendingTitles(page: Page | Locator): Promise<string[]> {
 
 /** Botón de la fila de una tarea (abre la ventana de edición). */
 export function taskButton(page: Page | Locator, title: string): Locator {
-  return page.getByRole('button', { name: new RegExp(escapeRegExp(title)) }).first();
+  // El nombre empieza con el título (o con "Prioritaria"): así no se confunde con el asa
+  // ("Reordenar …") ni con el menú ("Opciones de …") de la misma fila.
+  const name = new RegExp(`^(${escapeRegExp(es.tasks.isPriority)} )?${escapeRegExp(title)}`);
+  return page.getByRole('button', { name }).first();
 }
 
 /** Elige una opción de un menú "⋯": dropdown en desktop, panel inferior en mobile. */

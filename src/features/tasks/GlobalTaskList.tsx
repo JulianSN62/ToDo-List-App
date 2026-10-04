@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useCallback, type ReactNode } from 'react';
 import { useUiStore } from '@/app/uiStore';
 import type { Tag, Task } from '@/data';
 import { TaskRow } from './TaskRow';
@@ -27,7 +27,12 @@ export function GlobalTaskList({
 }) {
   const expandedTaskIds = useUiStore((state) => state.expandedTaskIds);
   const toggleTaskExpanded = useUiStore((state) => state.toggleTaskExpanded);
-  const taskActions = useTaskActions();
+  const { actionsFor, dialogs } = useTaskActions();
+  const getActions = useCallback(
+    (task: Task) =>
+      actionsFor(task, { open: () => onOpen(task), goToFolder: () => onGoToFolder(task) }),
+    [actionsFor, onOpen, onGoToFolder],
+  );
 
   return (
     <>
@@ -41,21 +46,18 @@ export function GlobalTaskList({
               tags={tagsByTask.get(task.id)}
               attachmentCount={attachmentCounts.get(task.id)}
               subtitle={subtitleFor(task)}
-              actions={taskActions.actionsFor(task, null, {
-                open: () => onOpen(task),
-                goToFolder: () => onGoToFolder(task),
-              })}
+              getActions={getActions}
               expanded={expandedTaskIds.has(task.id)}
-              onToggleExpanded={() => toggleTaskExpanded(task.id)}
-              onOpen={() => onOpen(task)}
-              onToggleDone={() => toggleTaskDone(task)}
-              onDelete={() => deleteTaskWithUndo(task)}
-              onGoToFolder={() => onGoToFolder(task)}
+              onToggleExpanded={toggleTaskExpanded}
+              onOpen={onOpen}
+              onToggleDone={toggleTaskDone}
+              onDelete={deleteTaskWithUndo}
+              onGoToFolder={onGoToFolder}
             />
           </li>
         ))}
       </ul>
-      {taskActions.dialogs}
+      {dialogs}
     </>
   );
 }

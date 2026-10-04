@@ -1,5 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
+import { APP_NAME } from '@/config/app';
 import { es } from '@/i18n/es';
 import { cn } from '@/lib/cn';
 import { IconButton } from './button';
@@ -33,8 +34,23 @@ export function ScreenHeader({
   );
 }
 
-export function ScreenTitle({ children }: { children: ReactNode }) {
+// Título de la pestaña del navegador: "Pantalla · ToDo List" (lo leen los lectores de
+// pantalla al cambiar de sección).
+export function useDocumentTitle(title: string): void {
+  useEffect(() => {
+    document.title = title ? `${title} · ${APP_NAME}` : APP_NAME;
+  }, [title]);
+}
+
+export function ScreenTitle({ children }: { children: string }) {
+  useDocumentTitle(children);
   return (
     <h1 className="truncate text-title-md font-semibold text-fg md:text-title-lg">{children}</h1>
   );
+}
+
+/** Título solo para lectores de pantalla y la pestaña (cuando se ve otra cosa, como la ruta). */
+export function HiddenScreenTitle({ children }: { children: string }) {
+  useDocumentTitle(children);
+  return <h1 className="sr-only">{children}</h1>;
 }

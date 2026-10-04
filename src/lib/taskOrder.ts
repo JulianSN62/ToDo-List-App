@@ -64,6 +64,26 @@ export function stepKeyInGroup<T extends OrderableTask>(
   return keyForStep(groupOf(sortedPending, task), taskId, direction);
 }
 
+export interface StepAvailability {
+  up: boolean;
+  down: boolean;
+}
+
+// Para cada pendiente, si puede subir o bajar dentro de su grupo visible. Calcula toda la
+// lista de una vez (O(n)) en vez de una búsqueda por fila (listas largas).
+export function stepAvailability<T extends OrderableTask>(
+  sortedPending: readonly T[],
+): Map<string, StepAvailability> {
+  const result = new Map<string, StepAvailability>();
+  for (const isPriority of [true, false]) {
+    const group = sortedPending.filter((task) => task.isPriority === isPriority);
+    group.forEach((task, index) => {
+      result.set(task.id, { up: index > 0, down: index < group.length - 1 });
+    });
+  }
+  return result;
+}
+
 export function canStepInGroup<T extends OrderableTask>(
   sortedPending: readonly T[],
   taskId: string,

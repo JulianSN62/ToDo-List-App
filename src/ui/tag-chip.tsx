@@ -4,6 +4,17 @@ import { colorTint, colorVar, type ColorToken } from '@/lib/colors';
 
 // Chip de etiqueta: fondo del color al 12%, punto de color y texto en el color principal
 // (así el texto cumple contraste AA con cualquier color y en ambos temas).
+type TagChipProps = {
+  name: string;
+  color: ColorToken | null;
+  size?: 'sm' | 'md';
+  className?: string;
+} & (
+  | { onRemove?: undefined; removeLabel?: undefined }
+  /** El chip muestra un botón para quitarlo, siempre con su nombre accesible. */
+  | { onRemove: () => void; removeLabel: string }
+);
+
 export function TagChip({
   name,
   color,
@@ -11,15 +22,7 @@ export function TagChip({
   onRemove,
   removeLabel,
   className,
-}: {
-  name: string;
-  color: ColorToken | null;
-  size?: 'sm' | 'md';
-  /** Si se indica, el chip muestra un botón para quitarlo. */
-  onRemove?: () => void;
-  removeLabel?: string;
-  className?: string;
-}) {
+}: TagChipProps) {
   return (
     <span
       className={cn(

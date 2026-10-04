@@ -1,4 +1,5 @@
 import { Minus, Plus, Trash2 } from 'lucide-react';
+import { useRef } from 'react';
 import { settingsRepo, useStoredSettings } from '@/data';
 import { es } from '@/i18n/es';
 import { clampRetentionDays, RETENTION_LIMITS } from '@/lib/retention';
@@ -21,10 +22,16 @@ export function RetentionSetting() {
     delayMs: SAVE_DELAY_MS,
   });
   const available = stored !== null;
+  const decreaseRef = useRef<HTMLButtonElement>(null);
+  const increaseRef = useRef<HTMLButtonElement>(null);
 
   function change(step: number) {
     const next = clampRetentionDays(value + step);
-    if (next !== value) setValue(next);
+    if (next === value) return;
+    setValue(next);
+    // Al llegar al límite el botón se deshabilita y perdería el foco: pasa al otro.
+    if (next <= RETENTION_LIMITS.min) increaseRef.current?.focus();
+    if (next >= RETENTION_LIMITS.max) decreaseRef.current?.focus();
   }
 
   return (
@@ -41,6 +48,7 @@ export function RetentionSetting() {
           </div>
           <div role="group" aria-labelledby="retention-label" className="flex items-center gap-1">
             <IconButton
+              ref={decreaseRef}
               variant="secondary"
               aria-label={es.settings.retentionDecrease}
               onClick={() => change(-1)}
@@ -55,6 +63,7 @@ export function RetentionSetting() {
               {es.settings.retentionValue(value)}
             </output>
             <IconButton
+              ref={increaseRef}
               variant="secondary"
               aria-label={es.settings.retentionIncrease}
               onClick={() => change(1)}

@@ -4,9 +4,9 @@ import { sanitizeFileName } from '@/lib/files';
 import type { BinaryFile, FileService, SaveResult } from '../types';
 import { webFiles } from '../web/files';
 
-// Android: el archivo se escribe en la caché de la app (la única carpeta que el
-// FileProvider comparte, ver res/xml/file_paths.xml) y se abre el menú de compartir
-// para guardarlo en Drive, en Archivos o mandarlo a otra app.
+// Android: el archivo se escribe en la caché de la app, en exports/ (respaldo) o attachments/
+// (adjuntos), las únicas carpetas que el FileProvider comparte (res/xml/file_paths.xml), y se
+// abre el menú de compartir para guardarlo en Drive, en Archivos o mandarlo a otra app.
 // Los adjuntos se eligen con el mismo selector que en la web (el WebView lo soporta).
 // Sin probar en el celular todavía (X84).
 
@@ -42,15 +42,28 @@ async function shareBinary(file: BinaryFile): Promise<SaveResult> {
   return share(uri, file.name);
 }
 
+const SHARED_DIRS = ['exports', 'attachments'];
+
 export const capacitorFiles: FileService = {
   async saveAndShare(file) {
     const { uri } = await Filesystem.writeFile({
-      path: file.name,
+      path: `exports/${sanitizeFileName(file.name)}`,
       data: file.content,
       directory: Directory.Cache,
       encoding: Encoding.UTF8,
+      recursive: true,
     });
     return share(uri, file.name, file.shareTitle);
+  },
+
+  async clearShared() {
+    for (const path of SHARED_DIRS) {
+      try {
+        await Filesystem.rmdir({ path, directory: Directory.Cache, recursive: true });
+      } catch {
+        // La carpeta no existe (nunca se compartió nada): no hay nada que borrar.
+      }
+    }
   },
 
   pickFiles: webFiles.pickFiles,

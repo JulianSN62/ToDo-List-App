@@ -131,6 +131,92 @@ export function flattenTree<T extends TreeNode>(
   return result;
 }
 
+export interface VisibleTreeItem<T> extends FlatTreeItem<T> {
+  parentId: string | null;
+  hasChildren: boolean;
+  expanded: boolean;
+}
+
+// Filas visibles de un árbol plegable: solo se muestran los hijos de lo desplegado.
+export function visibleTreeItems<T extends TreeNode>(
+  children: ChildrenMap<T>,
+  expandedIds: ReadonlySet<string>,
+): VisibleTreeItem<T>[] {
+  const result: VisibleTreeItem<T>[] = [];
+  const visited = new Set<string>();
+  const walk = (parentId: string | null, depth: number) => {
+    for (const node of children.get(parentId) ?? []) {
+      if (visited.has(node.id)) continue;
+      visited.add(node.id);
+      const hasChildren = (children.get(node.id)?.length ?? 0) > 0;
+      const expanded = hasChildren && expandedIds.has(node.id);
+      result.push({ node, depth, parentId, hasChildren, expanded });
+      if (expanded) walk(node.id, depth + 1);
+    }
+  };
+  walk(null, 0);
+  return result;
+}
+
+// Carpetas que hay que desplegar para que se vea una carpeta (todos sus ancestros).
+export function ancestorIds<T extends TreeNode>(
+  id: string | null,
+  byId: Map<string, T>,
+): Set<string> {
+  if (id === null) return new Set();
+  return new Set(
+    getPath(id, byId)
+      .slice(0, -1)
+      .map((node) => node.id),
+  );
+}
+
+export interface TreeKeyRow {
+  key: string;
+  parentKey: string | null;
+  hasChildren: boolean;
+  expanded: boolean;
+}
+
+export type TreeKeyAction =
+  | { kind: 'focus'; key: string }
+  | { kind: 'expand'; key: string }
+  | { kind: 'collapse'; key: string }
+  | null;
+
+// Teclado de un árbol (patrón "tree" de WAI-ARIA): flechas arriba y abajo recorren las filas
+// visibles, derecha despliega (o entra al primer hijo), izquierda pliega (o sube al padre),
+// Inicio y Fin van a la primera y la última.
+export function treeKeyAction(
+  rows: readonly TreeKeyRow[],
+  key: string,
+  pressed: string,
+): TreeKeyAction {
+  const index = rows.findIndex((row) => row.key === key);
+  const row = rows[index];
+  if (!row) return null;
+  const focus = (target: TreeKeyRow | undefined): TreeKeyAction =>
+    target ? { kind: 'focus', key: target.key } : null;
+  switch (pressed) {
+    case 'ArrowDown':
+      return focus(rows[index + 1]);
+    case 'ArrowUp':
+      return focus(rows[index - 1]);
+    case 'Home':
+      return focus(rows[0]);
+    case 'End':
+      return focus(rows[rows.length - 1]);
+    case 'ArrowRight':
+      if (!row.hasChildren) return null;
+      return row.expanded ? focus(rows[index + 1]) : { kind: 'expand', key: row.key };
+    case 'ArrowLeft':
+      if (row.expanded) return { kind: 'collapse', key: row.key };
+      return focus(rows.find((candidate) => candidate.key === row.parentKey));
+    default:
+      return null;
+  }
+}
+
 // Posición de cada carpeta en el orden de visualización del árbol
 // (para ordenar listas que mezclan tareas de varias carpetas).
 export function folderOrderIndex<T extends TreeNode>(

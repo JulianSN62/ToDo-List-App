@@ -30,6 +30,25 @@ function contentSecurityPolicy(env: Record<string, string>): Plugin {
   };
 }
 
+// Librerías que se usan desde el arranque, en archivos aparte: una versión nueva que solo
+// cambia código de la app no obliga a volver a bajarlas. Solo paquetes que se cargan al
+// inicio: un patrón más amplio metería acá módulos que hoy se cargan a demanda (por
+// ejemplo, los websockets de PowerSync, en @powersync/shared-internals).
+const VENDOR_CHUNKS = [
+  {
+    name: 'vendor-react',
+    test: /node_modules[\\/](react|react-dom|scheduler|react-router)[\\/]/,
+  },
+  {
+    name: 'vendor-data',
+    test: /node_modules[\\/](@powersync[\\/](web|common|react|capacitor)|@supabase[\\/][^\\/]+|@capacitor-community[\\/]sqlite)[\\/]/,
+  },
+  {
+    name: 'vendor-ui',
+    test: /node_modules[\\/](radix-ui|@radix-ui[\\/][^\\/]+|vaul|sonner|lucide-react|@dnd-kit[\\/][^\\/]+)[\\/]/,
+  },
+];
+
 export default defineConfig(({ mode }) => {
   // En el modo e2e no se lee ningún .env: las variables (ficticias) llegan desde
   // playwright.config.ts, así los tests nunca usan ni tocan el proyecto real.
@@ -74,8 +93,16 @@ export default defineConfig(({ mode }) => {
         workbox: {
           // Precachea el shell completo, incluidos los workers y el WASM de la base local.
           globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2,wasm}'],
-          // Las variantes "mc-" de SQLite solo se usan con cifrado de la base local, que la app no usa.
-          globIgnores: ['**/mc-wa-sqlite*'],
+          // Partes de SQLite que la app nunca carga: las variantes "mc-" son para cifrar la base
+          // local, y la versión sincrónica y los VFS de OPFS o en memoria solo se usan con otra
+          // configuración. PowerSync web usa IDBBatchAtomicVFS (versión async) por defecto.
+          globIgnores: [
+            '**/mc-wa-sqlite*',
+            '**/wa-sqlite-????????.{js,wasm}',
+            '**/OPFS*VFS-*.js',
+            '**/AccessHandlePoolVFS-*.js',
+            '**/MemoryVFS-*.js',
+          ],
           maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
           navigateFallback: '/index.html',
           cleanupOutdatedCaches: true,
@@ -98,9 +125,13 @@ export default defineConfig(({ mode }) => {
       format: 'es',
     },
     build: {
-      // El bundle principal incluye la base local y el cliente de sincronización (~1,2 MB).
-      // Se carga una sola vez y queda en caché; dividirlo es una optimización pendiente (Fase 10).
-      chunkSizeWarningLimit: 1500,
+      rolldownOptions: {
+        output: {
+          codeSplitting: { groups: VENDOR_CHUNKS },
+        },
+      },
+      // El mayor es vendor-data (base local + sincronización + Supabase, ~600 KB).
+      chunkSizeWarningLimit: 700,
     },
     server: {
       port: 5173,

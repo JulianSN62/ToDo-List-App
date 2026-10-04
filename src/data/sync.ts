@@ -1,5 +1,5 @@
 import { logger, errorMeta } from '@/lib/logger';
-import { localFiles } from '@/platform';
+import { files, localFiles } from '@/platform';
 import { SupabaseConnector } from './connector';
 import { getDb } from './db';
 import { stopFileSync } from './fileSync';
@@ -36,6 +36,10 @@ export async function stopSyncAndClear(): Promise<void> {
   await localFiles.clear().catch((error: unknown) => {
     logger.warn('No se pudieron borrar los archivos locales', errorMeta(error));
   });
+  // Copias que se compartieron (respaldo JSON y adjuntos) en la caché de Android.
+  await files.clearShared().catch((error: unknown) => {
+    logger.warn('No se pudieron borrar las copias compartidas', errorMeta(error));
+  });
 }
 
 // Cambios y archivos que todavía no se subieron (se perderían al cerrar sesión).
@@ -44,8 +48,9 @@ export async function getPendingUploadCount(): Promise<number> {
   let total = 0;
   try {
     total += (await db.getUploadQueueStats()).count;
-  } catch {
-    // Sin estadísticas: se cuenta lo demás.
+  } catch (error) {
+    // Sin estadísticas: se cuenta lo demás (el aviso puede quedar corto).
+    logger.warn('No se pudieron contar los cambios sin subir', errorMeta(error));
   }
   try {
     const files = await db.get<{ total: number }>(
@@ -57,8 +62,8 @@ export async function getPendingUploadCount(): Promise<number> {
           AND a.deleted_at IS NULL AND t.deleted_at IS NULL`,
     );
     total += files.total;
-  } catch {
-    // Igual que arriba.
+  } catch (error) {
+    logger.warn('No se pudieron contar los archivos sin subir', errorMeta(error));
   }
   return total;
 }

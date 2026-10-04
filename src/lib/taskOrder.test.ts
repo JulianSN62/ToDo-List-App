@@ -4,6 +4,7 @@ import {
   dropKeyInGroup,
   sortCompletedTasks,
   sortPendingTasks,
+  stepAvailability,
   stepKeyInGroup,
   type OrderableTask,
 } from './taskOrder';
@@ -42,6 +43,29 @@ describe('orden de tareas pendientes', () => {
     expect((key as string) < 'a0').toBe(true);
     // "d" es la última prioritaria: no puede bajar al grupo de no prioritarias
     expect(stepKeyInGroup(sorted, 'd', 'down')).toBeNull();
+  });
+
+  it('calcula de una vez qué tareas pueden subir o bajar', () => {
+    const sorted = sortPendingTasks(tasks);
+    const availability = stepAvailability(sorted);
+    expect(Object.fromEntries(availability)).toEqual({
+      b: { up: false, down: true },
+      d: { up: true, down: false },
+      a: { up: false, down: true },
+      c: { up: true, down: false },
+    });
+    // Coincide con calcular cada movimiento por separado.
+    for (const item of sorted) {
+      expect(availability.get(item.id)?.up).toBe(stepKeyInGroup(sorted, item.id, 'up') !== null);
+      expect(availability.get(item.id)?.down).toBe(
+        stepKeyInGroup(sorted, item.id, 'down') !== null,
+      );
+    }
+  });
+
+  it('una tarea sola en su grupo no se puede mover', () => {
+    const availability = stepAvailability(sortPendingTasks([task('x', 'a0')]));
+    expect(availability.get('x')).toEqual({ up: false, down: false });
   });
 
   it('al soltar sobre otro grupo queda en el borde del propio', () => {

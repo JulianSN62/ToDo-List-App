@@ -190,7 +190,9 @@ test.beforeEach(async ({ page }) => {
 
 test('adjuntar al crear: lista, contador y "Pendiente de subir" sin servidor', async ({ page }) => {
   await createTaskWithFiles(page, 'Renovar DNI', [iconFile(), pdfFile()]);
-  await expect(page.getByLabel(es.links.count(2)).filter({ visible: true })).toHaveCount(1);
+  await expect(
+    page.getByText(es.links.count(2), { exact: true }).filter({ visible: true }),
+  ).toHaveCount(1);
 
   const edit = await openTask(page, 'Renovar DNI');
   // El PNG se pudo haber convertido a WebP al comprimirlo.
@@ -305,7 +307,9 @@ test('quitar un archivo y cerrar sesión borra los archivos del dispositivo', as
   await edit.getByRole('button', { name: es.files.remove('inventario.pdf') }).click();
   await edit.getByRole('button', { name: es.common.save }).click();
   await expect(edit).toBeHidden();
-  await expect(page.getByLabel(es.links.count(1)).filter({ visible: true })).toHaveCount(1);
+  await expect(
+    page.getByText(es.links.count(1), { exact: true }).filter({ visible: true }),
+  ).toHaveCount(1);
 
   const reopened = await openTask(page, 'Mudanza');
   await expect(openFileButton(reopened, 'inventario.pdf')).toHaveCount(0);

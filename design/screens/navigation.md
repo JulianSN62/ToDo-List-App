@@ -80,7 +80,7 @@ Fuente: spec §11.2, §11.7. Tokens: [`../tokens.css`](../tokens.css).
 **Medidas:**
 - Columna árbol: 280px (igual que sidebar).
 - Columna lista: ancho flexible, mínimo 480px antes de pasar a scroll horizontal (no debería ocurrir en uso normal).
-- Columna detalle: 400px fijo, siempre visible cuando hay una tarea seleccionada; si no hay selección, muestra un estado vacío ("Seleccioná una tarea para ver el detalle").
+- ~~Columna detalle: 400px fijo, siempre visible cuando hay una tarea seleccionada; si no hay selección, muestra un estado vacío ("Seleccioná una tarea para ver el detalle").~~ Reemplazado por X51: el detalle es una ventana modal.
 - `[🔒]` = ícono de candado, indicador de solo lectura para Recordatorios/Pin cuando la tarea ya tiene uno creado desde el teléfono (S10) — en desktop no se puede crear/editar, solo se ve.
 - Overlay de atajos de teclado: ícono de ayuda (`?` en un círculo) en el header de la columna lista, abre un popover con la tabla `N / Ctrl+K / Esc / Enter`.
 - Sin nombre de app ni logo en ningún punto de la navegación (sidebar, header, bottom nav): la identidad visual se apoya solo en la paleta y los íconos.

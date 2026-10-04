@@ -24,7 +24,7 @@ export function Fab({ label, onClick }: { label: string; onClick: () => void }) 
       aria-label={label}
       onClick={onClick}
       className={cn(
-        'fixed right-4 z-30 flex size-14 items-center justify-center rounded-full bg-brand text-on-brand elevation-md transition-transform duration-(--duration-fast) active:scale-95',
+        'fixed right-[calc(16px+env(safe-area-inset-right,0px))] z-30 flex size-14 items-center justify-center rounded-full bg-brand text-on-brand elevation-md transition-transform duration-(--duration-fast) active:scale-95',
         'bottom-[calc(64px+16px+env(safe-area-inset-bottom,0px))]',
         keyboardOpen && 'hidden',
       )}

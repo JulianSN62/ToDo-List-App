@@ -37,7 +37,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label={es.nav.mainNavigation}
-      className="shrink-0 border-t border-line bg-panel pb-safe"
+      className="shrink-0 border-t border-line bg-panel pb-safe pl-safe"
     >
       <ul className="flex h-16">
         {ITEMS.map(({ to, label, icon: Icon, matches }) => {

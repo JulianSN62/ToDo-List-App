@@ -18,8 +18,8 @@ export function Input({ className, icon, invalid, ...props }: InputProps) {
       <input
         aria-invalid={invalid || undefined}
         className={cn(
-          'h-12 w-full rounded-sm border border-line bg-panel px-3 text-body text-fg transition-colors duration-(--duration-fast) outline-none',
-          'focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/30 focus-visible:outline-none',
+          'h-12 w-full rounded-sm border border-line-strong bg-panel px-3 text-body text-fg transition-colors duration-(--duration-fast) outline-none',
+          'focus-visible:border-brand focus-visible:ring-1 focus-visible:ring-brand focus-visible:outline-none',
           'disabled:opacity-50',
           icon ? 'pl-10' : undefined,
           invalid ? 'border-danger' : undefined,

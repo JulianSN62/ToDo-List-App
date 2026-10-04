@@ -1,5 +1,23 @@
 apply plugin: 'com.android.application'
 
+// Versión de la app: versionName sale de package.json y versionCode se calcula a partir de
+// ella (0.9.0 -> 900, 1.0.0 -> 10000), así cada versión nueva instala sobre la anterior.
+def appVersion = new groovy.json.JsonSlurper().parse(rootProject.file('../package.json')).version as String
+def versionParts = appVersion.tokenize('.-').take(3).collect { it as Integer }
+def appVersionCode = versionParts[0] * 10000 + versionParts[1] * 100 + versionParts[2]
+
+// Firma del APK de release (docs/SETUP.md, paso 9): android/keystore.properties, fuera de git,
+// con storeFile, storePassword, keyAlias y keyPassword. Otra ubicación: variable de entorno
+// ANDROID_KEYSTORE_PROPERTIES. Las contraseñas también pueden venir de ANDROID_STORE_PASSWORD y
+// ANDROID_KEY_PASSWORD. Sin ese archivo el release queda sin firmar (no se puede instalar).
+def keystorePropertiesPath = System.getenv('ANDROID_KEYSTORE_PROPERTIES')
+def keystorePropertiesFile = keystorePropertiesPath ? file(keystorePropertiesPath) : rootProject.file('keystore.properties')
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+def hasReleaseKeystore = keystorePropertiesFile.exists()
+
 android {
     namespace = "com.todolistapp.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +25,8 @@ android {
         applicationId "com.todolistapp.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode appVersionCode
+        versionName appVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,10 +34,24 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (hasReleaseKeystore) {
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword'] ?: System.getenv('ANDROID_STORE_PASSWORD')
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword'] ?: System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
+            // Sin minificar: los plugins de Capacitor no traen reglas de R8 probadas para esta app.
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (hasReleaseKeystore) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }

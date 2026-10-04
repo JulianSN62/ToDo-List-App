@@ -62,8 +62,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
     const unsubscribe = subscribeToAuthChanges((change) => {
-      if (change.kind === 'signedIn') void enterSignedIn(change.user);
-      else void enterSignedOut();
+      const update = change.kind === 'signedIn' ? enterSignedIn(change.user) : enterSignedOut();
+      update.catch((error: unknown) => {
+        logger.error('No se pudo actualizar la sesión', errorMeta(error));
+      });
     });
 
     return () => {

@@ -27,7 +27,7 @@ export function Chip({
       className={cn(
         'inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-body-sm [&_svg]:size-4',
         active
-          ? 'border-brand/40 bg-brand/10 text-brand'
+          ? 'border-brand bg-brand/10 font-medium text-fg'
           : 'border-line bg-panel text-muted hover:text-fg',
         className,
       )}
@@ -79,7 +79,7 @@ export function DatePicker({
           const next = event.target.value;
           onChange(next && isValidLocalDate(next) ? next : null);
         }}
-        className="h-12 w-full max-w-60 rounded-sm border border-line bg-panel px-3 text-body text-fg outline-none focus-visible:border-brand"
+        className="h-12 w-full max-w-60 rounded-sm border border-line-strong bg-panel px-3 text-body text-fg outline-none focus-visible:border-brand focus-visible:ring-1 focus-visible:ring-brand"
       />
     </div>
   );

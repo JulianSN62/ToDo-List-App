@@ -9,7 +9,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router';
+import { Link, NavLink, useLocation } from 'react-router';
 import { useFolderCounts, useFolderTree, type Folder as FolderModel } from '@/data';
 import { es } from '@/i18n/es';
 import { cn } from '@/lib/cn';
@@ -42,19 +42,21 @@ function SideLink({
       className={cn(
         'flex h-12 items-center gap-3 rounded-sm px-3 text-body-sm',
         collapsed && 'justify-center px-0',
-        active ? 'bg-brand/10 text-brand' : 'text-fg hover:bg-app',
+        active ? 'bg-brand/10 font-medium text-fg' : 'text-fg hover:bg-app',
       )}
     >
-      <Icon aria-hidden className={cn('shrink-0', collapsed ? 'size-6' : 'size-5')} />
+      <Icon
+        aria-hidden
+        className={cn('shrink-0', collapsed ? 'size-6' : 'size-5', active && 'text-brand')}
+      />
       <span className={collapsed ? 'sr-only' : 'truncate'}>{label}</span>
     </NavLink>
   );
 }
 
 function FolderTreeNav() {
-  const navigate = useNavigate();
   const today = useToday();
-  const { children, byId } = useFolderTree();
+  const { children, byId, isLoading } = useFolderTree();
   const counts = useFolderCounts(children, today);
   const activeFolderId = useUiStore((state) => state.activeFolderId);
   const [manuallyExpanded, setManuallyExpanded] = useState<Set<string>>(new Set());
@@ -96,7 +98,7 @@ function FolderTreeNav() {
           <div
             className={cn(
               'group flex h-10 items-center rounded-sm pr-2',
-              active ? 'bg-brand/10 text-brand' : 'text-fg hover:bg-app',
+              active ? 'bg-brand/10 font-medium text-fg' : 'text-fg hover:bg-app',
             )}
             style={{ paddingLeft: `${depth * 16}px` }}
           >
@@ -121,30 +123,37 @@ function FolderTreeNav() {
             ) : (
               <span className="size-8 shrink-0" aria-hidden />
             )}
-            <button
-              type="button"
-              onClick={() => navigate(`/f/${folder.id}`)}
+            <Link
+              to={`/f/${folder.id}`}
               aria-current={active ? 'page' : undefined}
               className="flex h-full min-w-0 flex-1 items-center gap-2 text-left text-body-sm"
             >
               {count && count.overdue > 0 ? (
-                <span
-                  aria-label={es.folders.hasOverdue}
-                  className="size-1.5 shrink-0 rounded-full bg-danger"
-                />
+                <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-danger" />
               ) : null}
               <ColorDot color={folder.color} />
               <span className="truncate">{folder.name}</span>
-              {count && count.pending > 0 ? (
-                <span className="ml-auto pl-2 text-caption text-muted">{count.pending}</span>
+              {count && count.overdue > 0 ? (
+                <span className="sr-only">{`, ${es.folders.hasOverdue}`}</span>
               ) : null}
-            </button>
+              {count && count.pending > 0 ? (
+                <span
+                  className={cn('ml-auto pl-2 text-caption', active ? 'text-fg' : 'text-muted')}
+                >
+                  <span aria-hidden>{count.pending}</span>
+                  <span className="sr-only">{`, ${es.folders.pendingCountLong(count.pending)}`}</span>
+                </span>
+              ) : null}
+            </Link>
           </div>
           {hasChildren && expanded ? <ul>{renderLevel(folder.id, depth + 1)}</ul> : null}
         </li>
       );
     });
 
+  if (!isLoading && (children.get(null)?.length ?? 0) === 0) {
+    return <p className="px-3 py-2 text-body-sm text-muted">{es.folders.sidebarEmpty}</p>;
+  }
   return <ul className="flex flex-col">{renderLevel(null, 0)}</ul>;
 }
 

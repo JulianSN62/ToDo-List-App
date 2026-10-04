@@ -19,10 +19,12 @@ import { setThemePreference, useThemePreference, type ThemePreference } from '@/
 import { APP_VERSION } from '@/config/app';
 import { getPendingUploadCount, syncNow, useSettings, useSyncState, useTags } from '@/data';
 import { es } from '@/i18n/es';
+import { errorMeta, logger } from '@/lib/logger';
 import { Button } from '@/ui/button';
 import { ConfirmDialog } from '@/ui/confirm-dialog';
 import { RadioGroup, RadioOption } from '@/ui/radio-group';
 import { ScreenHeader, ScreenTitle } from '@/ui/screen-header';
+import { showErrorToast } from '@/ui/toast';
 import { useCurrentUser, useAuth } from '../auth/authContext';
 import { SyncIndicator } from '../sync/SyncIndicator';
 import { BackupSetting } from './BackupSetting';
@@ -99,7 +101,8 @@ export function SettingsScreen() {
   }
 
   async function openSignOut() {
-    setPendingAtSignOut(await getPendingUploadCount());
+    // Si no se puede contar, se pregunta igual (sin el aviso de cambios pendientes).
+    setPendingAtSignOut(await getPendingUploadCount().catch(() => 0));
     setConfirmSignOut(true);
   }
 
@@ -107,6 +110,9 @@ export function SettingsScreen() {
     setSigningOut(true);
     try {
       await signOut();
+    } catch (error) {
+      logger.error('No se pudo cerrar la sesión', errorMeta(error));
+      showErrorToast(es.errors.signOutFailed);
     } finally {
       setSigningOut(false);
       setConfirmSignOut(false);

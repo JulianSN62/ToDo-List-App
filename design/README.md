@@ -1,4 +1,4 @@
-# Diseño — Mis Tareas
+# Diseño — ToDo List
 
 Diseño completo de la app (basado en `docs/specs-and-design.md`), cubriendo web/desktop y mobile, responsive, con medidas concretas para implementar directamente.
 

@@ -7,6 +7,7 @@ import {
   stopFileSync,
   useHasSynced,
 } from '@/data';
+import { errorMeta, logger } from '@/lib/logger';
 import { lifecycle, platform } from '@/platform';
 
 // Efectos mientras hay una sesión iniciada: sincronización, subida de archivos,
@@ -21,7 +22,9 @@ export function SessionEffects({ userId }: { userId: string }) {
     // Cola de subida de archivos adjuntos (se corta al cerrar sesión).
     startFileSync();
     return () => {
-      void stopFileSync();
+      stopFileSync().catch((error: unknown) => {
+        logger.warn('No se pudo detener la subida de archivos', errorMeta(error));
+      });
     };
   }, [userId]);
 

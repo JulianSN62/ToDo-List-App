@@ -4,7 +4,7 @@ import { es } from '@/i18n/es';
 // Se muestra si faltan variables del .env (en lugar de errores confusos).
 export function ConfigErrorScreen({ missing }: { missing: string[] }) {
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-app px-4">
+    <main className="flex min-h-dvh items-center justify-center bg-app px-4 pt-safe pb-safe">
       <div className="w-full max-w-[480px] rounded-md border border-line bg-panel p-6">
         <h1 className="flex items-center gap-2 text-title-sm font-semibold text-fg">
           <TriangleAlert aria-hidden className="size-5 text-star" />

@@ -37,6 +37,9 @@ export const webFiles: FileService = {
     return 'saved';
   },
 
+  // Las descargas quedan en la carpeta del usuario: la app no guarda copias propias.
+  async clearShared() {},
+
   pickFiles({ multiple = true, accept } = {}) {
     return new Promise((resolve) => {
       const input = document.createElement('input');

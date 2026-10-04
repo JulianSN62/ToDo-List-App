@@ -53,8 +53,10 @@ test('sin conexión: abre, crea, edita y borra; los cambios quedan pendientes', 
   await edit.getByRole('button', { name: es.common.save }).click();
   await expect(taskCheckbox(page, 'Comprar pasajes en tren')).toBeVisible();
 
-  await taskRow(page, 'Hacer la valija').getByRole('button', { name: es.tasks.menu }).click();
-  await chooseMenuItem(page, es.tasks.menu, es.common.delete);
+  await taskRow(page, 'Hacer la valija')
+    .getByRole('button', { name: es.tasks.menu('Hacer la valija') })
+    .click();
+  await chooseMenuItem(page, es.tasks.menu('Hacer la valija'), es.common.delete);
   await expect(taskCheckbox(page, 'Hacer la valija')).toHaveCount(0);
 
   await expect(

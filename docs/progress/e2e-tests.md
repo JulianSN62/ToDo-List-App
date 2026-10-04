@@ -1,6 +1,6 @@
 # Tests E2E (spec 15.1)
 
-**Estado:** ✅ En el repo desde el Bloque 4 (2026-10-02). Decisiones X93–X95. **64 tests:** 30 en mobile y 34 en desktop (desde el Bloque 5, con los 10 de adjuntos). Tardan unos 2–3 minutos, contando el build.
+**Estado:** ✅ En el repo desde el Bloque 4 (2026-10-02). Decisiones X93–X95 y X115. **86 tests:** 41 en mobile y 45 en desktop (desde el Bloque 6, con accesibilidad, listas largas y el árbol de "Mover a…"). Tardan unos 3–4 minutos, contando el build.
 
 ## Cómo se corren
 
@@ -27,6 +27,7 @@ npm run e2e
   - Además, Edge arranca con `--host-resolver-rules`, porque los workers de la base local no pasan por `route`.
 - **Consola vigilada:** un test falla si aparece un error de consola inesperado, incluidas las violaciones de la CSP. Solo se toleran los errores normales sin red: `powersync: Sync error` y `net::ERR_*`.
 - **Textos:** los selectores leen `src/i18n/es.ts`, así que cambiar un texto no rompe los tests.
+- **Datos de prueba en cantidad:** el build E2E (y solo ese) expone `window.__todoE2eSeed` para cargar de una vez miles de tareas y carpetas (`src/data/e2eSeed.ts`). El build de producción no lo incluye.
 - **Proyectos:**
   - `mobile`: 390×844, táctil.
   - `desktop`: 1280×800.
@@ -37,15 +38,17 @@ npm run e2e
 | Archivo | Qué prueba |
 |---|---|
 | `auth.spec.ts` | Sin sesión va al login y valida el email. Con la sesión guardada abre la app. Cerrar sesión borra la sesión y la base local. |
-| `folders.spec.ts` | Carpetas y subcarpetas, breadcrumb y botón Volver. Eliminar una carpeta con contenido pide confirmación y "Deshacer" restaura todo. |
+| `folders.spec.ts` | Carpetas y subcarpetas, breadcrumb y botón Volver. Eliminar una carpeta con contenido pide confirmación y "Deshacer" restaura todo. "Mover a…" como árbol plegable, usado con el teclado. |
 | `tasks.spec.ts` | Ventana de nueva tarea con todos los campos, "Crear y agregar otra" y Enter. Título obligatorio. La prioritaria sube y vuelve a su lugar. Completar y desmarcar ("Se borra en 7 días"). Eliminar con "Deshacer". Detalles desplegables. Descartar cambios pide confirmación. Mover de carpeta. |
 | `tags-today-search.spec.ts` | Etiquetas y links en la ventana (se antepone `https://`, se rechaza `javascript:`, se abre en una pestaña nueva). Filtros "Solo prioritarias" y por etiqueta. Grupos de Hoy / Próximas e "Ir a la carpeta". Búsqueda sin tildes ni mayúsculas. Ajustes → Etiquetas. |
-| `desktop.spec.ts` | Atajos `N`, `/`, `Ctrl+K` y `Esc`. Búsqueda flotante. "Deshacer" con la búsqueda abierta. Ayuda "?". Clic derecho. |
+| `desktop.spec.ts` | Atajos `N`, `/`, `Ctrl+K` y `Esc`. Búsqueda flotante. "Deshacer" (con el aviso y con `Ctrl+Z`) con la búsqueda abierta. Ayuda "?". Clic derecho. |
 | `mobile.spec.ts` | Sin atajos ni ayuda. Buscar como pantalla. Botón Volver en Ajustes, Hoy y Buscar. |
 | `settings.spec.ts` | El tema se aplica y se recuerda. La retención y las alertas quedan deshabilitadas antes del primer sync. Resumen de alertas y nota de Android. Exportar respaldo JSON, con su contenido validado. |
 | `offline.spec.ts` | Sin conexión: la app abre desde el service worker. Crear, editar y borrar. El indicador muestra "Sin conexión · N pendientes" y Ajustes, el contador. Todo sigue al recargar y al volver la conexión. |
 | `attachments.spec.ts` | Archivos adjuntos (Bloque 5). Usa un **Storage ficticio**: el test responde los pedidos de subida, URL firmada y descarga al Supabase de prueba. Prueba:<br>• Adjuntar al crear, con contador en la fila y "Pendiente de subir" sin servidor. Todo sigue al recargar.<br>• Una foto de 4000×3000 queda en 1600×1200 y pesa menos. Se rechaza un archivo de 10,5 MB.<br>• Un error 403 deja "Reintentar"; al reintentar se sube a `{usuario}/{tarea}/{id}-nombre`.<br>• "Liberar espacio", la miniatura que se vuelve a bajar con URL firmada, el visor de fotos y ver sin conexión lo ya abierto. Un PDF no guardado avisa que falta conexión.<br>• Quitar un archivo. Cerrar sesión avisa lo pendiente y vacía los archivos del dispositivo (IndexedDB). |
 | `screens.spec.ts` | Pasada por Carpetas, tareas, Hoy, Buscar, Ajustes y Alertas en tema claro y oscuro, más la ventana con archivos, los detalles de una tarea con archivos y Ajustes → Datos: el tema del sistema se respeta y no hay scroll horizontal. |
+| `a11y.spec.ts` | Accesibilidad (Bloque 6). **axe** revisa Carpetas, una carpeta con tareas, la ventana de nueva tarea, el menú "⋯", Hoy, Buscar, Ajustes, Alertas y el login, en tema claro y oscuro: sin problemas graves (los menores se informan en la salida). Además: título de cada pantalla en la pestaña, el foco vuelve al botón que abrió la ventana, "Saltar al contenido" y tocar un aviso no cierra la ventana. |
+| `long-lists.spec.ts` | Rendimiento (Bloque 6): una carpeta con 1000 tareas y 300 carpetas. Abrir, completar, subir con el menú, desplegar detalles, buscar y la barra lateral. Los tiempos (medidos dentro de la página) se anotan en la salida, sin umbrales. |
 
 ## Límites (lo que no pueden probar)
 

@@ -78,9 +78,11 @@ test('etiquetas y links en la ventana de tarea', async ({ page }) => {
 
   // La fila muestra los indicadores y los detalles, el link.
   // Hay un indicador para mobile y otro para desktop: se mira el que está a la vista.
-  await expect(page.getByLabel(es.links.count(1)).filter({ visible: true })).toHaveCount(1);
   await expect(
-    page.getByLabel(`${es.tags.title}: Urgente`).filter({ visible: true }).first(),
+    page.getByText(es.links.count(1), { exact: true }).filter({ visible: true }),
+  ).toHaveCount(1);
+  await expect(
+    page.getByText(es.tags.listLabel('Urgente'), { exact: true }).filter({ visible: true }).first(),
   ).toBeVisible();
   await page.getByRole('button', { name: es.tasks.showDetails('Revisar contrato') }).click();
   const popupPromise = page.waitForEvent('popup');

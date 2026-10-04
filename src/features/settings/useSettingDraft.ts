@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { es } from '@/i18n/es';
+import { errorMeta, logger } from '@/lib/logger';
 import { showErrorToast } from '@/ui/toast';
 
 // Ajuste sincronizado que se edita en pantalla: el cambio se ve al instante y se guarda
@@ -20,6 +21,11 @@ interface Options<T> {
   save: (value: T) => Promise<void>;
   delayMs?: number;
   equals?: (a: T, b: T) => boolean;
+}
+
+function reportSaveError(error: unknown) {
+  logger.error('No se pudo guardar la configuración', errorMeta(error));
+  showErrorToast(es.settings.saveError);
 }
 
 export function useSettingDraft<T>({
@@ -44,7 +50,7 @@ export function useSettingDraft<T>({
     return () => {
       if (state.timer === undefined || state.next === null) return;
       window.clearTimeout(state.timer);
-      void save(state.next.value).catch(() => showErrorToast(es.settings.saveError));
+      void save(state.next.value).catch(reportSaveError);
     };
   }, [save]);
 
@@ -57,9 +63,9 @@ export function useSettingDraft<T>({
           current && equals(current.value, value) ? { ...current, saved: true } : current,
         ),
       )
-      .catch(() => {
+      .catch((error: unknown) => {
         setDraft(null);
-        showErrorToast(es.settings.saveError);
+        reportSaveError(error);
       });
   }
 

@@ -1,12 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router';
+import { errorMeta, logger } from '@/lib/logger';
 import { lifecycle } from '@/platform';
+import { es } from '@/i18n/es';
 import { runBackHandler } from '@/ui/backStack';
+import { MAIN_CONTENT_ID } from '@/ui/sheet';
 import { useIsSidebarLayout } from '@/ui/useMediaQuery';
 import { FolderFormSheet } from '../features/folders/FolderFormSheet';
 import { SearchOverlay } from '../features/search/SearchOverlay';
 import { CreateTaskSheet } from '../features/tasks/TaskFormSheet';
 import { BottomNav } from './BottomNav';
+import { preloadLazyComponents, whenIdle } from './lazyComponent';
 import { Sidebar } from './Sidebar';
 import { useUiStore } from './uiStore';
 import { useKeyboardShortcuts } from './useKeyboardShortcuts';
@@ -21,6 +25,9 @@ export function AppShell() {
   useEffect(() => {
     if (!isSidebarLayout) useUiStore.getState().setSearchOverlayOpen(false);
   }, [isSidebarLayout]);
+  // Las pantallas y ventanas diferidas se cargan cuando el navegador está libre.
+  useEffect(() => whenIdle(preloadLazyComponents), []);
+
   const navigate = useNavigate();
   const location = useLocation();
   const pathRef = useRef(location.pathname);
@@ -37,15 +44,37 @@ export function AppShell() {
         navigate('/');
         return;
       }
-      void lifecycle.minimize();
+      lifecycle.minimize().catch((error: unknown) => {
+        logger.warn('No se pudo minimizar la app', errorMeta(error));
+      });
     });
   }, [navigate]);
 
   return (
     <div className="flex h-dvh overflow-hidden bg-app">
+      {/* Primer elemento con Tab: salta la navegación (teclado y lectores de pantalla). */}
+      <a
+        href={`#${MAIN_CONTENT_ID}`}
+        onClick={(event) => {
+          event.preventDefault();
+          document.getElementById(MAIN_CONTENT_ID)?.focus();
+        }}
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-sm focus:bg-panel focus:px-4 focus:py-3 focus:text-body-sm focus:font-medium focus:text-fg focus:elevation-md"
+      >
+        {es.nav.skipToContent}
+      </a>
       {isSidebarLayout ? <Sidebar /> : null}
       <div className="flex min-w-0 flex-1 flex-col pr-safe">
-        <Outlet />
+        <main
+          id={MAIN_CONTENT_ID}
+          tabIndex={-1}
+          className="flex min-h-0 flex-1 flex-col focus:outline-none"
+        >
+          {/* Solo se ve vacío la primera vez que se abre una pantalla diferida (un instante). */}
+          <Suspense fallback={<div className="flex-1" />}>
+            <Outlet />
+          </Suspense>
+        </main>
         {isSidebarLayout ? null : <BottomNav />}
       </div>
       <FolderFormSheet />

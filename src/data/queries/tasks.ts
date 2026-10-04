@@ -6,9 +6,31 @@ import type { Task } from '../types';
 
 // Lecturas reactivas de tareas.
 
+type TaskRowWithId = TaskRow & { id: string };
+
+// Las listas conservan el mismo objeto para cada tarea que no cambió (la consulta compara
+// fila por fila y la conversión se recuerda por fila). Así, con listas largas, las filas
+// memorizadas solo se vuelven a dibujar cuando cambia su propia tarea.
+const ROW_COMPARATOR = {
+  keyBy: (row: TaskRowWithId) => row.id,
+  compareBy: (row: TaskRowWithId) => JSON.stringify(row),
+};
+const converted = new WeakMap<object, Task>();
+
+function toTaskCached(row: Readonly<TaskRowWithId>): Task {
+  let task = converted.get(row);
+  if (!task) {
+    task = toTask(row);
+    converted.set(row, task);
+  }
+  return task;
+}
+
 function useTaskList(sql: string, params: unknown[] = []): { tasks: Task[]; isLoading: boolean } {
-  const { data, isLoading } = useQuery<TaskRow>(sql, params);
-  return useMemo(() => ({ tasks: data.map(toTask), isLoading }), [data, isLoading]);
+  const { data, isLoading } = useQuery<TaskRowWithId>(sql, params, {
+    rowComparator: ROW_COMPARATOR,
+  });
+  return useMemo(() => ({ tasks: data.map(toTaskCached), isLoading }), [data, isLoading]);
 }
 
 export function useFolderTasks(folderId: string | null): { tasks: Task[]; isLoading: boolean } {

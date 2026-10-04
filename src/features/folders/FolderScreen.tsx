@@ -1,5 +1,5 @@
 import { FolderOpen, ListFilter, ListTodo, Plus } from 'lucide-react';
-import { useEffect, useMemo, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Fab } from '@/app/Fab';
 import { ShortcutsHelp } from '@/app/ShortcutsHelp';
@@ -15,19 +15,21 @@ import {
   useSettings,
   useTaskTagIndex,
   type Folder,
+  type FolderTree,
+  type Tag,
   type Task,
 } from '@/data';
 import { es } from '@/i18n/es';
 import { errorMeta, logger } from '@/lib/logger';
 import { keyForDrop } from '@/lib/ordering';
-import { filterTasks, hasActiveFilters } from '@/lib/taskFilters';
+import { filterTasks, hasActiveFilters, type TaskFilters } from '@/lib/taskFilters';
 import { compareAcrossFolders } from '@/lib/taskOrder';
 import { folderOrderIndex, formatPath, getDescendantIds, getPath } from '@/lib/tree';
 import { ActionMenu } from '@/ui/action-menu';
 import { useBackHandler } from '@/ui/backStack';
 import { Button } from '@/ui/button';
 import { EmptyState } from '@/ui/empty-state';
-import { ScreenHeader, ScreenTitle } from '@/ui/screen-header';
+import { HiddenScreenTitle, ScreenHeader, ScreenTitle } from '@/ui/screen-header';
 import { SortableList } from '@/ui/sortable-list';
 import { showErrorToast } from '@/ui/toast';
 import { useIsSidebarLayout } from '@/ui/useMediaQuery';
@@ -48,12 +50,88 @@ import { useFolderActions } from './useFolderActions';
 // Con filtros activos ("Solo prioritarias", etiqueta) se listan las pendientes que
 // coinciden en la carpeta y todas sus subcarpetas (en la raíz, en todas).
 
+const folderName = (folder: Folder) => folder.name;
+
 function SectionHeader({ title, action }: { title: string; action?: ReactNode }) {
   return (
     <div className="flex h-10 items-center justify-between px-4">
       <h2 className="text-caption font-semibold tracking-wide text-muted uppercase">{title}</h2>
       {action}
     </div>
+  );
+}
+
+// Pendientes de la carpeta y sus subcarpetas (en la raíz, de todas) que cumplen los
+// filtros, en el orden del árbol. Solo se monta con un filtro activo: la consulta de
+// todas las pendientes no corre si no hace falta.
+function FilteredTasks({
+  folderId,
+  tree,
+  filters,
+  today,
+  retentionDays,
+  tagsByTask,
+  attachmentCounts,
+  onOpen,
+  onGoToFolder,
+  onClear,
+}: {
+  folderId: string | null;
+  tree: FolderTree;
+  filters: TaskFilters;
+  today: string;
+  retentionDays: number;
+  tagsByTask: ReadonlyMap<string, readonly Tag[]>;
+  attachmentCounts: ReadonlyMap<string, number>;
+  onOpen: (task: Task) => void;
+  onGoToFolder: (task: Task) => void;
+  onClear: () => void;
+}) {
+  const { tasks: pendingTasks } = usePendingTasks();
+  const filteredTasks = useMemo(() => {
+    const scope = folderId
+      ? new Set([folderId, ...getDescendantIds(folderId, tree.children)])
+      : null;
+    const order = folderOrderIndex(tree.children);
+    const inScope = pendingTasks.filter(
+      (task) => tree.byId.has(task.folderId) && (scope === null || scope.has(task.folderId)),
+    );
+    return filterTasks(inScope, filters, tagsByTask).sort((a, b) =>
+      compareAcrossFolders(a, b, order),
+    );
+  }, [folderId, tree, pendingTasks, filters, tagsByTask]);
+  const subtitleFor = useCallback(
+    (task: Task) =>
+      task.folderId === folderId ? null : (
+        <span className="truncate">{formatPath(task.folderId, tree.byId, folderId)}</span>
+      ),
+    [folderId, tree.byId],
+  );
+
+  return (
+    <>
+      <p className="px-4 pb-2 text-caption text-muted">
+        {folderId === null ? es.filters.scopeRoot : es.filters.scopeFolder}
+      </p>
+      {filteredTasks.length > 0 ? (
+        <GlobalTaskList
+          tasks={filteredTasks}
+          today={today}
+          retentionDays={retentionDays}
+          tagsByTask={tagsByTask}
+          attachmentCounts={attachmentCounts}
+          subtitleFor={subtitleFor}
+          onOpen={onOpen}
+          onGoToFolder={onGoToFolder}
+        />
+      ) : (
+        <EmptyState icon={<ListFilter />} title={es.filters.noResults}>
+          <Button variant="secondary" onClick={onClear}>
+            {es.filters.clear}
+          </Button>
+        </EmptyState>
+      )}
+    </>
   );
 }
 
@@ -73,7 +151,6 @@ export function FolderScreen({
   const tree = useFolderTree();
   const counts = useFolderCounts(tree.children, today);
   const { tasks, isLoading: tasksLoading } = useFolderTasks(folderId);
-  const { tasks: pendingTasks } = usePendingTasks();
   const tagIndex = useTaskTagIndex();
   const attachmentCounts = useAttachmentCounts();
   const folderActions = useFolderActions();
@@ -103,21 +180,6 @@ export function FolderScreen({
     [storedFilters, tagIndex.tagsById],
   );
   const filtering = hasActiveFilters(filters);
-
-  // Pendientes de la carpeta y sus subcarpetas que cumplen los filtros, en el orden del árbol.
-  const filteredTasks = useMemo(() => {
-    if (!filtering) return [];
-    const scope = folderId
-      ? new Set([folderId, ...getDescendantIds(folderId, tree.children)])
-      : null;
-    const order = folderOrderIndex(tree.children);
-    const inScope = pendingTasks.filter(
-      (task) => tree.byId.has(task.folderId) && (scope === null || scope.has(task.folderId)),
-    );
-    return filterTasks(inScope, filters, tagIndex.tagsByTask).sort((a, b) =>
-      compareAcrossFolders(a, b, order),
-    );
-  }, [filtering, folderId, tree, pendingTasks, filters, tagIndex.tagsByTask]);
 
   useEffect(() => {
     setActiveFolderId(folderId);
@@ -169,7 +231,8 @@ export function FolderScreen({
   const isRoot = folderId === null;
   const hasNoTasks = !tasksLoading && tasks.length === 0;
   // Los filtros se ofrecen solo si hay pendientes en el alcance (en la raíz, en cualquier carpeta).
-  const showRootFilters = isRoot && (filtering || pendingTasks.length > 0);
+  const showRootFilters =
+    isRoot && (filtering || subfolders.some((item) => (counts.get(item.id)?.pending ?? 0) > 0));
   const showFolderFilters =
     filtering || !hasNoTasks || (folderId !== null && (counts.get(folderId)?.pending ?? 0) > 0);
 
@@ -189,7 +252,10 @@ export function FolderScreen({
         </Button>
       ) : null}
       {folder ? (
-        <ActionMenu label={es.folders.folderMenu} items={folderActions.actionsFor(folder)} />
+        <ActionMenu
+          label={es.folders.folderMenu(folder.name)}
+          items={() => folderActions.actionsFor(folder)}
+        />
       ) : null}
     </>
   );
@@ -197,13 +263,14 @@ export function FolderScreen({
   const subfolderList = (
     <SortableList
       items={subfolders}
+      itemLabel={folderName}
       onReorder={reorderFolders}
       renderItem={(item, handle) => (
         <FolderRow
           folder={item}
           counts={counts.get(item.id)}
           handle={handle}
-          actions={folderActions.actionsFor(item)}
+          actions={() => folderActions.actionsFor(item)}
         />
       )}
     />
@@ -220,43 +287,35 @@ export function FolderScreen({
 
   // Tareas filtradas (lista plana con la carpeta de cada una).
   const filteredSection = (
-    <>
-      <p className="px-4 pb-2 text-caption text-muted">
-        {isRoot ? es.filters.scopeRoot : es.filters.scopeFolder}
-      </p>
-      {filteredTasks.length > 0 ? (
-        <GlobalTaskList
-          tasks={filteredTasks}
-          today={today}
-          retentionDays={settings.completedRetentionDays}
-          tagsByTask={tagIndex.tagsByTask}
-          attachmentCounts={attachmentCounts}
-          subtitleFor={(task: Task) =>
-            task.folderId === folderId ? null : (
-              <span className="truncate">{formatPath(task.folderId, tree.byId, folderId)}</span>
-            )
-          }
-          onOpen={globalSheet.open}
-          onGoToFolder={(task) => {
-            clearFolderFilters();
-            globalSheet.goToFolder(task);
-          }}
-        />
-      ) : (
-        <EmptyState icon={<ListFilter />} title={es.filters.noResults}>
-          <Button variant="secondary" onClick={clearFolderFilters}>
-            {es.filters.clear}
-          </Button>
-        </EmptyState>
-      )}
-    </>
+    <FilteredTasks
+      folderId={folderId}
+      tree={tree}
+      filters={filters}
+      today={today}
+      retentionDays={settings.completedRetentionDays}
+      tagsByTask={tagIndex.tagsByTask}
+      attachmentCounts={attachmentCounts}
+      onOpen={globalSheet.open}
+      onGoToFolder={(task) => {
+        clearFolderFilters();
+        globalSheet.goToFolder(task);
+      }}
+      onClear={clearFolderFilters}
+    />
   );
 
   return (
     <div className="flex min-h-0 flex-1">
       <section className="flex min-w-0 flex-1 flex-col">
         <ScreenHeader onBack={isRoot ? undefined : goUp} actions={headerActions}>
-          {isRoot ? <ScreenTitle>{es.nav.folders}</ScreenTitle> : <FolderBreadcrumb path={path} />}
+          {isRoot ? (
+            <ScreenTitle>{es.nav.folders}</ScreenTitle>
+          ) : (
+            <>
+              <HiddenScreenTitle>{folder?.name ?? es.nav.folders}</HiddenScreenTitle>
+              <FolderBreadcrumb path={path} />
+            </>
+          )}
         </ScreenHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto pb-28 md:pb-8">
@@ -278,7 +337,9 @@ export function FolderScreen({
                 <EmptyState
                   icon={<FolderOpen />}
                   title={es.folders.rootEmptyTitle}
-                  hint={isSidebarLayout ? undefined : es.folders.rootEmptyHint}
+                  hint={
+                    isSidebarLayout ? es.folders.rootEmptyHintDesktop : es.folders.rootEmptyHint
+                  }
                 />
               )}
             </>
@@ -312,7 +373,9 @@ export function FolderScreen({
                 ) : hasNoTasks ? (
                   <EmptyState
                     icon={<ListTodo />}
-                    title={es.folders.emptyTitle}
+                    title={
+                      subfolders.length === 0 ? es.folders.emptyTitle : es.folders.noTasksTitle
+                    }
                     hint={isSidebarLayout ? es.folders.emptyHintDesktop : es.folders.emptyHint}
                   />
                 ) : (

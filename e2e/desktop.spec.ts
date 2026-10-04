@@ -88,7 +88,7 @@ test('Ctrl+K desde Hoy e "Ir a la carpeta" cierra la búsqueda', async ({ page }
   const overlay = dialog(page, es.search.title);
   await overlay.getByRole('searchbox').fill('banco');
   await expect(taskButton(overlay, 'Llamar al banco')).toBeVisible();
-  await overlay.getByRole('button', { name: es.tasks.menu }).first().click();
+  await overlay.getByRole('button', { name: es.tasks.menu('Llamar al banco') }).click();
   await page.getByRole('menuitem', { name: es.tasks.goToFolder }).click();
   await expect(overlay).toBeHidden();
   await page.waitForURL(/\/f\//);
@@ -100,12 +100,22 @@ test('"Deshacer" funciona con la búsqueda flotante abierta', async ({ page }) =
   await page.keyboard.press('Control+k');
   const overlay = dialog(page, es.search.title);
   await overlay.getByRole('searchbox').fill('informe');
-  await overlay.getByRole('button', { name: es.tasks.menu }).first().click();
+  const menu = overlay.getByRole('button', { name: es.tasks.menu('Preparar informe anual') });
+  await menu.click();
   await page.getByRole('menuitem', { name: es.common.delete }).click();
   await expect(taskButton(overlay, 'Preparar informe anual')).toHaveCount(0);
   await undoButton(page).click();
   await expect(taskButton(overlay, 'Preparar informe anual')).toBeVisible();
   await expect(overlay).toBeVisible();
+
+  // Ctrl+Z hace lo mismo desde el teclado, con la ventana abierta.
+  await menu.click();
+  await page.getByRole('menuitem', { name: es.common.delete }).click();
+  await expect(taskButton(overlay, 'Preparar informe anual')).toHaveCount(0);
+  await page.keyboard.press('Control+z');
+  await expect(taskButton(overlay, 'Preparar informe anual')).toBeVisible();
+  await expect(overlay).toBeVisible();
+  await expect(undoButton(page)).toHaveCount(0);
 });
 
 test('ayuda de atajos: con el globo abierto, N no actúa', async ({ page }) => {

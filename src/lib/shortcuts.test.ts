@@ -24,6 +24,20 @@ describe('atajos de teclado', () => {
     expect(matchShortcut(key('K', { metaKey: true }), idle)).toBe('search');
   });
 
+  it('Ctrl+Z deshace, incluso con una ventana abierta, pero no dentro de un campo', () => {
+    expect(matchShortcut(key('z', { ctrlKey: true }), idle)).toBe('undo');
+    expect(matchShortcut(key('Z', { metaKey: true }), idle)).toBe('undo');
+    expect(matchShortcut(key('z', { ctrlKey: true }), { typing: false, overlayOpen: true })).toBe(
+      'undo',
+    );
+    expect(matchShortcut(key('z', { ctrlKey: true }), { typing: true, overlayOpen: false })).toBe(
+      null,
+    );
+    // Ctrl+Shift+Z (rehacer) y Z sola no son atajos.
+    expect(matchShortcut(key('z', { ctrlKey: true, shiftKey: true }), idle)).toBeNull();
+    expect(matchShortcut(key('z'), idle)).toBeNull();
+  });
+
   it('mientras se escribe solo vale Ctrl+K', () => {
     const typing = { typing: true, overlayOpen: false };
     expect(matchShortcut(key('n'), typing)).toBeNull();

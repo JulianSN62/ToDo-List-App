@@ -112,6 +112,8 @@ export function TagPickerSheet({
 
   const showEmpty = tags.length === 0 && !query.trim();
 
+  const itemRole = props.mode === 'single' ? 'presentation' : undefined;
+
   return (
     <Sheet
       open={open}
@@ -150,13 +152,14 @@ export function TagPickerSheet({
           </div>
         ) : null}
 
+        {/* En modo single es un listbox: los <li> no agregan semántica (las opciones son los botones). */}
         <ul
           className="flex flex-col"
           aria-label={title}
           role={props.mode === 'single' ? 'listbox' : undefined}
         >
           {canCreate ? (
-            <li>
+            <li role={itemRole}>
               <button
                 type="button"
                 disabled={creating}
@@ -170,12 +173,16 @@ export function TagPickerSheet({
           ) : null}
 
           {props.mode === 'single' && !query.trim() && tags.length > 0 ? (
-            <li>
+            <li role={itemRole}>
               <button
                 type="button"
                 role="option"
                 aria-selected={props.selectedId === null}
-                className={cn(rowClass, props.selectedId === null && 'bg-brand/10 text-brand')}
+                className={cn(
+                  rowClass,
+                  props.selectedId === null &&
+                    'bg-brand/10 font-medium [&_svg:last-child]:text-brand',
+                )}
                 onClick={() => choose(null)}
               >
                 <TagIcon aria-hidden className="size-5 shrink-0 text-muted" />
@@ -188,13 +195,13 @@ export function TagPickerSheet({
           {filtered.map((tag) => {
             const selected = isSelected(tag);
             return (
-              <li key={tag.id}>
+              <li key={tag.id} role={itemRole}>
                 <button
                   type="button"
                   role={props.mode === 'multiple' ? 'checkbox' : 'option'}
                   aria-checked={props.mode === 'multiple' ? selected : undefined}
                   aria-selected={props.mode === 'single' ? selected : undefined}
-                  className={cn(rowClass, selected && 'bg-brand/10')}
+                  className={cn(rowClass, selected && 'bg-brand/10 font-medium')}
                   onClick={() => (props.mode === 'multiple' ? toggle(tag.id) : choose(tag.id))}
                 >
                   <ColorDot color={tag.color} />
@@ -203,7 +210,7 @@ export function TagPickerSheet({
                     aria-hidden
                     className={cn(
                       'flex size-5 shrink-0 items-center justify-center rounded-sm',
-                      props.mode === 'multiple' && 'border border-line',
+                      props.mode === 'multiple' && 'border-2 border-muted',
                       selected && 'border-brand bg-brand text-on-brand',
                       selected && props.mode === 'single' && 'bg-transparent text-brand',
                     )}

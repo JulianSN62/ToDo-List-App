@@ -46,15 +46,21 @@ export function FilesStorageSetting() {
         {es.files.storage.device(formatFileSize(usage.deviceBytes))}
       </p>
       <p className="text-body-sm text-muted">{es.files.storage.help}</p>
-      <div>
+      <div className="flex flex-col items-start gap-2">
         <Button
           variant="secondary"
           disabled={usage.freeableBytes === 0 || freeing}
+          aria-describedby={usage.freeableBytes === 0 ? 'nothing-to-free' : undefined}
           onClick={() => setConfirming(true)}
         >
           <HardDrive />
           {es.files.storage.free}
         </Button>
+        {usage.freeableBytes === 0 ? (
+          <p id="nothing-to-free" className="text-caption text-muted">
+            {es.files.storage.nothingToFree}
+          </p>
+        ) : null}
       </div>
 
       <ConfirmDialog

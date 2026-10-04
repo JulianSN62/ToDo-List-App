@@ -2,11 +2,11 @@
 
 Estado del desarrollo por fase (según la sección 14 de `docs/specs-and-design.md`), con lo hecho, lo pendiente y por dónde seguir. Se actualiza al terminar cada fase o funcionalidad.
 
-**Última actualización:** 2026-10-02 (Bloque 5) · Versión de la app: 0.1.0 · Git: repositorio público en GitHub ([JulianSN62/ToDo-List-App](https://github.com/JulianSN62/ToDo-List-App)) desde el 2026-10-02 (X88). Push solo cuando se pide explícitamente (X89).
+**Última actualización:** 2026-10-03 (Bloque 6) · Versión de la app: **0.9.0** · Git: repositorio público en GitHub ([JulianSN62/ToDo-List-App](https://github.com/JulianSN62/ToDo-List-App)) desde el 2026-10-02 (X88). Push solo cuando se pide explícitamente (X89).
 
-**Avance estimado: ~80 % de la v1** (≈ 92 % de la parte web/PWA). Falta:
-- La Fase 10 (pulido y entrega): el **Bloque 6**, para web.
-- La parte de Android: notificaciones (Fase 8) y cámara (resto de la Fase 9), en unos 2 bloques.
+**Avance estimado: ~87 % de la v1.** La parte web/PWA está **completa en código**; solo faltan tus pruebas con la cuenta real. Falta la parte de Android, en 2 bloques:
+- **Bloque 7:** notificaciones (resto de la Fase 8).
+- **Bloque 8:** entrega en el celular (cámara, APK firmado instalado, revisión de UX ahí, versión 1.0.0).
 
 **Prioridad actual (X84):** web y PWA. El proyecto Android se mantiene compilando, pero no se prueba hasta nuevo aviso.
 
@@ -24,24 +24,45 @@ Estado del desarrollo por fase (según la sección 14 de `docs/specs-and-design.
 | 7 — PWA y desktop | ✅ Hecha en código (Bloque 3) · falta que publiques la web en Netlify | [phase-07-pwa.md](./phase-07-pwa.md) |
 | 8 — Android y notificaciones | 🟡 Base Android lista y APK compilado · notificaciones **pospuestas** hasta probar el celular (X84) · cálculo de avisos adelantado (Bloque 4) | [phase-08-android-base.md](./phase-08-android-base.md) |
 | 9 — Archivos y fotos | ✅ Hecha en web (Bloque 5) · migración corrida por vos · falta probar con tu cuenta · cámara y Android sin probar (X84) | [phase-09-files.md](./phase-09-files.md) |
-| 10 — Pulido y entrega | ⏳ Pendiente | — |
-| Tests E2E (spec 15.1) | ✅ En el repo (Bloque 4): `npm run e2e`, 64 tests (10 de adjuntos en el Bloque 5) | [e2e-tests.md](./e2e-tests.md) |
+| 10 — Pulido y entrega | ✅ Hecha en web (Bloque 6) · APK de release firmado listo · falta revisarlo e instalarlo en el celular (Bloque 8) | [phase-10-polish.md](./phase-10-polish.md) |
+| Tests E2E (spec 15.1) | ✅ En el repo (Bloque 4): `npm run e2e`, 86 tests (accesibilidad con axe y listas largas en el Bloque 6) | [e2e-tests.md](./e2e-tests.md) |
 
-## Plan vigente (2026-10-02, decisiones X84–X87)
+## Plan vigente (2026-10-03, decisiones X84 y X106)
 
-Bloques chicos, cada uno cerrado con lint, typecheck, tests y build en verde, documentación al día, **un commit** y tu confirmación.
+Bloques chicos, cada uno cerrado con lint, typecheck, tests, build y E2E en verde, documentación al día, **un commit** y tu confirmación.
 
-- **Bloque 3 — ✅ hecho:** resto de las Fases 6 y 7.
-- **Bloque 4 — ✅ hecho:** tests E2E en el repo y Ajustes → Alertas de vencimiento en web.
-- **Bloque 5 — ✅ hecho:** archivos adjuntos en web (Fase 9). Detalle abajo.
-- **Bloque 6 — siguiente sesión: pulido web (Fase 10, web):** carga diferida (bundle de ~1,2 MB), accesibilidad (avisos con una ventana abierta, contraste, foco), errores, estados vacíos, textos finales, `SETUP.md` completo y endurecer `file_paths.xml` de Android (sin probar en el celular).
-- **Pospuesto — notificaciones Android (resto de la Fase 8, X84).** Se retoma cuando quieras probar el celular; hace falta el **modelo y la versión de Android** (Spike B). Plan ya armado:
+- **Bloques 3, 4 y 5 — ✅ hechos:** Fases 6 y 7, tests E2E y alertas en web, archivos adjuntos en web.
+- **Bloque 6 — ✅ hecho:** pulido web (Fase 10). Detalle abajo.
+- **Bloque 7 — siguiente, cuando quieras probar el celular: notificaciones Android** (resto de la Fase 8, X84). Hace falta el **modelo y la versión de Android** (Spike B). Plan ya armado:
   - **8A Base:** `@capacitor/local-notifications`, canales (`due_alerts`, `reminders`, `pinned`), permisos (notificaciones y alarmas exactas), tabla local `notif_registry`, tocar una notificación abre `/task/:id`, cerrar sesión las cancela.
   - **8B Lógica pura con tests:** ~~cálculo de avisos (6.6)~~ (hecho en el Bloque 4: `dueAlertFireTimes`), conjunto deseado (ventana de 60 días, máx. 200) y diferencias para `reconcile()`.
   - **8C** Avisos de vencimiento programados con la configuración de Ajustes (la pantalla ya está, Bloque 4).
   - **8D Recordatorios personalizados (9.7)**, **8E Tareas ancladas (9.6)** y **8F Diagnóstico (SET-6)** con notificación de prueba.
+- **Bloque 8 — entrega Android:** cámara (y su carpeta en `file_paths.xml`), instalar el APK firmado con tu keystore, revisar gestos, teclado y áreas seguras en el celular, y versión 1.0.0.
 
-## Última tanda: Bloque 5 — Archivos adjuntos en web (2026-10-02)
+## Última tanda: Bloque 6 — Pulido web (2026-10-03)
+
+Plan de la sesión en 6 fases (X106): 6A carga y rendimiento, 6B errores, 6C accesibilidad, 6D estados vacíos y textos, 6E Android y documentación, 6F cierre. Detalle en [phase-10-polish.md](./phase-10-polish.md).
+
+- **Más rápida al abrir y al actualizar:** pantallas y ventanas que se cargan a demanda, librerías en archivos aparte que quedan en caché y 1,2 MB menos para guardar sin conexión.
+- **Listas largas:** con 1000 tareas, completar una tarda unos 190 ms en vez de unos 600 ms medido aparte (entre 265 y 460 ms durante la suite completa, con 4 navegadores a la vez): solo se redibuja la fila que cambia.
+- **Errores:** nunca más una pantalla en blanco. Avisa si la base del dispositivo no abre (por ejemplo, en una ventana privada).
+- **Accesibilidad:**
+  - Contraste AA en los dos temas; los botones de modo oscuro tienen texto oscuro (tu elección).
+  - El foco vuelve al cerrar las ventanas y hay enlace "Saltar al contenido".
+  - **Ctrl+Z** deshace la última eliminación.
+  - Nombres claros para lectores de pantalla y revisión automática con axe.
+- **"Mover a…" como árbol plegable**, estados vacíos nuevos y textos repasados.
+- **Android:** APK de release firmado listo para cuando crees tu keystore; el menú de compartir ya no puede ver todo el almacenamiento.
+- **`SETUP.md`:** APK firmado, restaurar desde cero y publicar una versión nueva.
+
+**Verificación:**
+- `npm run lint`, `npm run typecheck`, `npm test` (**231 tests**, 35 archivos) y `npm run build`: sin errores.
+- `npm run e2e`: **86 de 86** en verde (41 en mobile y 45 en desktop; 22 nuevos: accesibilidad con axe, listas largas, árbol de "Mover a…" y Ctrl+Z).
+- `npm run android:build` compila. `npm run android:release` con un keystore descartable: firmado y verificado con `apksigner` (versión 0.9.0, código 900). No se instaló en el celular (X84).
+- **Sin probar todavía (necesita tu cuenta o el celular):** lo de siempre con la cuenta real, y el APK firmado en el teléfono.
+
+## Tanda anterior: Bloque 5 — Archivos adjuntos en web (2026-10-02)
 
 Plan de la sesión en 5 fases (X96): 5A servidor, 5B datos y plataforma, 5C interfaz, 5D pruebas y 5E cierre. Decisiones del usuario en X97 y técnicas en X98–X104. Detalle en [phase-09-files.md](./phase-09-files.md).
 
@@ -134,4 +155,5 @@ Pedidos del usuario después de probar el login en el navegador (detalle en [pha
    - Publicar en Netlify (paso 10).
    - Probar la sincronización real entre dos navegadores.
    - Probar Ajustes → Alertas con datos reales.
-3. **Siguiente sesión: Bloque 6** (pulido web, Fase 10).
+3. **Vos — cuando quieras el APK firmado:** crear tu keystore y `android/keystore.properties` ([SETUP.md, paso 9](../SETUP.md#apk-firmado-para-instalar-y-actualizar)).
+4. **Siguiente sesión: Bloque 7** (notificaciones Android), cuando quieras probar el celular. Hace falta el modelo y la versión de Android.

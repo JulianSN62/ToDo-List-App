@@ -31,14 +31,10 @@ export const es = {
     back: 'Volver',
     move: 'Mover',
     edit: 'Editar',
-    moreOptions: 'Más opciones',
     moveUp: 'Subir',
     moveDown: 'Bajar',
-    dragToReorder: 'Arrastrar para reordenar',
+    dragItem: (name: string) => `Reordenar "${name}"`,
     root: 'Inicio',
-    comingSoon: 'Disponible próximamente.',
-    loading: 'Cargando…',
-    add: 'Agregar',
   },
 
   nav: {
@@ -47,6 +43,7 @@ export const es = {
     search: 'Buscar',
     settings: 'Ajustes',
     mainNavigation: 'Navegación principal',
+    skipToContent: 'Saltar al contenido',
     collapseSidebar: 'Contraer barra lateral',
     expandSidebar: 'Expandir barra lateral',
   },
@@ -54,10 +51,12 @@ export const es = {
   dnd: {
     instructions:
       'Para reordenar, presioná espacio o Enter sobre el asa, movete con las flechas y volvé a presionar espacio o Enter para soltar. Escape cancela.',
-    picked: 'Elemento tomado.',
-    moved: 'Elemento movido.',
-    dropped: 'Elemento soltado.',
-    cancelled: 'Movimiento cancelado.',
+    picked: (name: string) => `Tomaste "${name}".`,
+    moved: (name: string, position: number, total: number) =>
+      `"${name}" está en la posición ${position} de ${total}.`,
+    dropped: (name: string, position: number, total: number) =>
+      `Soltaste "${name}" en la posición ${position} de ${total}.`,
+    cancelled: (name: string) => `Se canceló el movimiento de "${name}".`,
   },
 
   config: {
@@ -68,6 +67,7 @@ export const es = {
   },
 
   auth: {
+    title: 'Iniciar sesión',
     emailLabel: 'Email',
     emailPlaceholder: 'vos@email.com',
     sendCode: 'Enviar código',
@@ -122,14 +122,17 @@ export const es = {
     namePlaceholder: 'Ej.: Universidad',
     colorLabel: 'Color (opcional)',
     pendingCount: (count: number) => `${count} pend.`,
+    /** Para lectores de pantalla (sin abreviar). */
+    pendingCountLong: (count: number) => plural(count, 'tarea pendiente', 'tareas pendientes'),
     hasOverdue: 'Tiene tareas vencidas',
     rename: 'Renombrar',
     color: 'Color',
     move: 'Mover',
     delete: 'Eliminar',
-    folderMenu: 'Opciones de la carpeta',
+    folderMenu: (name: string) => `Opciones de la carpeta "${name}"`,
     moveTitle: (name: string) => `Mover "${name}" a…`,
     searchFolder: 'Buscar carpeta…',
+    noSearchResults: 'No hay carpetas con ese nombre.',
     current: 'actual',
     deleteTitle: (name: string) => `¿Eliminar "${name}"?`,
     deleteDescription: (subfolders: number, tasks: number) => {
@@ -144,9 +147,14 @@ export const es = {
     deleted: 'Carpeta eliminada',
     rootEmptyTitle: 'Todavía no tenés carpetas.',
     rootEmptyHint: 'Tocá + para crear la primera.',
-    emptyTitle: 'Esta carpeta no tiene tareas.',
-    emptyHint: 'Tocá + para crear una.',
-    emptyHintDesktop: 'Creá una con el botón "Nueva tarea".',
+    rootEmptyHintDesktop: 'Creá la primera con el botón "Nueva carpeta" o con la tecla N.',
+    /** Carpeta sin subcarpetas ni tareas (design/screens/folders.md). */
+    emptyTitle: 'Todavía no hay nada acá.',
+    /** Carpeta con subcarpetas pero sin tareas. */
+    noTasksTitle: 'Esta carpeta no tiene tareas.',
+    emptyHint: 'Tocá + para crear una tarea.',
+    emptyHintDesktop: 'Creá una con el botón "Nueva tarea" o con la tecla N.',
+    sidebarEmpty: 'Todavía no hay carpetas.',
     notFound: 'Esta carpeta no existe o fue eliminada.',
     goToRoot: 'Ir a Carpetas',
     createFolderFab: 'Crear carpeta',
@@ -182,6 +190,7 @@ export const es = {
     markDone: (title: string) => `Marcar "${title}" como hecha`,
     markUndone: (title: string) => `Marcar "${title}" como pendiente`,
     completedSection: (count: number) => `Completadas (${count})`,
+    allDone: 'No quedan tareas pendientes en esta carpeta.',
     deletesIn: (days: number) =>
       days <= 0 ? 'Se borra hoy' : `Se borra en ${plural(days, 'día', 'días')}`,
     priority: 'Prioridad',
@@ -189,7 +198,6 @@ export const es = {
     unmarkPriority: 'Quitar prioridad',
     isPriority: 'Prioritaria',
     dueDate: 'Fecha límite',
-    addDueDate: 'Agregar fecha',
     color: 'Color',
     folder: 'Carpeta',
     moveTo: 'Mover a…',
@@ -198,11 +206,11 @@ export const es = {
     deleteTask: 'Eliminar tarea',
     reminders: 'Recordatorios',
     pin: 'Anclar tarea',
+    pinned: 'Anclada',
     nativeOnly: 'Disponible en la app de Android',
     nativeComingSoon: 'Disponible en una próxima versión',
     attachments: 'Adjuntos',
-    tags: 'Etiquetas',
-    menu: 'Opciones de la tarea',
+    menu: (title: string) => `Opciones de "${title}"`,
     notFound: 'Esta tarea no existe o fue eliminada.',
     swipeComplete: 'Completar',
     swipeDelete: 'Eliminar',
@@ -215,14 +223,12 @@ export const es = {
     titleTooLong: (max: number) => `El título puede tener hasta ${max} caracteres.`,
     titleRequired: 'Escribí un título.',
     goToFolder: 'Ir a la carpeta',
-    completedBadge: 'Completada',
   },
 
   tags: {
     title: 'Etiquetas',
     addTag: 'Agregar etiqueta',
     editTags: 'Cambiar etiquetas',
-    noneSelected: 'Sin etiquetas',
     searchOrCreate: 'Buscar o crear etiqueta…',
     search: 'Buscar etiqueta…',
     create: (name: string) => `Crear etiqueta «${name}»`,
@@ -232,6 +238,8 @@ export const es = {
     remove: (name: string) => `Quitar la etiqueta ${name}`,
     more: (count: number) => `+${count}`,
     count: (count: number) => plural(count, 'etiqueta', 'etiquetas'),
+    /** Etiquetas de una tarea, para lectores de pantalla. */
+    listLabel: (names: string) => `Etiquetas: ${names}`,
     newTag: 'Nueva etiqueta',
     editTag: 'Editar etiqueta',
     nameLabel: 'Nombre',
@@ -310,6 +318,8 @@ export const es = {
       freeDescription: (size: string) =>
         `Se borran de este dispositivo ${size} de archivos que ya están en la nube. Se vuelven a descargar cuando los abras con conexión. Los que todavía no se subieron se conservan.`,
       freed: 'Espacio liberado',
+      nothingToFree:
+        'Por ahora no hay nada para liberar: en este dispositivo no hay archivos que ya estén en la nube.',
     },
   },
 
@@ -367,6 +377,7 @@ export const es = {
     clear: 'Limpiar búsqueda',
     hintTitle: 'Buscá por título, descripción o etiqueta.',
     hintBody: 'No importan las mayúsculas ni las tildes.',
+    noResultsHint: 'Probá con otra palabra: se busca también en las tareas completadas.',
     noResults: (query: string) => `No encontramos tareas para «${query}».`,
     noResultsTag: 'No hay tareas con esa etiqueta.',
     resultsCount: (count: number) => plural(count, 'resultado', 'resultados'),
@@ -391,7 +402,6 @@ export const es = {
     themeLight: 'Claro',
     themeDark: 'Oscuro',
     sync: 'Sincronización',
-    account: 'Cuenta',
     signOut: 'Cerrar sesión',
     signOutTitle: '¿Cerrar sesión?',
     signOutDescription:
@@ -427,7 +437,13 @@ export const es = {
     search: 'Buscar',
     close: 'Cerrar ventana o panel',
     confirm: 'Crear o confirmar',
+    undo: 'Deshacer (mientras se ve el aviso)',
     or: 'o',
+  },
+
+  toasts: {
+    /** Región de avisos para lectores de pantalla (Sonner agrega "alt+T"). */
+    region: 'Avisos',
   },
 
   backup: {
@@ -451,6 +467,15 @@ export const es = {
     generic: 'Algo salió mal. Probá de nuevo.',
     notFoundTitle: 'Página no encontrada',
     goHome: 'Ir al inicio',
+    reload: 'Recargar',
+    appTitle: 'Algo salió mal',
+    appDescription:
+      'La app encontró un error inesperado. Recargá la página; tus datos quedan guardados en este dispositivo.',
+    newVersion: 'Hay una versión nueva de la app. Recargá la página para seguir.',
+    localDbTitle: 'No se pudo abrir la base de datos de este dispositivo',
+    localDbDescription:
+      'Puede pasar en una ventana privada, si el navegador bloquea el almacenamiento de los sitios o si el dispositivo se quedó sin espacio. Probá recargar; si sigue pasando, abrí la app en una ventana normal y liberá espacio.',
+    signOutFailed: 'No se pudo cerrar la sesión. Probá de nuevo.',
   },
 } as const;
 

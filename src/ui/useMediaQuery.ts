@@ -6,10 +6,23 @@ export const BREAKPOINTS = {
   desktop: '(min-width: 1024px)',
 } as const;
 
+// Una sola MediaQueryList por consulta: lo usan muchas filas a la vez (listas largas)
+// y crear una por render es caro.
+const lists = new Map<string, MediaQueryList>();
+
+function mediaList(query: string): MediaQueryList {
+  let list = lists.get(query);
+  if (!list) {
+    list = window.matchMedia(query);
+    lists.set(query, list);
+  }
+  return list;
+}
+
 export function useMediaQuery(query: string): boolean {
   const subscribe = useCallback(
     (callback: () => void) => {
-      const media = window.matchMedia(query);
+      const media = mediaList(query);
       media.addEventListener('change', callback);
       return () => media.removeEventListener('change', callback);
     },
@@ -17,7 +30,7 @@ export function useMediaQuery(query: string): boolean {
   );
   return useSyncExternalStore(
     subscribe,
-    () => window.matchMedia(query).matches,
+    () => mediaList(query).matches,
     () => false,
   );
 }

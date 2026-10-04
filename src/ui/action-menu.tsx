@@ -18,8 +18,28 @@ export interface ActionItem {
   disabled?: boolean;
 }
 
+/** Ítems fijos, o una función que los arma recién al abrir el menú (listas largas). */
+export type ActionItems = ActionItem[] | (() => ActionItem[]);
+
+// Con una función, los ítems se arman al abrir y se conservan mientras el menú se cierra
+// (animación de salida). Con un arreglo se usan tal cual.
+function useMenuItems(items: ActionItems, open: boolean): ActionItem[] {
+  const [snapshot, setSnapshot] = useState<{ open: boolean; list: ActionItem[] }>({
+    open: false,
+    list: [],
+  });
+  if (Array.isArray(items)) return items;
+  if (snapshot.open !== open) {
+    const next = { open, list: open ? items() : snapshot.list };
+    setSnapshot(next);
+    return next.list;
+  }
+  return snapshot.list;
+}
+
 const itemClass =
-  'flex h-12 w-full items-center gap-3 rounded-sm px-3 text-left text-body-sm outline-none [&_svg]:size-5 [&_svg]:shrink-0';
+  // Foco visible por dentro del ítem (si no, el borde del menú lo recorta).
+  'flex h-12 w-full items-center gap-3 rounded-sm px-3 text-left text-body-sm -outline-offset-2 [&_svg]:size-5 [&_svg]:shrink-0';
 
 export function ActionMenu({
   label,
@@ -30,7 +50,7 @@ export function ActionMenu({
   onOpenChange,
 }: {
   label: string;
-  items: ActionItem[];
+  items: ActionItems;
   triggerClassName?: string;
   size?: 'icon' | 'iconSm';
   /** Apertura controlada desde afuera (por ejemplo, con clic derecho en la fila). */
@@ -41,6 +61,7 @@ export function ActionMenu({
   const [internalOpen, setInternalOpen] = useState(false);
   const open = openProp ?? internalOpen;
   const setOpen = onOpenChange ?? setInternalOpen;
+  const list = useMenuItems(items, open);
 
   const trigger = (
     <IconButton aria-label={label} size={size} className={triggerClassName}>
@@ -50,7 +71,9 @@ export function ActionMenu({
 
   if (isSidebarLayout) {
     return (
-      <DropdownMenu.Root open={open} onOpenChange={setOpen}>
+      // No modal: no oculta el resto de la página con aria-hidden (que dejaba elementos
+      // enfocables ocultos para los lectores de pantalla). Esc, Tab o un clic afuera lo cierran.
+      <DropdownMenu.Root open={open} onOpenChange={setOpen} modal={false}>
         <DropdownMenu.Trigger asChild>{trigger}</DropdownMenu.Trigger>
         <DropdownMenu.Portal>
           <DropdownMenu.Content
@@ -58,14 +81,14 @@ export function ActionMenu({
             sideOffset={4}
             className="z-50 min-w-56 rounded-sm border border-line bg-panel p-1 elevation-md data-[state=open]:animate-in data-[state=open]:fade-in-0"
           >
-            {items.map((item) => (
+            {list.map((item) => (
               <DropdownMenu.Item
                 key={item.key}
                 disabled={item.disabled}
                 onSelect={item.onSelect}
                 className={cn(
                   itemClass,
-                  'cursor-pointer data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-[highlighted]:bg-app',
+                  'cursor-pointer data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-[highlighted]:bg-brand/10',
                   item.danger ? 'text-danger' : 'text-fg [&_svg]:text-muted',
                 )}
               >
@@ -91,7 +114,7 @@ export function ActionMenu({
       </IconButton>
       <Sheet open={open} onOpenChange={setOpen} title={label} hideTitle>
         <ul className="-mx-2 flex flex-col">
-          {items.map((item) => (
+          {list.map((item) => (
             <li key={item.key}>
               <button
                 type="button"

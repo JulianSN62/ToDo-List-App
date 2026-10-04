@@ -1,16 +1,18 @@
 import { FolderOpen, X } from 'lucide-react';
-import { useCallback, useState, type ReactNode } from 'react';
+import { Suspense, useCallback, useState, type ReactNode } from 'react';
 import { useToday } from '@/app/hooks/useToday';
+import { lazyComponent } from '@/app/lazyComponent';
 import { useUiStore } from '@/app/uiStore';
 import { useTask, useTaskFiles, useTaskLinks, useTaskTagIds } from '@/data';
 import { es } from '@/i18n/es';
 import { IconButton } from '@/ui/button';
 import { ConfirmDialog } from '@/ui/confirm-dialog';
 import { Sheet, SheetBody } from '@/ui/sheet';
-import { TaskForm } from './TaskForm';
 
 // Ventanas de tarea: "Nueva tarea" y "Editar tarea". Bloquean la app hasta cerrarlas
-// (bottom sheet alto en mobile, modal centrado en desktop).
+// (bottom sheet alto en mobile, modal centrado en desktop). El formulario se carga a demanda.
+
+const TaskForm = lazyComponent(() => import('./TaskForm').then((module) => module.TaskForm));
 
 interface FrameControls {
   /** Cierra sin preguntar. */
@@ -83,7 +85,9 @@ function TaskSheetFrame({
           </div>
         }
       >
-        {children({ close: () => close(), requestClose: () => requestClose(), onDirtyChange })}
+        <Suspense fallback={null}>
+          {children({ close: () => close(), requestClose: () => requestClose(), onDirtyChange })}
+        </Suspense>
       </Sheet>
       <ConfirmDialog
         open={confirmDiscard}
@@ -142,18 +146,27 @@ function useOpenSession(taskId: string | null) {
   return session;
 }
 
-// Se abre con la ruta /task/:id (desde la lista, el menú "Editar" o un link directo)
-// o desde las vistas globales (Hoy, Buscar, filtros), que muestran "Ir a la carpeta".
-export function EditTaskSheet({
-  taskId,
-  onClose,
-  onGoToFolder,
-}: {
+interface EditTaskSheetProps {
   taskId: string | null;
   onClose: () => void;
   onGoToFolder?: (folderId: string) => void;
-}) {
-  const session = useOpenSession(taskId);
+}
+
+// Se abre con la ruta /task/:id (desde la lista, el menú "Editar" o un link directo)
+// o desde las vistas globales (Hoy, Buscar, filtros), que muestran "Ir a la carpeta".
+// Hasta la primera apertura no se monta (sin consultas a la base).
+export function EditTaskSheet(props: EditTaskSheetProps) {
+  const session = useOpenSession(props.taskId);
+  if (session.taskId === null) return null;
+  return <EditTaskSheetContent {...props} session={session} />;
+}
+
+function EditTaskSheetContent({
+  taskId,
+  onClose,
+  onGoToFolder,
+  session,
+}: EditTaskSheetProps & { session: ReturnType<typeof useOpenSession> }) {
   const result = useTask(session.taskId);
   const tagIds = useTaskTagIds(session.taskId);
   const links = useTaskLinks(session.taskId);

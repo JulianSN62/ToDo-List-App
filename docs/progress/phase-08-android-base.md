@@ -11,6 +11,7 @@
 - Seguridad: `allowBackup=false`, reglas de extracción que excluyen todos los datos de copias y transferencias, sin tráfico http.
 - Íconos adaptativos y splash generados (`npm run icons`).
 - Script `npm run android:build` (busca un JDK 21 y compila). APK verificado: `android/app/build/outputs/apk/debug/app-debug.apk`.
+- **Bloque 6 (X114):** APK de release firmado con `npm run android:release` (keystore fuera del repositorio, ver `docs/SETUP.md` paso 9); `versionName` y `versionCode` salen de `package.json`; `file_paths.xml` comparte solo `exports/` y `attachments/` de la caché, y esas copias se borran al cerrar sesión. Compilado y verificado con `apksigner`, sin instalar en el celular.
 
 ## Cómo probar
 `npm run android:build` (con el `.env` completo) → instalar el APK (ver `docs/SETUP.md` paso 9) → login, crear datos, modo avión, volver a conectar.
