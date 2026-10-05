@@ -104,6 +104,19 @@ export function formatLongDate(value: string, today: string): string {
   return format(date, pattern, { locale: esLocale });
 }
 
+// Fecha y hora de un recordatorio en hora local: "Hoy 18:30", "Mañana 09:00",
+// "sáb 10 oct 09:00" (con el año si no es el actual).
+export function formatInstantShort(value: string, now: Date = new Date()): string {
+  const date = parseInstant(value);
+  if (!date) return value;
+  const time = format(date, 'HH:mm');
+  const diff = diffInLocalDays(todayLocalDate(date), todayLocalDate(now));
+  if (diff === 0) return es.dates.atTime(es.dates.today, time);
+  if (diff === 1) return es.dates.atTime(es.dates.tomorrow, time);
+  const pattern = date.getFullYear() === now.getFullYear() ? 'EEE d MMM' : 'd MMM yyyy';
+  return es.dates.atTime(format(date, pattern, { locale: esLocale }), time);
+}
+
 export function isOverdue(dueDate: string | null, today: string): boolean {
   if (!dueDate) return false;
   return diffInLocalDays(dueDate, today) < 0;

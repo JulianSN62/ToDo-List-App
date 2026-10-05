@@ -162,6 +162,35 @@ Para ver la consola de la app en el celular: Chrome en la PC → `chrome://inspe
 
 Importante: el `.env` se "congela" dentro del APK al compilar. Si cambiás algún valor, volvé a correr `npm run android:build`.
 
+### Notificaciones en el celular
+
+La primera vez que actives las alertas, agregues un recordatorio o anclés una tarea, la app pide permiso (en Android 13 o más aparece el pedido del sistema). En **Ajustes → Notificaciones** (solo en Android) ves si falta algo, con un botón para cada ajuste del sistema:
+
+- **Permiso de notificaciones.**
+- **Alarmas exactas:** sin ellas los avisos pueden llegar varios minutos tarde. En Android 12 vienen permitidas; en Android 14 hay que darlas a mano.
+- **Optimización de batería:** algunos fabricantes (Samsung, Xiaomi, Motorola…) cortan las apps en segundo plano. Conviene poner ToDo List en "No optimizar" o "Sin restricciones".
+- **"Enviar notificación de prueba"** para comprobar que llegan.
+
+Si forzás la detención de la app desde los ajustes de Android, se borran sus alarmas: se reprograman solas la próxima vez que la abras.
+
+### Probar en un emulador (sin el celular)
+
+Se usa el emulador que trae el SDK de Android (WHPX tiene que estar activo en Windows; `emulator -accel-check` lo confirma).
+
+1. **Herramientas de línea de comandos:** bajá `commandlinetools-win-*_latest.zip` desde la página de Android Studio y descomprimilo en `%LOCALAPPDATA%\Android\Sdk\cmdline-tools\latest`.
+2. **Imagen del sistema:** `sdkmanager` ahora redirige a la herramienta `android`. Desde PowerShell, con un JDK 21 en `JAVA_HOME`:
+
+   ```powershell
+   & "$env:LOCALAPPDATA\Android\Sdk\cmdline-tools\latest\bin\android.exe" "--sdk=$env:LOCALAPPDATA\Android\Sdk" sdk install "system-images;android-34;google_apis;x86_64"
+   ```
+
+   La de **Android 14** (`android-34`) trae un WebView 113, que alcanza. La de Android 12 (`android-31`) trae el WebView 91 y no se puede actualizar sin Play Store: la app muestra "Hay que actualizar el navegador" (X125).
+3. **Dispositivo virtual:** `avdmanager.bat create avd -n todo_android14 -k "system-images;android-34;google_apis;x86_64" -d pixel_5`. En `%USERPROFILE%\.android\avd\todo_android14.avd\config.ini` conviene poner `hw.keyboard=yes` (teclado de la PC) y borrar la línea `disk.dataPartition.path=<temp>` (si no, los datos se pierden al apagarlo).
+4. **Arrancar e instalar:** `emulator -avd todo_android14`, después `adb install -r android\app\build\outputs\apk\debug\app-debug.apk`. Iniciás sesión con tu email y el código, como en el celular.
+5. **Reiniciar para probar:** `adb shell svc power reboot`. `adb reboot` corta en seco y Android no guarda el permiso de alarmas exactas.
+
+Los avisos programados se ven con `adb shell dumpsys alarm` y los visibles con `adb shell dumpsys notification --noredact`.
+
 ### APK firmado (para instalar y actualizar)
 
 El APK de prueba alcanza para probar, pero se firma con una clave de depuración distinta en cada PC. Para instalar la app de verdad y poder actualizarla siempre, se usa el APK de **release**, firmado con **tu** keystore. El keystore y sus contraseñas **nunca** se suben al repositorio (`*.jks`, `*.keystore` y `keystore.properties` ya están en el `.gitignore`).

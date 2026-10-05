@@ -45,6 +45,7 @@ const noTagOrLinkChanges = {
   tags: { add: [], remove: [] },
   links: { add: [], update: [], remove: [] },
   files: { add: [], remove: [] },
+  reminders: { add: [], update: [], remove: [] },
 };
 
 describe('formulario de tarea', () => {
@@ -59,6 +60,8 @@ describe('formulario de tarea', () => {
       tagIds: [],
       links: [],
       files: [],
+      isPinned: false,
+      reminders: [],
     });
   });
 
@@ -102,6 +105,54 @@ describe('formulario de tarea', () => {
     expect(
       diffTaskForm({ ...saved, description: 'Algo' }, { ...saved, description: '' }).patch,
     ).toEqual({ description: null });
+  });
+
+  it('anclar y los recordatorios cuentan como cambios', () => {
+    const pinned = diffTaskForm(saved, { ...saved, isPinned: true });
+    expect(pinned.patch).toEqual({ isPinned: true });
+    expect(hasTaskFormChanges(pinned)).toBe(true);
+    expect(isTaskFormDirty(saved, { ...saved, isPinned: true })).toBe(true);
+
+    const withReminder = {
+      ...saved,
+      reminders: [
+        {
+          key: 'n',
+          id: null,
+          message: '',
+          times: [{ id: null, fireAt: '2099-01-01T12:00:00.000Z' }],
+        },
+      ],
+    };
+    expect(isTaskFormDirty(saved, withReminder)).toBe(true);
+    const changes = diffTaskForm(saved, withReminder);
+    expect(changes.reminders.add).toEqual([
+      { message: null, fireAts: ['2099-01-01T12:00:00.000Z'] },
+    ]);
+    expect(hasTaskFormChanges(changes)).toBe(true);
+  });
+
+  it('carga los recordatorios guardados y si la tarea está anclada', () => {
+    const form = taskToForm(
+      {
+        folderId: 'f1',
+        title: 'Revisar contrato',
+        description: null,
+        dueDate: null,
+        isPriority: false,
+        color: null,
+        isPinned: true,
+      },
+      {
+        tagIds: [],
+        links: [],
+        reminders: [{ id: 'r1', message: null, times: [{ id: 't1', fireAt: 'x' }] }],
+      },
+    );
+    expect(form.isPinned).toBe(true);
+    expect(form.reminders).toEqual([
+      { key: 'r1', id: 'r1', message: '', times: [{ id: 't1', fireAt: 'x' }] },
+    ]);
   });
 
   it('informa la carpeta nueva por separado', () => {

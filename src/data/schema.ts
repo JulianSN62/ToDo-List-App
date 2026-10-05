@@ -133,6 +133,20 @@ const attachment_local_state = new Table(
   { localOnly: true },
 );
 
+// Solo local (spec 5.5): notificaciones que la app programó en este dispositivo. El id es la
+// clave de la notificación (tipo:referencia:instante) y notif_id, el número que usa Android.
+const notif_registry = new Table(
+  {
+    notif_id: column.integer,
+    kind: column.text,
+    ref_id: column.text,
+    task_id: column.text,
+    fire_at: column.text,
+    signature: column.text,
+  },
+  { localOnly: true },
+);
+
 export const AppSchema = new Schema({
   folders,
   tasks,
@@ -143,6 +157,7 @@ export const AppSchema = new Schema({
   reminder_times,
   user_settings,
   attachment_local_state,
+  notif_registry,
 });
 
 export type Database = (typeof AppSchema)['types'];
@@ -153,6 +168,7 @@ export type TaskTagRow = Database['task_tags'];
 export type AttachmentRow = Database['attachments'];
 export type UserSettingsRow = Database['user_settings'];
 export type AttachmentLocalStateRow = Database['attachment_local_state'];
+export type NotifRegistryRow = Database['notif_registry'];
 
 // Tablas que se sincronizan y columnas booleanas de cada una (para convertir 0/1 al subir).
 export const SYNCED_TABLES = [

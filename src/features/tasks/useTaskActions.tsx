@@ -1,21 +1,26 @@
 import {
   ArrowDown,
   ArrowUp,
+  BellPlus,
   FolderInput,
   FolderOpen,
+  MapPin,
+  MapPinOff,
   Pencil,
   Star,
   StarOff,
   Trash2,
 } from 'lucide-react';
 import { useCallback, useState, type ReactNode } from 'react';
-import { taskRepo, type Task } from '@/data';
+import { reminderRepo, taskRepo, type Task } from '@/data';
 import { es } from '@/i18n/es';
 import { errorMeta, logger } from '@/lib/logger';
 import type { MoveDirection } from '@/lib/ordering';
 import type { ActionItem } from '@/ui/action-menu';
 import { showErrorToast, showToast, showUndoToast } from '@/ui/toast';
 import { FolderPickerSheet } from '../folders/FolderPickerSheet';
+import { ReminderSheet } from '../reminders/ReminderSheet';
+import { useNotificationPermission } from '../reminders/useNotificationPermission';
 import { useTaskNavigation } from './useTaskNavigation';
 
 // Acciones sobre una tarea, compartidas por la fila, el menú y la ventana de edición.
@@ -63,6 +68,10 @@ export function useTaskActions(): {
 } {
   const { openTask } = useTaskNavigation();
   const [moving, setMoving] = useState<Task | null>(null);
+  // Tarea a la que se le agrega un recordatorio (se guarda al tocar "Listo").
+  const [reminderFor, setReminderFor] = useState<Task | null>(null);
+  const [reminderKey, setReminderKey] = useState(0);
+  const askNotificationPermission = useNotificationPermission();
 
   const actionsFor = useCallback(
     (task: Task, options: TaskActionOptions = {}): ActionItem[] => {
@@ -102,6 +111,28 @@ export function useTaskActions(): {
                 .catch(report('No se pudo cambiar la prioridad')),
           },
           move,
+          {
+            key: 'pin',
+            label: task.isPinned ? es.reminders.menuUnpin : es.reminders.menuPin,
+            icon: task.isPinned ? <MapPinOff /> : <MapPin />,
+            onSelect: () =>
+              void taskRepo
+                .setPinned(task.id, !task.isPinned)
+                .then(() => {
+                  showToast(task.isPinned ? es.reminders.unpinnedToast : es.reminders.pinnedToast);
+                  if (!task.isPinned) askNotificationPermission();
+                })
+                .catch(report('No se pudo anclar la tarea')),
+          },
+          {
+            key: 'reminder',
+            label: es.reminders.add,
+            icon: <BellPlus />,
+            onSelect: () => {
+              setReminderFor(task);
+              setReminderKey((current) => current + 1);
+            },
+          },
         );
         const { reorder } = options;
         if (reorder) {
@@ -132,27 +163,48 @@ export function useTaskActions(): {
       });
       return items;
     },
-    [openTask],
+    [openTask, askNotificationPermission],
   );
 
   const dialogs = (
-    <FolderPickerSheet
-      open={moving !== null}
-      onOpenChange={(open) => {
-        if (!open) setMoving(null);
-      }}
-      title={moving ? es.tasks.moveTitle(moving.title) : ''}
-      allowRoot={false}
-      disabledIds={new Set<string>()}
-      currentId={moving?.folderId ?? null}
-      onConfirm={(targetId) => {
-        if (!moving || !targetId) return;
-        void taskRepo
-          .move(moving.id, targetId)
-          .then(() => showToast(es.tasks.moved))
-          .catch(report('No se pudo mover la tarea'));
-      }}
-    />
+    <>
+      <FolderPickerSheet
+        open={moving !== null}
+        onOpenChange={(open) => {
+          if (!open) setMoving(null);
+        }}
+        title={moving ? es.tasks.moveTitle(moving.title) : ''}
+        allowRoot={false}
+        disabledIds={new Set<string>()}
+        currentId={moving?.folderId ?? null}
+        onConfirm={(targetId) => {
+          if (!moving || !targetId) return;
+          void taskRepo
+            .move(moving.id, targetId)
+            .then(() => showToast(es.tasks.moved))
+            .catch(report('No se pudo mover la tarea'));
+        }}
+      />
+      <ReminderSheet
+        open={reminderFor !== null}
+        formKey={reminderKey}
+        request={reminderFor ? { mode: 'create' } : null}
+        onClose={() => setReminderFor(null)}
+        onSubmit={(value) => {
+          if (!reminderFor) return;
+          void reminderRepo
+            .add(reminderFor.id, {
+              message: value.message,
+              fireAts: value.times.map((time) => time.fireAt),
+            })
+            .then(() => {
+              showToast(es.reminders.added);
+              askNotificationPermission();
+            })
+            .catch(report('No se pudo guardar el recordatorio'));
+        }}
+      />
+    </>
   );
 
   return { actionsFor, dialogs };

@@ -6,6 +6,7 @@ import { ShortcutsHelp } from '@/app/ShortcutsHelp';
 import { useUiStore } from '@/app/uiStore';
 import {
   useAttachmentCounts,
+  useReminderCounts,
   useDueTasks,
   useFolderTree,
   useSettings,
@@ -34,6 +35,7 @@ export function TodayScreen() {
   const { tasks, isLoading } = useDueTasks();
   const tagIndex = useTaskTagIndex();
   const attachmentCounts = useAttachmentCounts();
+  const reminderCounts = useReminderCounts();
   const priorityOnly = useUiStore((state) => state.todayPriorityOnly);
   const setPriorityOnly = useUiStore((state) => state.setTodayPriorityOnly);
   const clearFolderFilters = useUiStore((state) => state.clearFolderFilters);
@@ -141,6 +143,7 @@ export function TodayScreen() {
                     retentionDays={settings.completedRetentionDays}
                     tagsByTask={tagIndex.tagsByTask}
                     attachmentCounts={attachmentCounts}
+                    reminderCounts={reminderCounts}
                     subtitleFor={(task) => (
                       <span className="truncate">{formatPath(task.folderId, tree.byId)}</span>
                     )}

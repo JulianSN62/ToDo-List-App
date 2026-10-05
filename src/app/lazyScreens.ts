@@ -16,6 +16,9 @@ export const SettingsScreen = lazyComponent(() =>
 export const DueAlertsScreen = lazyComponent(() =>
   import('../features/settings/DueAlertsScreen').then((module) => module.DueAlertsScreen),
 );
+export const NotificationsScreen = lazyComponent(() =>
+  import('../features/settings/NotificationsScreen').then((module) => module.NotificationsScreen),
+);
 export const TagsScreen = lazyComponent(() =>
   import('../features/tags/TagsScreen').then((module) => module.TagsScreen),
 );

@@ -12,6 +12,7 @@ export const LIMITS = {
   linkLabel: 200,
   fileName: 255,
   mimeType: 255,
+  reminderMessage: 200,
 } as const;
 
 export const folderNameSchema = z.string().trim().min(1).max(LIMITS.folderName);

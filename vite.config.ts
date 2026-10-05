@@ -4,6 +4,8 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { compatTexts } from './src/i18n/compat.ts';
+import { browserSupport } from './tooling/browserSupport.ts';
 import { buildContentSecurityPolicy } from './tooling/csp.ts';
 import { assertNoSecretsInPublicEnv } from './tooling/envGuard.ts';
 
@@ -62,6 +64,7 @@ export default defineConfig(({ mode }) => {
       react(),
       tailwindcss(),
       contentSecurityPolicy(env),
+      browserSupport(compatTexts),
       VitePWA({
         // El registro del service worker se hace a mano (src/app/pwa) y nunca en Android.
         injectRegister: false,

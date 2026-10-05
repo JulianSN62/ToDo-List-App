@@ -51,6 +51,13 @@ export function usePendingTasks(): { tasks: Task[]; isLoading: boolean } {
   return useTaskList('SELECT * FROM tasks WHERE deleted_at IS NULL AND is_done = 0');
 }
 
+// Tareas ancladas pendientes (Ajustes → Notificaciones).
+export function usePinnedTasks(): { tasks: Task[]; isLoading: boolean } {
+  return useTaskList(
+    'SELECT * FROM tasks WHERE deleted_at IS NULL AND is_done = 0 AND is_pinned = 1 ORDER BY title',
+  );
+}
+
 // Todas las tareas no eliminadas (búsqueda global).
 export function useAllTasks(): { tasks: Task[]; isLoading: boolean } {
   return useTaskList('SELECT * FROM tasks WHERE deleted_at IS NULL');

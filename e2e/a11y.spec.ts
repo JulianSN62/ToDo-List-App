@@ -65,6 +65,12 @@ for (const colorScheme of ['light', 'dark'] as const) {
 
       const form = await openNewTask(page);
       await expectNoSeriousViolations(page, 'la ventana de nueva tarea');
+      await form.getByRole('button', { name: es.reminders.add }).click();
+      const reminder = dialog(page, es.reminders.newReminder);
+      await expect(reminder).toBeVisible();
+      await expectNoSeriousViolations(page, 'la ventana de un recordatorio');
+      await reminder.getByRole('button', { name: es.common.cancel }).click();
+      await expect(reminder).toBeHidden();
       await form.getByRole('button', { name: es.tasks.closeForm }).click();
       await expect(form).toBeHidden();
 

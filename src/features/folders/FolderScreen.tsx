@@ -8,6 +8,7 @@ import { useUiStore } from '@/app/uiStore';
 import {
   folderRepo,
   useAttachmentCounts,
+  useReminderCounts,
   useFolderCounts,
   useFolderTasks,
   useFolderTree,
@@ -72,6 +73,7 @@ function FilteredTasks({
   retentionDays,
   tagsByTask,
   attachmentCounts,
+  reminderCounts,
   onOpen,
   onGoToFolder,
   onClear,
@@ -83,6 +85,7 @@ function FilteredTasks({
   retentionDays: number;
   tagsByTask: ReadonlyMap<string, readonly Tag[]>;
   attachmentCounts: ReadonlyMap<string, number>;
+  reminderCounts: ReadonlyMap<string, number>;
   onOpen: (task: Task) => void;
   onGoToFolder: (task: Task) => void;
   onClear: () => void;
@@ -120,6 +123,7 @@ function FilteredTasks({
           retentionDays={retentionDays}
           tagsByTask={tagsByTask}
           attachmentCounts={attachmentCounts}
+          reminderCounts={reminderCounts}
           subtitleFor={subtitleFor}
           onOpen={onOpen}
           onGoToFolder={onGoToFolder}
@@ -153,6 +157,7 @@ export function FolderScreen({
   const { tasks, isLoading: tasksLoading } = useFolderTasks(folderId);
   const tagIndex = useTaskTagIndex();
   const attachmentCounts = useAttachmentCounts();
+  const reminderCounts = useReminderCounts();
   const folderActions = useFolderActions();
   const taskActions = useTaskActions();
   const globalSheet = useGlobalTaskSheet();
@@ -295,6 +300,7 @@ export function FolderScreen({
       retentionDays={settings.completedRetentionDays}
       tagsByTask={tagIndex.tagsByTask}
       attachmentCounts={attachmentCounts}
+      reminderCounts={reminderCounts}
       onOpen={globalSheet.open}
       onGoToFolder={(task) => {
         clearFolderFilters();
@@ -386,6 +392,7 @@ export function FolderScreen({
                     selectedTaskId={selectedTaskId}
                     tagsByTask={tagIndex.tagsByTask}
                     attachmentCounts={attachmentCounts}
+                    reminderCounts={reminderCounts}
                     actionsFor={taskActions.actionsFor}
                   />
                 )}

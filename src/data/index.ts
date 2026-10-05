@@ -5,6 +5,7 @@ export type {
   CurrentUser,
   FileStatus,
   Folder,
+  Reminder,
   Tag,
   Task,
   TaskFile,
@@ -27,6 +28,7 @@ export { tagRepo, TagNameTakenError, type TagInput } from './repositories/tagRep
 export { settingsRepo } from './repositories/settingsRepo';
 export { backupRepo, type BackupExport } from './repositories/backupRepo';
 export { runStartupCleanup } from './repositories/maintenance';
+export { reminderRepo } from './repositories/reminderRepo';
 export {
   fileRepo,
   FileFetchError,
@@ -40,6 +42,7 @@ export {
   useDueTasks,
   useFolderTasks,
   usePendingTasks,
+  usePinnedTasks,
   useTask,
 } from './queries/tasks';
 export {
@@ -58,10 +61,16 @@ export {
   type FileStorageUsage,
 } from './queries/attachments';
 export { useSettings, useStoredSettings } from './queries/settings';
+export { useReminderCounts, useTaskReminders } from './queries/reminders';
 
 export { useSyncState, useOnline, useHasSynced, type SyncKind, type SyncState } from './syncState';
 export { startSync, syncNow, stopSyncAndClear, getPendingUploadCount } from './sync';
 export { startFileSync, stopFileSync, wakeFileSync } from './fileSync';
+export {
+  startNotificationSync,
+  stopNotificationSync,
+  wakeNotificationSync,
+} from './notificationSync';
 
 export {
   AuthFlowError,

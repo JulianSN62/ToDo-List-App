@@ -1,7 +1,9 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router';
+import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Task, TaskFile, TaskLink } from '@/data';
+import type { Reminder, Task, TaskFile, TaskLink } from '@/data';
 import type { PickedFile } from '@/platform';
 import { TaskForm } from './TaskForm';
 
@@ -35,6 +37,7 @@ vi.mock('@/data', () => ({
     retryUpload: (id: string) => retryUpload(id),
   },
   wakeFileSync: vi.fn(),
+  wakeNotificationSync: vi.fn(),
   FileFetchError: class FileFetchError extends Error {},
 }));
 
@@ -50,11 +53,36 @@ vi.mock('@/platform', () => ({
   files: { pickFiles: () => pickFiles(), openPdf: vi.fn(), saveFile: vi.fn() },
   // Sin compresión: los archivos se adjuntan tal cual.
   images: { compress: vi.fn(async () => null) },
+  // En web no hay notificaciones: los recordatorios se editan igual.
+  notifications: { isSupported: () => false },
 }));
 
 function picked(name: string, mimeType: string, size: number): PickedFile {
   return { name, mimeType, size, data: new Blob([new Uint8Array(Math.min(size, 16))]) };
 }
+
+// Los paneles reales son responsive (bottom sheet / modal); acá alcanza con su contenido.
+vi.mock('@/ui/sheet', () => ({
+  Sheet: ({
+    open,
+    title,
+    children,
+    footer,
+  }: {
+    open: boolean;
+    title: string;
+    children: ReactNode;
+    footer?: ReactNode;
+  }) =>
+    open ? (
+      <div role="dialog" aria-label={title}>
+        {children}
+        {footer}
+      </div>
+    ) : null,
+  SheetBody: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  SheetFooter: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+}));
 
 // El visor de fotos usa paneles responsive; no hace falta en estas pruebas.
 vi.mock('../attachments/ImageViewer', () => ({ ImageViewer: () => null }));
@@ -128,11 +156,20 @@ function renderCreate() {
       onClose={onClose}
       onCancel={vi.fn()}
     />,
+    { wrapper: MemoryRouter },
   );
   return { onClose, title: screen.getByRole('textbox', { name: 'Título' }) };
 }
 
-function renderEdit(extras: { tagIds?: string[]; links?: TaskLink[]; files?: TaskFile[] } = {}) {
+function renderEdit(
+  extras: {
+    tagIds?: string[];
+    links?: TaskLink[];
+    files?: TaskFile[];
+    reminders?: Reminder[];
+    task?: Task;
+  } = {},
+) {
   const onClose = vi.fn();
   const onDirtyChange = vi.fn();
   savedFiles = extras.files ?? [];
@@ -140,16 +177,18 @@ function renderEdit(extras: { tagIds?: string[]; links?: TaskLink[]; files?: Tas
     <TaskForm
       mode={{
         kind: 'edit',
-        task,
+        task: extras.task ?? task,
         tagIds: extras.tagIds ?? [],
         links: extras.links ?? [],
         files: savedFiles,
+        reminders: extras.reminders ?? [],
       }}
       today={TODAY}
       onClose={onClose}
       onCancel={vi.fn()}
       onDirtyChange={onDirtyChange}
     />,
+    { wrapper: MemoryRouter },
   );
   return { onClose, onDirtyChange };
 }
@@ -182,6 +221,8 @@ describe('ventana de nueva tarea', () => {
       tagIds: [],
       links: [],
       files: [],
+      isPinned: false,
+      reminders: [],
     });
   });
 
@@ -322,6 +363,7 @@ describe('ventana de edición', () => {
       tags: { add: [], remove: [] },
       links: { add: [], update: [], remove: [] },
       files: { add: [], remove: [] },
+      reminders: { add: [], update: [], remove: [] },
     });
   });
 
@@ -374,6 +416,7 @@ describe('ventana de edición', () => {
       tags: { add: [], remove: ['tag-u'] },
       links: { add: [], update: [], remove: ['l1'] },
       files: { add: [], remove: [] },
+      reminders: { add: [], update: [], remove: [] },
     });
   });
 
@@ -398,6 +441,120 @@ describe('ventana de edición', () => {
         },
       }),
     );
+  });
+});
+
+// Instante local en el futuro lejano (las fechas pasadas no se aceptan).
+const future = (day: number, hours: number, minutes = 0) =>
+  new Date(2099, 0, day, hours, minutes).toISOString();
+
+function setRow(index: number, date: string, time: string) {
+  fireEvent.change(screen.getByLabelText(`Fecha ${index}`), { target: { value: date } });
+  fireEvent.change(screen.getByLabelText(`Hora ${index}`), { target: { value: time } });
+}
+
+describe('recordatorios y anclado en la ventana', () => {
+  beforeEach(() => {
+    create.mockReset();
+    create.mockResolvedValue('id');
+    applyEdits.mockReset();
+    applyEdits.mockResolvedValue();
+  });
+
+  it('crea la tarea anclada y con un recordatorio de dos fechas', async () => {
+    const user = userEvent.setup();
+    const { onClose, title } = renderCreate();
+
+    await user.type(title, 'Pagar luz');
+    await user.click(screen.getByRole('button', { name: 'Agregar recordatorio' }));
+    const sheet = await screen.findByRole('dialog', { name: 'Nuevo recordatorio' });
+    await user.type(within(sheet).getByLabelText('Mensaje (opcional)'), 'Antes del 10');
+    setRow(1, '2099-01-10', '09:00');
+    await user.click(within(sheet).getByRole('button', { name: 'Agregar otra fecha' }));
+    setRow(2, '2099-01-11', '18:30');
+    await user.click(within(sheet).getByRole('button', { name: 'Listo' }));
+
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Nuevo recordatorio' })).not.toBeInTheDocument(),
+    );
+    expect(screen.getByText('Antes del 10')).toBeInTheDocument();
+    expect(
+      screen.getByText('Los avisos llegan en la app de Android: se programan cuando la abrís.'),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('switch', { name: 'Anclar tarea' }));
+    await user.click(screen.getByRole('button', { name: 'Crear' }));
+
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Pagar luz',
+        isPinned: true,
+        reminders: [{ message: 'Antes del 10', fireAts: [future(10, 9), future(11, 18, 30)] }],
+      }),
+    );
+  });
+
+  it('no acepta fechas pasadas', async () => {
+    const user = userEvent.setup();
+    renderCreate();
+
+    await user.click(screen.getByRole('button', { name: 'Agregar recordatorio' }));
+    const sheet = await screen.findByRole('dialog', { name: 'Nuevo recordatorio' });
+    setRow(1, '2001-05-01', '09:00');
+    await user.click(within(sheet).getByRole('button', { name: 'Listo' }));
+
+    expect(await within(sheet).findByText('Esa fecha y hora ya pasaron.')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Nuevo recordatorio' })).toBeInTheDocument();
+  });
+
+  it('editar y quitar recordatorios se guarda con "Guardar"', async () => {
+    const user = userEvent.setup();
+    const reminders: Reminder[] = [
+      {
+        id: 'r1',
+        taskId: 't1',
+        message: null,
+        times: [{ id: 'rt1', fireAt: future(10, 9) }],
+      },
+      {
+        id: 'r2',
+        taskId: 't1',
+        message: 'Llamar',
+        times: [{ id: 'rt2', fireAt: future(12, 8) }],
+      },
+    ];
+    const { onClose } = renderEdit({ reminders });
+
+    await user.click(
+      screen.getByRole('button', { name: 'Editar el recordatorio "Revisar contrato"' }),
+    );
+    const sheet = await screen.findByRole('dialog', { name: 'Editar recordatorio' });
+    await user.click(within(sheet).getByRole('button', { name: 'Agregar otra fecha' }));
+    setRow(2, '2099-01-15', '10:00');
+    await user.click(within(sheet).getByRole('button', { name: 'Listo' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Editar recordatorio' })).not.toBeInTheDocument(),
+    );
+    await user.click(screen.getByRole('button', { name: 'Quitar el recordatorio "Llamar"' }));
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+    expect(applyEdits).toHaveBeenCalledWith(
+      't1',
+      expect.objectContaining({
+        reminders: {
+          add: [],
+          update: [{ id: 'r1', addFireAts: [future(15, 10)], removeTimeIds: [] }],
+          remove: ['r2'],
+        },
+      }),
+    );
+  });
+
+  it('una tarea completada no se puede anclar', () => {
+    renderEdit({ task: { ...task, isDone: true, isPinned: true } });
+    expect(screen.getByRole('switch', { name: 'Anclar tarea' })).toBeDisabled();
+    expect(screen.getByRole('switch', { name: 'Anclar tarea' })).not.toBeChecked();
   });
 });
 

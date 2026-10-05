@@ -1,4 +1,5 @@
 import {
+  Bell,
   Calendar,
   Check,
   ChevronDown,
@@ -12,7 +13,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { memo, type ReactNode } from 'react';
-import { useTaskFiles, useTaskLinks, type Tag, type Task } from '@/data';
+import { useTaskFiles, useTaskLinks, useTaskReminders, type Tag, type Task } from '@/data';
 import { es } from '@/i18n/es';
 import { cn } from '@/lib/cn';
 import { colorVar } from '@/lib/colors';
@@ -27,6 +28,7 @@ import { TagChip } from '@/ui/tag-chip';
 import { toFileListItem } from '../attachments/fileItems';
 import { FileList } from '../attachments/FileList';
 import { LinkList } from '../attachments/LinkList';
+import { reminderTimesText } from '../reminders/reminderText';
 import { useSwipeActions } from './useSwipeActions';
 
 // Fila de tarea: franja de color, asa, casilla, título, indicadores, flecha y menú.
@@ -85,18 +87,20 @@ function TagIndicator({ tags }: { tags: readonly Tag[] }) {
   );
 }
 
-// Indicadores de una tarea pendiente (anclada, etiquetas, adjuntos, fecha límite).
+// Indicadores de una tarea pendiente (anclada, etiquetas, adjuntos, recordatorios, fecha límite).
 // Se usan dos veces: debajo del título en mobile (envuelven si no entran) y a la
 // derecha del título en desktop (hay lugar de sobra en una sola línea).
 function PendingIndicators({
   task,
   tags,
   attachmentCount,
+  reminderCount,
   today,
 }: {
   task: Task;
   tags: readonly Tag[];
   attachmentCount: number;
+  reminderCount: number;
   today: string;
 }) {
   if (task.isDone) return null;
@@ -113,12 +117,20 @@ function PendingIndicators({
           <span className="sr-only">{es.links.count(attachmentCount)}</span>
         </span>
       ) : null}
+      {reminderCount > 0 ? (
+        <span className="inline-flex shrink-0 items-center gap-0.5 text-caption text-muted">
+          <Bell aria-hidden className="size-3.5" />
+          <span aria-hidden>{reminderCount}</span>
+          <span className="sr-only">{es.reminders.indicator(reminderCount)}</span>
+        </span>
+      ) : null}
       {task.dueDate ? <DueChip dueDate={task.dueDate} today={today} /> : null}
     </>
   );
 }
 
-// Detalles desplegados: descripción completa, fecha larga, prioridad, color, etiquetas y links.
+// Detalles desplegados: descripción completa, fecha larga, prioridad, color, etiquetas, links,
+// archivos y recordatorios.
 function TaskRowDetails({
   id,
   task,
@@ -138,6 +150,7 @@ function TaskRowDetails({
 }) {
   const { links } = useTaskLinks(task.id);
   const { files } = useTaskFiles(task.id);
+  const { reminders } = useTaskReminders(task.id);
   const due = task.dueDate ? relativeDueLabel(task.dueDate, today) : null;
   // La etiqueta relativa solo aporta para fechas cercanas o vencidas.
   const showRelative = task.dueDate !== null && diffInLocalDays(task.dueDate, today) <= 1;
@@ -148,7 +161,8 @@ function TaskRowDetails({
     task.color ||
     tags.length > 0 ||
     links.length > 0 ||
-    files.length > 0;
+    files.length > 0 ||
+    reminders.length > 0;
 
   return (
     <div
@@ -204,6 +218,22 @@ function TaskRowDetails({
       ) : null}
       <LinkList links={links} />
       <FileList items={files.map(toFileListItem)} />
+      {reminders.length > 0 ? (
+        <ul className="flex w-full flex-col gap-1" aria-label={es.reminders.title}>
+          {reminders.map((reminder) => (
+            <li key={reminder.id} className="flex min-w-0 items-start gap-2 text-body-sm">
+              <Bell aria-hidden className="mt-0.5 size-4 shrink-0 text-muted" />
+              <span className="min-w-0">
+                <span className="text-fg">{reminder.message ?? task.title}</span>
+                <span className="text-muted tabular-nums">
+                  {' '}
+                  · {reminderTimesText(reminder.times)}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       {hasDetails ? null : <p className="text-body-sm text-muted">{es.tasks.noDetails}</p>}
       <div className="flex flex-wrap gap-2">
         <Button variant="secondary" size="sm" onClick={onEdit}>
@@ -234,6 +264,8 @@ export interface TaskRowProps {
   expanded: boolean;
   tags?: readonly Tag[];
   attachmentCount?: number;
+  /** Recordatorios con fechas pendientes. */
+  reminderCount?: number;
   /** Segunda línea debajo del título (ruta de la carpeta en las vistas globales). */
   subtitle?: ReactNode;
   // Las funciones reciben la tarea: así no cambian entre renders y la fila memorizada
@@ -259,6 +291,7 @@ export const TaskRow = memo(function TaskRow({
   expanded,
   tags = [],
   attachmentCount = 0,
+  reminderCount = 0,
   subtitle,
   getActions,
   onToggleExpanded,
@@ -272,7 +305,11 @@ export const TaskRow = memo(function TaskRow({
   // línea (junto con la ruta de carpeta, si hay) en vez de amontonarse junto al título.
   const hasPendingIndicators =
     !task.isDone &&
-    (task.isPinned || tags.length > 0 || attachmentCount > 0 || task.dueDate !== null);
+    (task.isPinned ||
+      tags.length > 0 ||
+      attachmentCount > 0 ||
+      reminderCount > 0 ||
+      task.dueDate !== null);
   const swipe = useSwipeActions({
     enabled: !task.isDone,
     onSwipeRight: () => onToggleDone(task),
@@ -395,6 +432,7 @@ export const TaskRow = memo(function TaskRow({
                         task={task}
                         tags={tags}
                         attachmentCount={attachmentCount}
+                        reminderCount={reminderCount}
                         today={today}
                       />
                     </span>
@@ -412,6 +450,7 @@ export const TaskRow = memo(function TaskRow({
                   task={task}
                   tags={tags}
                   attachmentCount={attachmentCount}
+                  reminderCount={reminderCount}
                   today={today}
                 />
               </span>

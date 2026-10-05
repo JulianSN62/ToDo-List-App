@@ -97,7 +97,7 @@ Tareas recurrentes, estados intermedios (en progreso), subtareas, compartir carp
 | D10 | Recordatorios personalizados: se pueden crear **todos los que se quieran** por tarea; cada recordatorio admite **una o varias fechas/horas**; al dispararse una fecha, **se borra** de la base (y el recordatorio se borra cuando no le quedan fechas). |
 | D11 | Avisos automáticos de vencimiento: **configurables** (cuántos días antes, a qué hora, y activar/desactivar). |
 | D12 | Tarea **anclada:** notificación fija que solo se quita desde la app (desanclar). Solo Android. |
-| D13 | Recordatorios y anclado **no se desarrollan para desktop**. |
+| D13 | Recordatorios y anclado **no se desarrollan para desktop**. **Cambiado (X117):** se editan también en la web; las notificaciones siguen siendo solo de Android. |
 | D14 | Reordenar tareas: **arrastrar y soltar + botones subir/bajar**. |
 | D15 | Prioritarias: marca visual + filtro "Solo prioritarias" + **suben al principio**; al desmarcar vuelven a su ubicación original. |
 | D16 | Login: **passwordless**, email + código de verificación (OTP) de un solo uso enviado por correo (ver `design/screens/auth.md`). Sin registro público (usuario único creado desde el panel de Supabase). Sesión persistente **sin expiración forzada** en mobile, desktop y web — no se vuelve a pedir el código salvo logout explícito. Futuro (fuera de v1): opción en Configuración para crear cuentas adicionales cuando se comparta la app. |
@@ -119,7 +119,7 @@ Tareas recurrentes, estados intermedios (en progreso), subtareas, compartir carp
 | S7 | En la carpeta raíz no hay tareas, solo carpetas. Toda tarea vive dentro de una carpeta. |
 | S8 | Al crear tareas, **Enter** crea la tarea y deja el panel abierto para cargar varias seguidas (el usuario va a cargar listas largas). Un botón "Listo" cierra el panel. **Reemplazado por X52** (`docs/DECISIONS.md`): ventana con "Crear" y "Crear y agregar otra". |
 | S9 | El filtro "Solo prioritarias" actúa sobre la carpeta actual **y todas sus subcarpetas** (en la raíz, sobre todo). |
-| S10 | Los controles de recordatorio y anclado **no se muestran** en web/desktop; si una tarea los tiene (creados en el celular), se muestra un indicador de solo lectura. |
+| S10 | Los controles de recordatorio y anclado **no se muestran** en web/desktop; si una tarea los tiene (creados en el celular), se muestra un indicador de solo lectura. **Cambiado (X117):** se muestran y se editan también en la web, con la nota de que los avisos llegan en la app de Android. |
 
 ---
 
@@ -677,7 +677,7 @@ Objetivo: notificación fija que **no se pueda sacar deslizando**; solo se quita
 
 **Riesgo importante [VERIFICAR en el dispositivo real]:** una notificación marcada como "en curso" (`ongoing`) puede ser descartable por el usuario en versiones recientes de Android (14+) cuando no pertenece a un servicio en primer plano. El comportamiento exacto depende de la versión y del fabricante.
 
-Enfoque en capas (probar en este orden y detenerse en el primero que funcione bien en el celular del usuario):
+Enfoque en capas (probar en este orden y detenerse en el primero que funcione bien en el celular del usuario). **Decidido (X118):** Opción 2, porque el plugin oficial no guarda las notificaciones inmediatas y no volvían al reiniciar.
 1. **Opción 1:** `@capacitor/local-notifications` con `ongoing: true` y `autoCancel: false`. Probarlo primero con un spike (Fase 1).
 2. **Opción 2 (si la 1 no alcanza): plugin nativo propio en Kotlin** dentro de `android/`:
    - Publica la notificación con `NotificationCompat` (ongoing, `setOnlyAlertOnce`, canal `pinned`).

@@ -4,6 +4,7 @@ import { nowIso } from '@/lib/dates';
 import { newId, taskTagId } from '@/lib/ids';
 import { normalizeLinkLabel, normalizeLinkUrl } from '@/lib/links';
 import { keyBetween } from '@/lib/ordering';
+import type { NewReminderInput, ReminderChanges } from '@/lib/reminders';
 import { isRetentionExpired } from '@/lib/retention';
 import { normalizeDescription, normalizeTitle } from '@/lib/validation';
 import { localFiles } from '@/platform';
@@ -17,6 +18,7 @@ import {
   stageFiles,
   type NewFileInput,
 } from './attachmentRepo';
+import { applyReminderChanges, insertReminders } from './reminderRepo';
 
 // Escrituras de tareas. Solo el título es obligatorio.
 
@@ -49,6 +51,8 @@ export interface NewTaskInput {
   tagIds?: string[];
   links?: LinkInput[];
   files?: NewFileInput[];
+  isPinned?: boolean;
+  reminders?: NewReminderInput[];
 }
 
 export interface TaskPatch {
@@ -57,6 +61,7 @@ export interface TaskPatch {
   dueDate?: string | null;
   isPriority?: boolean;
   color?: ColorToken | null;
+  isPinned?: boolean;
 }
 
 // Cambios de la ventana de edición, aplicados juntos al tocar "Guardar".
@@ -68,6 +73,7 @@ export interface TaskEdits {
   links?: { add: LinkInput[]; update: (LinkInput & { id: string })[]; remove: string[] };
   /** Archivos nuevos y los que se quitan (borrado lógico, como los links). */
   files?: { add: NewFileInput[]; remove: string[] };
+  reminders?: ReminderChanges;
 }
 
 // Arma el UPDATE con solo los campos indicados (así se sube solo lo que cambió).
@@ -95,6 +101,10 @@ function patchToSql(patch: TaskPatch): { sets: string[]; values: unknown[] } {
   if (patch.color !== undefined) {
     sets.push('color = ?');
     values.push(patch.color);
+  }
+  if (patch.isPinned !== undefined) {
+    sets.push('is_pinned = ?');
+    values.push(boolToInt(patch.isPinned));
   }
   return { sets, values };
 }
@@ -161,7 +171,7 @@ async function withTaskTagIds(
 }
 
 export const taskRepo = {
-  // Crea la tarea al final de la carpeta, con sus etiquetas, links y archivos.
+  // Crea la tarea al final de la carpeta, con sus etiquetas, links, archivos y recordatorios.
   async create(input: NewTaskInput): Promise<string> {
     const title = normalizeTitle(input.title);
     if (!title) throw new Error('Título inválido');
@@ -178,7 +188,7 @@ export const taskRepo = {
         await tx.execute(
           `INSERT INTO tasks (id, owner_id, folder_id, title, description, due_date, is_priority,
                               color, position, is_done, is_pinned, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?)`,
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
           [
             id,
             ownerId,
@@ -189,12 +199,14 @@ export const taskRepo = {
             boolToInt(input.isPriority ?? false),
             input.color ?? null,
             position,
+            boolToInt(input.isPinned ?? false),
             now,
             now,
           ],
         );
         await insertLinks(tx, id, ownerId, links, now);
         await insertFileRows(tx, id, ownerId, files, now);
+        await insertReminders(tx, id, ownerId, input.reminders ?? [], now);
         await insertTaskTags(tx, id, ownerId, tags, now);
       });
     } catch (error) {
@@ -214,7 +226,7 @@ export const taskRepo = {
   },
 
   // Guarda todos los cambios de la ventana de edición en una sola transacción.
-  // Orden: campos, carpeta, links, archivos y etiquetas (agregar etiquetas va al final
+  // Orden: campos, carpeta, links, archivos, recordatorios y etiquetas (agregar etiquetas va al final
   // porque es lo único que el servidor podría rechazar, y así no arrastra al resto).
   async applyEdits(id: string, edits: TaskEdits): Promise<void> {
     const ownerId = requireUserId();
@@ -259,6 +271,7 @@ export const taskRepo = {
         }
         await insertLinks(tx, id, ownerId, linksToAdd, now);
         await insertFileRows(tx, id, ownerId, filesToAdd, now);
+        if (edits.reminders) await applyReminderChanges(tx, id, ownerId, edits.reminders, now);
         for (const tagId of edits.tags?.remove ?? []) {
           await tx.execute('DELETE FROM task_tags WHERE task_id = ? AND tag_id = ?', [id, tagId]);
         }
@@ -284,6 +297,14 @@ export const taskRepo = {
         [now, id],
       );
     }
+  },
+
+  // Anclar o desanclar (spec 9.6). Una tarea completada no se ancla.
+  async setPinned(id: string, pinned: boolean): Promise<void> {
+    await getDb().execute(
+      `UPDATE tasks SET is_pinned = ?, updated_at = ? WHERE id = ? AND (is_done = 0 OR ? = 0)`,
+      [boolToInt(pinned), nowIso(), id, boolToInt(pinned)],
+    );
   },
 
   // Mover a otra carpeta: queda al final de la carpeta destino.
@@ -322,8 +343,8 @@ export const taskRepo = {
     ]);
   },
 
-  // Borra definitivamente las completadas que superaron la retención, con sus etiquetas
-  // y adjuntos locales (en el servidor se borran en cascada y los archivos quedan en la
+  // Borra definitivamente las completadas que superaron la retención, con sus etiquetas,
+  // recordatorios y adjuntos locales (en el servidor se borran en cascada y los archivos quedan en la
   // papelera de Storage para la limpieza diaria). Es idempotente.
   async purgeExpiredCompleted(retentionDays: number, now: Date = new Date()): Promise<number> {
     const db = getDb();
@@ -342,6 +363,13 @@ export const taskRepo = {
     const fileIds = files.map((file) => file.id);
     await db.writeTransaction(async (tx) => {
       await tx.execute('DELETE FROM task_tags WHERE task_id IN (SELECT value FROM json_each(?))', [
+        idsJson,
+      ]);
+      await tx.execute(
+        'DELETE FROM reminder_times WHERE task_id IN (SELECT value FROM json_each(?))',
+        [idsJson],
+      );
+      await tx.execute('DELETE FROM reminders WHERE task_id IN (SELECT value FROM json_each(?))', [
         idsJson,
       ]);
       await tx.execute(

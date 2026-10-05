@@ -10,6 +10,7 @@ import { CheckboxRow } from '@/ui/checkbox';
 import { Input } from '@/ui/input';
 import { ScreenHeader, ScreenTitle } from '@/ui/screen-header';
 import { Switch } from '@/ui/switch';
+import { useNotificationPermission } from '../reminders/useNotificationPermission';
 import { useSettingDraft } from './useSettingDraft';
 
 // Ajustes -> Alertas de vencimiento (SET-3): activarlas, cuántos días antes avisar y a qué
@@ -33,6 +34,7 @@ export function DueAlertsScreen() {
   const goBack = () => navigate('/settings');
   // Botón atrás de Android: vuelve a Ajustes.
   useBackHandler(true, goBack);
+  const askNotificationPermission = useNotificationPermission();
 
   const enabled = useSettingDraft({
     stored: stored?.dueAlertsEnabled,
@@ -90,7 +92,11 @@ export function DueAlertsScreen() {
             <Switch
               id="due-alerts-enabled"
               checked={enabled.value}
-              onCheckedChange={enabled.change}
+              onCheckedChange={(value) => {
+                enabled.change(value);
+                // Al activar las alertas se pide el permiso (spec 9.5).
+                if (value) askNotificationPermission();
+              }}
               disabled={!available}
             />
           </div>

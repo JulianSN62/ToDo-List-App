@@ -38,6 +38,7 @@ export function TaskList({
   selectedTaskId,
   tagsByTask,
   attachmentCounts,
+  reminderCounts,
   actionsFor,
 }: {
   tasks: Task[];
@@ -46,6 +47,7 @@ export function TaskList({
   selectedTaskId: string | null;
   tagsByTask: ReadonlyMap<string, readonly Tag[]>;
   attachmentCounts: ReadonlyMap<string, number>;
+  reminderCounts?: ReadonlyMap<string, number>;
   /** Debe ser estable entre renders (useTaskActions lo es). */
   actionsFor: (task: Task, options?: TaskActionOptions) => ActionItem[];
 }) {
@@ -102,6 +104,7 @@ export function TaskList({
     expanded: expandedTaskIds.has(task.id),
     tags: tagsByTask.get(task.id),
     attachmentCount: attachmentCounts.get(task.id),
+    reminderCount: reminderCounts?.get(task.id),
     getActions,
     onToggleExpanded: toggleTaskExpanded,
     onOpen: handleOpen,

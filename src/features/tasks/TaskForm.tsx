@@ -1,13 +1,4 @@
-import {
-  Bell,
-  Calendar,
-  Folder as FolderIcon,
-  Lock,
-  MapPin,
-  Palette,
-  Star,
-  Trash2,
-} from 'lucide-react';
+import { Calendar, Folder as FolderIcon, Palette, Star, Trash2 } from 'lucide-react';
 import {
   useEffect,
   useId,
@@ -21,6 +12,7 @@ import {
   taskRepo,
   useFolderTree,
   useTaskFiles,
+  type Reminder,
   type Task,
   type TaskFile,
   type TaskLink,
@@ -28,6 +20,7 @@ import {
 import { es } from '@/i18n/es';
 import { newId } from '@/lib/ids';
 import { errorMeta, logger } from '@/lib/logger';
+import { remindersToCreate } from '@/lib/reminders';
 import {
   applyLinkDraft,
   diffTaskForm,
@@ -44,7 +37,6 @@ import {
 } from '@/lib/taskForm';
 import { getPath } from '@/lib/tree';
 import { LIMITS, normalizeDescription, normalizeTitle } from '@/lib/validation';
-import { platform } from '@/platform';
 import { Button } from '@/ui/button';
 import { ColorSwatchPicker } from '@/ui/color-swatch-picker';
 import { Input } from '@/ui/input';
@@ -55,6 +47,9 @@ import { showErrorToast, showToast } from '@/ui/toast';
 import { AttachmentsField } from '../attachments/AttachmentsField';
 import { draftsToFileItems } from '../attachments/fileItems';
 import { FolderPickerSheet } from '../folders/FolderPickerSheet';
+import { ReminderSheet, type ReminderValue } from '../reminders/ReminderSheet';
+import { RemindersField } from '../reminders/RemindersField';
+import { useNotificationPermission } from '../reminders/useNotificationPermission';
 import { TagsField } from '../tags/TagsField';
 import { DatePicker } from './DatePicker';
 import { deleteTaskWithUndo } from './useTaskActions';
@@ -64,7 +59,14 @@ import { deleteTaskWithUndo } from './useTaskActions';
 
 export type TaskFormMode =
   | { kind: 'create'; folderId: string }
-  | { kind: 'edit'; task: Task; tagIds: string[]; links: TaskLink[]; files: TaskFile[] };
+  | {
+      kind: 'edit';
+      task: Task;
+      tagIds: string[];
+      links: TaskLink[];
+      files: TaskFile[];
+      reminders: Reminder[];
+    };
 
 function report(error: unknown) {
   logger.error('No se pudo guardar la tarea', errorMeta(error));
@@ -96,18 +98,6 @@ function Field({
   );
 }
 
-// Campos que todavía no están disponibles: se muestran bloqueados.
-function LockedRow({ icon, label, note }: { icon: ReactNode; label: string; note: string }) {
-  return (
-    <div className="flex min-h-12 items-center gap-2 text-body-sm text-muted [&_svg]:size-5">
-      {icon}
-      <span className="flex-1">{label}</span>
-      <Lock aria-hidden className="size-4" />
-      <span className="text-caption">{note}</span>
-    </div>
-  );
-}
-
 export function TaskForm({
   mode,
   today,
@@ -132,7 +122,12 @@ export function TaskForm({
   const [baseline, setBaseline] = useState<TaskFormValues>(() =>
     mode.kind === 'create'
       ? emptyTaskForm(mode.folderId)
-      : taskToForm(mode.task, { tagIds: mode.tagIds, links: mode.links, files: mode.files }),
+      : taskToForm(mode.task, {
+          tagIds: mode.tagIds,
+          links: mode.links,
+          files: mode.files,
+          reminders: mode.reminders,
+        }),
   );
   const [values, setValues] = useState<TaskFormValues>(baseline);
   const [error, setError] = useState<string | null>(null);
@@ -145,6 +140,10 @@ export function TaskForm({
   const [filesBusy, setFilesBusy] = useState(false);
   // Estado actual (subida, guardado en el dispositivo) de los archivos ya guardados.
   const { files: savedFiles } = useTaskFiles(mode.kind === 'edit' ? mode.task.id : null);
+  // Recordatorio que se está editando: key null = uno nuevo.
+  const [reminderEdit, setReminderEdit] = useState<{ key: string | null } | null>(null);
+  const [reminderFormKey, setReminderFormKey] = useState(0);
+  const askNotificationPermission = useNotificationPermission();
 
   const dirty = isTaskFormDirty(baseline, values) || isLinkDraftDirty(values.links, linkDraft);
   useEffect(() => {
@@ -208,8 +207,41 @@ export function TaskForm({
       tagIds: submitted.tagIds,
       links: linksToCreate(submitted.links),
       files: filesToCreate(submitted.files),
+      isPinned: submitted.isPinned,
+      reminders: remindersToCreate(submitted.reminders),
     };
   }
+
+  // Después de guardar un recordatorio nuevo o anclar, se pide el permiso (spec 9.5).
+  function afterSave(before: TaskFormValues, saved: TaskFormValues) {
+    const addedReminder = saved.reminders.some((reminder) =>
+      reminder.times.some((time) => time.id === null),
+    );
+    if (addedReminder || (saved.isPinned && !before.isPinned)) askNotificationPermission();
+  }
+
+  function openReminder(key: string | null) {
+    setReminderEdit({ key });
+    setReminderFormKey((current) => current + 1);
+  }
+
+  function submitReminder(value: ReminderValue) {
+    const key = reminderEdit?.key ?? null;
+    setValues((current) => ({
+      ...current,
+      reminders:
+        key === null
+          ? [...current.reminders, { key: newId(), id: null, ...value }]
+          : current.reminders.map((reminder) =>
+              reminder.key === key ? { ...reminder, ...value } : reminder,
+            ),
+    }));
+  }
+
+  const editingReminder =
+    reminderEdit?.key != null
+      ? values.reminders.find((reminder) => reminder.key === reminderEdit.key)
+      : undefined;
 
   async function createAndClose() {
     if (mode.kind !== 'create') return;
@@ -219,6 +251,7 @@ export function TaskForm({
     setSaving(true);
     try {
       await taskRepo.create(toCreateInput(submitted));
+      afterSave(baseline, submitted);
       onClose();
     } catch (caught) {
       report(caught);
@@ -227,26 +260,39 @@ export function TaskForm({
     }
   }
 
-  // Guarda y deja la ventana lista para la siguiente. Título, descripción, links y archivos se
-  // vacían enseguida para seguir escribiendo; fecha, prioridad, color, etiquetas y carpeta se
-  // mantienen.
+  // Guarda y deja la ventana lista para la siguiente. Título, descripción, links, archivos,
+  // recordatorios y anclado se vacían enseguida para seguir escribiendo; fecha, prioridad,
+  // color, etiquetas y carpeta se mantienen.
   async function createAndContinue() {
     if (mode.kind !== 'create') return;
     const submitted = resolveValues();
     if (!submitted) return;
-    const next = { ...submitted, title: '', description: '', links: [], files: [] };
+    const next = {
+      ...submitted,
+      title: '',
+      description: '',
+      links: [],
+      files: [],
+      reminders: [],
+      isPinned: false,
+    };
     setValues(next);
     setBaseline(next);
     setError(null);
     titleRef.current?.focus();
     try {
       await taskRepo.create(toCreateInput(submitted));
+      afterSave(next, submitted);
       showToast(es.tasks.created);
     } catch (caught) {
       report(caught);
       // Si no se empezó a escribir otra, se recupera lo que no se pudo guardar.
       setValues((current) =>
-        current.title || current.description || current.links.length > 0 || current.files.length > 0
+        current.title ||
+        current.description ||
+        current.links.length > 0 ||
+        current.files.length > 0 ||
+        current.reminders.length > 0
           ? current
           : {
               ...current,
@@ -254,6 +300,8 @@ export function TaskForm({
               description: submitted.description,
               links: submitted.links,
               files: submitted.files,
+              reminders: submitted.reminders,
+              isPinned: submitted.isPinned,
             },
       );
     }
@@ -267,7 +315,10 @@ export function TaskForm({
     const changes = diffTaskForm(baseline, submitted);
     setSaving(true);
     try {
-      if (hasTaskFormChanges(changes)) await taskRepo.applyEdits(mode.task.id, changes);
+      if (hasTaskFormChanges(changes)) {
+        await taskRepo.applyEdits(mode.task.id, changes);
+        afterSave(baseline, submitted);
+      }
       onClose();
     } catch (caught) {
       report(caught);
@@ -293,8 +344,6 @@ export function TaskForm({
       submitPrimary();
     }
   }
-
-  const nativeNote = platform.isNative ? es.tasks.nativeComingSoon : es.tasks.nativeOnly;
 
   return (
     <>
@@ -415,10 +464,21 @@ export function TaskForm({
             onBusyChange={setFilesBusy}
           />
 
-          <div className="flex flex-col border-t border-line pt-2">
-            <LockedRow icon={<Bell aria-hidden />} label={es.tasks.reminders} note={nativeNote} />
-            <LockedRow icon={<MapPin aria-hidden />} label={es.tasks.pin} note={nativeNote} />
-          </div>
+          <RemindersField
+            reminders={values.reminders}
+            taskTitle={values.title}
+            isPinned={values.isPinned}
+            isDone={mode.kind === 'edit' && mode.task.isDone}
+            onPinnedChange={(isPinned) => change({ isPinned })}
+            onAdd={() => openReminder(null)}
+            onEdit={openReminder}
+            onRemove={(key) =>
+              setValues((current) => ({
+                ...current,
+                reminders: current.reminders.filter((reminder) => reminder.key !== key),
+              }))
+            }
+          />
 
           {mode.kind === 'edit' ? (
             <Button
@@ -484,6 +544,20 @@ export function TaskForm({
         onConfirm={(folderId) => {
           if (folderId) change({ folderId });
         }}
+      />
+
+      <ReminderSheet
+        open={reminderEdit !== null}
+        formKey={reminderFormKey}
+        request={
+          reminderEdit === null
+            ? null
+            : editingReminder
+              ? { mode: 'edit', message: editingReminder.message, times: editingReminder.times }
+              : { mode: 'create' }
+        }
+        onClose={() => setReminderEdit(null)}
+        onSubmit={submitReminder}
       />
     </>
   );

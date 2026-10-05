@@ -2,6 +2,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { es as esLocale } from 'date-fns/locale';
 import {
   Bell,
+  BellRing,
   ChevronRight,
   Cloud,
   Database,
@@ -20,6 +21,7 @@ import { APP_VERSION } from '@/config/app';
 import { getPendingUploadCount, syncNow, useSettings, useSyncState, useTags } from '@/data';
 import { es } from '@/i18n/es';
 import { errorMeta, logger } from '@/lib/logger';
+import { notifications } from '@/platform';
 import { Button } from '@/ui/button';
 import { ConfirmDialog } from '@/ui/confirm-dialog';
 import { RadioGroup, RadioOption } from '@/ui/radio-group';
@@ -31,9 +33,9 @@ import { BackupSetting } from './BackupSetting';
 import { FilesStorageSetting } from './FilesStorageSetting';
 import { RetentionSetting } from './RetentionSetting';
 
-// Ajustes (spec 7.7): tema, retención, alertas de vencimiento, etiquetas, respaldo,
-// espacio de los archivos adjuntos, sincronización, cuenta y versión. El diagnóstico de notificaciones llega con la Fase 8
-// (solo Android).
+// Ajustes (spec 7.7): tema, retención, alertas de vencimiento, diagnóstico de notificaciones
+// (solo Android), etiquetas, respaldo, espacio de los archivos adjuntos, sincronización,
+// cuenta y versión.
 
 function Group({ title, icon, children }: { title: string; icon: ReactNode; children: ReactNode }) {
   return (
@@ -164,6 +166,14 @@ export function SettingsScreen() {
               }
               onClick={() => navigate('/settings/alerts')}
             />
+            {notifications.isSupported() ? (
+              <LinkRow
+                icon={<BellRing aria-hidden />}
+                label={es.notifications.title}
+                description={es.notifications.rowSummary}
+                onClick={() => navigate('/settings/notifications')}
+              />
+            ) : null}
             <LinkRow
               icon={<TagIcon aria-hidden />}
               label={es.settings.tags}

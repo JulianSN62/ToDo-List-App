@@ -1,6 +1,6 @@
 # Tests E2E (spec 15.1)
 
-**Estado:** ✅ En el repo desde el Bloque 4 (2026-10-02). Decisiones X93–X95 y X115. **86 tests:** 41 en mobile y 45 en desktop (desde el Bloque 6, con accesibilidad, listas largas y el árbol de "Mover a…"). Tardan unos 3–4 minutos, contando el build.
+**Estado:** ✅ En el repo desde el Bloque 4 (2026-10-02). Decisiones X93–X95 y X115. **94 tests:** 45 en mobile y 49 en desktop (desde el Bloque 7, con recordatorios y anclado en la web). Tardan unos 3–4 minutos, contando el build.
 
 ## Cómo se corren
 
@@ -47,7 +47,8 @@ npm run e2e
 | `offline.spec.ts` | Sin conexión: la app abre desde el service worker. Crear, editar y borrar. El indicador muestra "Sin conexión · N pendientes" y Ajustes, el contador. Todo sigue al recargar y al volver la conexión. |
 | `attachments.spec.ts` | Archivos adjuntos (Bloque 5). Usa un **Storage ficticio**: el test responde los pedidos de subida, URL firmada y descarga al Supabase de prueba. Prueba:<br>• Adjuntar al crear, con contador en la fila y "Pendiente de subir" sin servidor. Todo sigue al recargar.<br>• Una foto de 4000×3000 queda en 1600×1200 y pesa menos. Se rechaza un archivo de 10,5 MB.<br>• Un error 403 deja "Reintentar"; al reintentar se sube a `{usuario}/{tarea}/{id}-nombre`.<br>• "Liberar espacio", la miniatura que se vuelve a bajar con URL firmada, el visor de fotos y ver sin conexión lo ya abierto. Un PDF no guardado avisa que falta conexión.<br>• Quitar un archivo. Cerrar sesión avisa lo pendiente y vacía los archivos del dispositivo (IndexedDB). |
 | `screens.spec.ts` | Pasada por Carpetas, tareas, Hoy, Buscar, Ajustes y Alertas en tema claro y oscuro, más la ventana con archivos, los detalles de una tarea con archivos y Ajustes → Datos: el tema del sistema se respeta y no hay scroll horizontal. |
-| `a11y.spec.ts` | Accesibilidad (Bloque 6). **axe** revisa Carpetas, una carpeta con tareas, la ventana de nueva tarea, el menú "⋯", Hoy, Buscar, Ajustes, Alertas y el login, en tema claro y oscuro: sin problemas graves (los menores se informan en la salida). Además: título de cada pantalla en la pestaña, el foco vuelve al botón que abrió la ventana, "Saltar al contenido" y tocar un aviso no cierra la ventana. |
+| `a11y.spec.ts` | Accesibilidad (Bloque 6). **axe** revisa Carpetas, una carpeta con tareas, la ventana de nueva tarea, la de un recordatorio, el menú "⋯", Hoy, Buscar, Ajustes, Alertas y el login, en tema claro y oscuro: sin problemas graves (los menores se informan en la salida). Además: título de cada pantalla en la pestaña, el foco vuelve al botón que abrió la ventana, "Saltar al contenido" y tocar un aviso no cierra la ventana. |
+| `reminders.spec.ts` | Recordatorios y anclado en la web (Bloque 7, X117): crear una tarea anclada con un recordatorio de dos fechas, verlo en la fila y en los detalles, quitar una fecha y el recordatorio, desanclar. Una fecha pasada se rechaza. Anclar, desanclar y agregar un recordatorio desde el menú "⋯". En la web no hay Diagnóstico de notificaciones. |
 | `long-lists.spec.ts` | Rendimiento (Bloque 6): una carpeta con 1000 tareas y 300 carpetas. Abrir, completar, subir con el menú, desplegar detalles, buscar y la barra lateral. Los tiempos (medidos dentro de la página) se anotan en la salida, sin umbrales. |
 
 ## Límites (lo que no pueden probar)
@@ -57,7 +58,7 @@ npm run e2e
 - **PDF en pestaña nueva:** el navegador sin ventana de los tests no muestra PDF. Se comprobó a mano con Edge real (X102).
 - **Login con código real:** hace falta tu email. Ya lo probaste en la Fase 1.
 - **Pantallas con la configuración del servidor:** sin la fila `user_settings`, la retención y las alertas solo se ven deshabilitadas. Su lógica con datos está cubierta por los tests de componente: `RetentionSetting.test.tsx` y `DueAlertsScreen.test.tsx`.
-- **Android:** los E2E son de la web. El celular se prueba a mano cuando se retome la Fase 8 (X84).
+- **Android:** los E2E son de la web. Las notificaciones se probaron en un emulador de Android 14 con tu cuenta (Bloque 7, ver [phase-08-android-base.md](./phase-08-android-base.md)); el celular se prueba en el Bloque 8.
 
 ## Hallazgo del primer uso
 

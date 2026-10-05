@@ -46,6 +46,14 @@ export function showErrorToast(message: string = es.errors.generic): void {
   toast.error(message);
 }
 
+// Aviso con una acción (por ejemplo, "Revisar" lleva a los ajustes). Dura como el de "Deshacer".
+export function showActionToast(message: string, actionLabel: string, onAction: () => void): void {
+  toast(message, {
+    duration: UNDO_DURATION_MS,
+    action: { label: actionLabel, onClick: onAction },
+  });
+}
+
 // Aviso que queda visible hasta que se usa la acción o se descarta (ej.: nueva versión de la PWA).
 export function showPersistentActionToast(
   message: string,

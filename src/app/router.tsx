@@ -3,6 +3,7 @@ import { FolderScreen } from '../features/folders/FolderScreen';
 import { TaskRoute } from '../features/tasks/TaskRoute';
 import {
   DueAlertsScreen,
+  NotificationsScreen,
   SearchScreen,
   SettingsScreen,
   TagsScreen,
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
           { path: 'settings', element: <SettingsScreen /> },
           { path: 'settings/alerts', element: <DueAlertsScreen /> },
           { path: 'settings/tags', element: <TagsScreen /> },
+          { path: 'settings/notifications', element: <NotificationsScreen /> },
           { path: '*', element: <NotFound /> },
         ],
       },

@@ -1,5 +1,12 @@
 import type { ColorToken } from './colors';
 import { normalizeLinkLabel, normalizeLinkUrl } from './links';
+import {
+  diffReminders,
+  hasReminderChanges,
+  sameReminders,
+  type ReminderChanges,
+  type ReminderDraft,
+} from './reminders';
 import { normalizeDescription, normalizeTitle } from './validation';
 
 // Valores del formulario de crear/editar tarea y cálculo de qué cambió al guardar.
@@ -33,6 +40,8 @@ export interface TaskFormValues {
   tagIds: string[];
   links: LinkDraft[];
   files: FileDraft[];
+  isPinned: boolean;
+  reminders: ReminderDraft[];
 }
 
 // Forma mínima de una tarea guardada (evita depender de la capa de datos).
@@ -43,6 +52,13 @@ export interface TaskFormSource {
   dueDate: string | null;
   isPriority: boolean;
   color: ColorToken | null;
+  isPinned?: boolean;
+}
+
+export interface SavedReminder {
+  id: string;
+  message: string | null;
+  times: readonly { id: string; fireAt: string }[];
 }
 
 export interface SavedLink {
@@ -71,6 +87,7 @@ export interface TaskFormPatch {
   dueDate?: string | null;
   isPriority?: boolean;
   color?: ColorToken | null;
+  isPinned?: boolean;
 }
 
 export interface NewLinkInput {
@@ -85,6 +102,7 @@ export interface TaskFormChanges {
   tags: { add: string[]; remove: string[] };
   links: { add: NewLinkInput[]; update: SavedLink[]; remove: string[] };
   files: { add: NewFileDraft[]; remove: string[] };
+  reminders: ReminderChanges;
 }
 
 export type TaskFormError = 'titleRequired' | 'titleTooLong';
@@ -135,6 +153,8 @@ export function emptyTaskForm(folderId: string): TaskFormValues {
     tagIds: [],
     links: [],
     files: [],
+    isPinned: false,
+    reminders: [],
   };
 }
 
@@ -144,6 +164,7 @@ export function taskToForm(
     tagIds: readonly string[];
     links: readonly SavedLink[];
     files?: readonly SavedFile[];
+    reminders?: readonly SavedReminder[];
   } = { tagIds: [], links: [] },
 ): TaskFormValues {
   return {
@@ -167,6 +188,13 @@ export function taskToForm(
       mimeType: file.mimeType,
       size: file.size,
       data: null,
+    })),
+    isPinned: task.isPinned ?? false,
+    reminders: (extras.reminders ?? []).map((reminder) => ({
+      key: reminder.id,
+      id: reminder.id,
+      message: reminder.message ?? '',
+      times: reminder.times.map((time) => ({ id: time.id, fireAt: time.fireAt })),
     })),
   };
 }
@@ -238,6 +266,7 @@ export function diffTaskForm(initial: TaskFormValues, current: TaskFormValues): 
   if (current.dueDate !== initial.dueDate) patch.dueDate = current.dueDate;
   if (current.isPriority !== initial.isPriority) patch.isPriority = current.isPriority;
   if (current.color !== initial.color) patch.color = current.color;
+  if (current.isPinned !== initial.isPinned) patch.isPinned = current.isPinned;
 
   const beforeTags = new Set(initial.tagIds);
   const afterTags = new Set(current.tagIds);
@@ -251,6 +280,7 @@ export function diffTaskForm(initial: TaskFormValues, current: TaskFormValues): 
     },
     links: diffLinks(initial.links, current.links),
     files: diffFiles(initial.files, current.files),
+    reminders: diffReminders(initial.reminders, current.reminders),
   };
 }
 
@@ -264,7 +294,8 @@ export function hasTaskFormChanges(changes: TaskFormChanges): boolean {
     changes.links.update.length > 0 ||
     changes.links.remove.length > 0 ||
     changes.files.add.length > 0 ||
-    changes.files.remove.length > 0
+    changes.files.remove.length > 0 ||
+    hasReminderChanges(changes.reminders)
   );
 }
 
@@ -301,9 +332,11 @@ export function isTaskFormDirty(initial: TaskFormValues, current: TaskFormValues
     current.dueDate !== initial.dueDate ||
     current.isPriority !== initial.isPriority ||
     current.color !== initial.color ||
+    current.isPinned !== initial.isPinned ||
     current.folderId !== initial.folderId ||
     !sameTagSet(initial.tagIds, current.tagIds) ||
     !sameLinks(initial.links, current.links) ||
-    !sameFiles(initial.files, current.files)
+    !sameFiles(initial.files, current.files) ||
+    !sameReminders(initial.reminders, current.reminders)
   );
 }

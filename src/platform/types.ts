@@ -34,36 +34,84 @@ export interface ExternalLinkService {
   open(url: string): Promise<void>;
 }
 
-export type NotificationKind = 'due' | 'reminder' | 'pin';
+export type NotificationPermission = 'granted' | 'denied' | 'prompt';
 
-export interface DesiredNotification {
-  kind: NotificationKind;
-  refId: string;
-  taskId: string;
-  fireAt: string | null;
-  title: string;
-  body: string;
+export interface NotificationChannelConfig {
+  id: string;
+  name: string;
+  description: string;
+  /** 4 = alta (suena y aparece arriba); 2 = baja (sin sonido). */
+  importance: 2 | 4;
+  vibration: boolean;
 }
 
-export interface DesiredNotifications {
-  items: DesiredNotification[];
+/** Notificación con fecha para programar (aviso de vencimiento o recordatorio). */
+export interface LocalNotificationRequest {
+  /** Número que identifica la notificación en el sistema. */
+  id: number;
+  title: string;
+  body: string;
+  channelId: string;
+  at: Date;
+  /** Tarea que se abre al tocarla. */
+  taskId: string;
+}
+
+/** Notificación fija de una tarea anclada (canal "pinned"). */
+export interface PinnedNotificationRequest {
+  id: number;
+  title: string;
+  body: string;
+  taskId: string;
+}
+
+export interface ActiveNotificationIds {
+  /** Programadas con fecha que todavía no salieron. */
+  scheduledIds: number[];
+  /** Visibles en la barra de notificaciones. */
+  visibleIds: number[];
 }
 
 export interface NotificationDiagnostics {
-  permission: 'granted' | 'denied' | 'prompt';
+  permission: NotificationPermission;
+  /** Alarmas exactas (Android 12 o más): sin ellas los avisos pueden llegar tarde. */
   exactAlarms: 'granted' | 'denied' | 'unknown';
-  batteryOptimization: 'ok' | 'warning' | 'unknown';
+  /** "optimized": Android puede demorar o cortar los avisos para ahorrar batería. */
+  battery: 'unrestricted' | 'optimized' | 'unknown';
 }
 
-/** Notificaciones locales. Se implementa en Android en la Fase 8; en web no hace nada. */
+export type NotificationSettingsTarget = 'notifications' | 'exactAlarms' | 'battery';
+
+/**
+ * Notificaciones locales (spec 9). Solo Android: en web no hace nada (isSupported = false).
+ * La plataforma solo programa y cancela; qué programar lo decide src/lib/notificationPlan.ts.
+ */
 export interface NotificationService {
   isSupported(): boolean;
-  getPermissionState(): Promise<'granted' | 'denied' | 'prompt'>;
-  requestPermission(): Promise<boolean>;
-  /** Recalcula y sincroniza TODAS las notificaciones locales con el estado de la base. */
-  reconcile(desired: DesiredNotifications): Promise<void>;
-  sendTest(): Promise<void>;
+  /** Crea los canales (spec 9.3). Si ya existen, Android conserva lo que el usuario cambió. */
+  ensureChannels(channels: readonly NotificationChannelConfig[]): Promise<void>;
+  getPermission(): Promise<NotificationPermission>;
+  requestPermission(): Promise<NotificationPermission>;
+  getActive(): Promise<ActiveNotificationIds>;
+  /** Programa o reemplaza (mismo id) sin abrir ninguna pantalla de permisos. */
+  schedule(items: readonly LocalNotificationRequest[]): Promise<void>;
+  /** Cancela las programadas (las ya visibles quedan en la barra). */
+  cancel(ids: readonly number[]): Promise<void>;
+  /**
+   * Ancladas: recibe la lista completa, muestra (o actualiza) esas y quita las demás. Se
+   * guardan en el dispositivo para volver a mostrarlas al reiniciar o si se descartan.
+   */
+  syncPinned(items: readonly PinnedNotificationRequest[]): Promise<void>;
+  /** Cancela y quita todas, también las ancladas (al cerrar sesión). */
+  cancelAll(): Promise<void>;
+  /** Al tocar una notificación: recibe la tarea que hay que abrir. */
+  onTap(callback: (taskId: string) => void): Unsubscribe;
+  /** Se disparó una notificación con la app abierta. */
+  onReceived(callback: () => void): Unsubscribe;
+  sendTest(content: { id: number; title: string; body: string; channelId: string }): Promise<void>;
   getDiagnostics(): Promise<NotificationDiagnostics>;
+  /** Abre la pantalla de Android para cambiar ese permiso. */
+  openSettings(target: NotificationSettingsTarget): Promise<void>;
 }
 
 export interface PickedFile {

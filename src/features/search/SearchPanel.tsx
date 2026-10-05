@@ -5,6 +5,7 @@ import { useUiStore } from '@/app/uiStore';
 import {
   useAllTasks,
   useAttachmentCounts,
+  useReminderCounts,
   useFolderTree,
   useSettings,
   useTaskTagIndex,
@@ -45,6 +46,7 @@ export function SearchPanel({
   const { tasks } = useAllTasks();
   const tagIndex = useTaskTagIndex();
   const attachmentCounts = useAttachmentCounts();
+  const reminderCounts = useReminderCounts();
   const query = useUiStore((state) => state.searchQuery);
   const setQuery = useUiStore((state) => state.setSearchQuery);
   const storedTagId = useUiStore((state) => state.searchTagId);
@@ -157,6 +159,7 @@ export function SearchPanel({
             retentionDays={settings.completedRetentionDays}
             tagsByTask={tagIndex.tagsByTask}
             attachmentCounts={attachmentCounts}
+            reminderCounts={reminderCounts}
             subtitleFor={(task) => (
               <>
                 <span className="min-w-0 truncate">{formatPath(task.folderId, tree.byId)}</span>

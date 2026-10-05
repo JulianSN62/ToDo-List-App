@@ -2,6 +2,7 @@
 // Ningún componente debe tener textos escritos a mano: siempre se leen de acá.
 
 import type { ColorToken } from '@/lib/colors';
+import { compatTexts } from './compat';
 
 const plural = (count: number, singular: string, pluralForm: string) =>
   `${count} ${count === 1 ? singular : pluralForm}`;
@@ -204,11 +205,7 @@ export const es = {
     moveTitle: (title: string) => `Mover "${title}" a…`,
     moved: 'Tarea movida',
     deleteTask: 'Eliminar tarea',
-    reminders: 'Recordatorios',
-    pin: 'Anclar tarea',
     pinned: 'Anclada',
-    nativeOnly: 'Disponible en la app de Android',
-    nativeComingSoon: 'Disponible en una próxima versión',
     attachments: 'Adjuntos',
     menu: (title: string) => `Opciones de "${title}"`,
     notFound: 'Esta tarea no existe o fue eliminada.',
@@ -338,6 +335,8 @@ export const es = {
     tomorrow: 'Mañana',
     yesterday: 'Ayer',
     overdueDays: (days: number) => `Vencida hace ${plural(days, 'día', 'días')}`,
+    /** Fecha y hora de un recordatorio: "Mañana 09:00". */
+    atTime: (day: string, time: string) => `${day} ${time}`,
   },
 
   colors: {
@@ -431,6 +430,93 @@ export const es = {
     summaryOff: 'Desactivadas',
   },
 
+  reminders: {
+    title: 'Recordatorios',
+    add: 'Agregar recordatorio',
+    newReminder: 'Nuevo recordatorio',
+    editReminder: 'Editar recordatorio',
+    messageLabel: 'Mensaje (opcional)',
+    messagePlaceholder: 'Si lo dejás vacío, se usa el título de la tarea',
+    timesLabel: 'Fechas y horas',
+    timesHelp: 'Te avisa en cada una. Podés agregar varias.',
+    dateLabel: (index: number) => `Fecha ${index}`,
+    timeLabel: (index: number) => `Hora ${index}`,
+    addTime: 'Agregar otra fecha',
+    removeTime: (index: number) => `Quitar la fecha ${index}`,
+    done: 'Listo',
+    errorIncomplete: 'Elegí la fecha y la hora.',
+    errorPast: 'Esa fecha y hora ya pasaron.',
+    errorNoTimes: 'Agregá al menos una fecha.',
+    errorTooMany: (max: number) => `Puede tener hasta ${max} fechas.`,
+    errorMessageTooLong: (max: number) => `El mensaje puede tener hasta ${max} caracteres.`,
+    empty: 'Sin recordatorios.',
+    /** Fechas de un recordatorio en la lista: "Mañana 09:00, sáb 10 oct 18:00 y 1 más". */
+    timesSummary: (times: readonly string[], more: number) =>
+      more > 0 ? `${times.join(', ')} y ${more} más` : joinWithAnd(times),
+    edit: (label: string) => `Editar el recordatorio "${label}"`,
+    remove: (label: string) => `Quitar el recordatorio "${label}"`,
+    /** Ícono de la fila, para lectores de pantalla. */
+    indicator: (count: number) => plural(count, 'recordatorio', 'recordatorios'),
+    androidNote: 'Los avisos llegan en la app de Android: se programan cuando la abrís.',
+    added: 'Recordatorio agregado',
+    pin: 'Anclar tarea',
+    pinHelp: 'Queda fija en las notificaciones del celular hasta que la desancles.',
+    pinDoneHelp: 'Las tareas completadas no se pueden anclar.',
+    menuPin: 'Anclar',
+    menuUnpin: 'Desanclar',
+    pinnedToast: 'Tarea anclada',
+    unpinnedToast: 'Tarea desanclada',
+    permissionDenied: 'Las notificaciones están desactivadas en este celular.',
+    permissionAction: 'Revisar',
+  },
+
+  notifications: {
+    channelDue: 'Alertas de vencimiento',
+    channelDueDescription: 'Avisos antes de que venza una tarea con fecha límite.',
+    channelReminders: 'Recordatorios',
+    channelRemindersDescription: 'Los recordatorios que agregaste a tus tareas.',
+    channelPinned: 'Tareas ancladas',
+    channelPinnedDescription: 'Tareas fijas en la barra de notificaciones. No suenan.',
+    dueTitle: (days: number, title: string) => {
+      if (days <= 0) return `Vence hoy: ${title}`;
+      if (days === 1) return `Vence mañana: ${title}`;
+      return `Vence en ${days} días: ${title}`;
+    },
+    reminderBody: (taskTitle: string, path: string) =>
+      path ? `${taskTitle} · ${path}` : taskTitle,
+    pinDue: (date: string) => `Vence el ${date}`,
+    testTitle: 'Notificación de prueba',
+    testBody: 'Si ves esto, los avisos funcionan en este celular.',
+    title: 'Notificaciones',
+    rowSummary: 'Permisos, alarmas y batería',
+    androidOnly: 'Esta sección está disponible en la app de Android.',
+    permission: 'Permiso de notificaciones',
+    permissionOk: 'Permitidas.',
+    permissionOff: 'Desactivadas: no vas a recibir avisos ni ver las tareas ancladas.',
+    permissionPrompt: 'Todavía no las permitiste.',
+    allow: 'Permitir',
+    exactAlarms: 'Alarmas exactas',
+    exactOk: 'Permitidas: los avisos llegan a la hora justa.',
+    exactOff: 'Sin permiso: los avisos pueden llegar varios minutos tarde.',
+    battery: 'Optimización de batería',
+    batteryOk: 'Sin restricciones: los avisos llegan aunque la app esté cerrada.',
+    batteryWarning: 'Android puede demorar los avisos para ahorrar batería.',
+    batteryGuide:
+      'Algunos celulares cierran las apps en segundo plano para ahorrar batería y los avisos dejan de llegar. En la lista de optimización de batería, buscá ToDo List y elegí "No optimizar" o "Sin restricciones". En Samsung revisá también Batería → Límites de uso en segundo plano.',
+    openSettings: 'Abrir ajustes',
+    statusOk: 'Correcto',
+    statusWarning: 'Conviene revisarlo',
+    statusError: 'Falta configurar',
+    sendTest: 'Enviar notificación de prueba',
+    testSent: 'Notificación de prueba enviada.',
+    testFailed: 'No se pudo enviar. Revisá el permiso de notificaciones.',
+    forceStopNote:
+      'Si forzás la detención de la app desde los ajustes de Android, los avisos se reprograman la próxima vez que la abras.',
+    pinnedTitle: 'Tareas ancladas',
+    noPinned: 'No hay tareas ancladas.',
+    unpin: (title: string) => `Desanclar "${title}"`,
+  },
+
   shortcuts: {
     title: 'Atajos de teclado',
     newItem: 'Nueva tarea o carpeta',
@@ -456,6 +542,9 @@ export const es = {
     error: 'No se pudo exportar el respaldo.',
     shareTitle: (appName: string) => `Respaldo de ${appName}`,
   },
+
+  /** Navegador o WebView sin soporte (se muestra antes de cargar la app). */
+  compat: compatTexts,
 
   pwa: {
     updateAvailable: 'Hay una nueva versión disponible.',

@@ -65,6 +65,15 @@ export interface TaskFile {
   cached: boolean;
 }
 
+// Recordatorio personalizado de una tarea con sus fechas (spec 9.7).
+export interface Reminder {
+  id: string;
+  taskId: string;
+  message: string | null;
+  /** Fechas que todavía no pasaron, de la más cercana a la más lejana (fireAt en ISO UTC). */
+  times: { id: string; fireAt: string }[];
+}
+
 export interface UserSettings {
   completedRetentionDays: number;
   dueAlertsEnabled: boolean;

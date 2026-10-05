@@ -30,6 +30,11 @@ const config: CapacitorConfig = {
       // El WebView se achica cuando aparece el teclado, para que no tape los campos.
       resizeOnFullScreen: true,
     },
+    LocalNotifications: {
+      // Tilde blanca (res/drawable/ic_stat_notify.xml) teñida con el color de acento.
+      smallIcon: 'ic_stat_notify',
+      iconColor: '#4F46E5',
+    },
   },
 };
 

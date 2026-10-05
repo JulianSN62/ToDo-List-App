@@ -12,6 +12,7 @@ export function GlobalTaskList({
   retentionDays,
   tagsByTask,
   attachmentCounts,
+  reminderCounts,
   subtitleFor,
   onOpen,
   onGoToFolder,
@@ -21,6 +22,7 @@ export function GlobalTaskList({
   retentionDays: number;
   tagsByTask: ReadonlyMap<string, readonly Tag[]>;
   attachmentCounts: ReadonlyMap<string, number>;
+  reminderCounts?: ReadonlyMap<string, number>;
   subtitleFor: (task: Task) => ReactNode;
   onOpen: (task: Task) => void;
   onGoToFolder: (task: Task) => void;
@@ -45,6 +47,7 @@ export function GlobalTaskList({
               retentionDays={retentionDays}
               tags={tagsByTask.get(task.id)}
               attachmentCount={attachmentCounts.get(task.id)}
+              reminderCount={reminderCounts?.get(task.id)}
               subtitle={subtitleFor(task)}
               getActions={getActions}
               expanded={expandedTaskIds.has(task.id)}

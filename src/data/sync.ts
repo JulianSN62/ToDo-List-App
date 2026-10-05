@@ -3,6 +3,7 @@ import { files, localFiles } from '@/platform';
 import { SupabaseConnector } from './connector';
 import { getDb } from './db';
 import { stopFileSync } from './fileSync';
+import { clearNotifications, stopNotificationSync } from './notificationSync';
 
 // Conexión del motor de sincronización. La app funciona igual sin conexión:
 // esto solo sube y baja cambios cuando hay internet.
@@ -29,9 +30,13 @@ export async function syncNow(): Promise<void> {
 }
 
 // Al cerrar sesión: corta la sincronización y borra todos los datos locales,
-// incluidos los archivos adjuntos guardados en el dispositivo.
+// incluidos los archivos adjuntos guardados en el dispositivo y las notificaciones.
 export async function stopSyncAndClear(): Promise<void> {
   await stopFileSync();
+  await stopNotificationSync();
+  await clearNotifications().catch((error: unknown) => {
+    logger.warn('No se pudieron quitar las notificaciones', errorMeta(error));
+  });
   await getDb().disconnectAndClear();
   await localFiles.clear().catch((error: unknown) => {
     logger.warn('No se pudieron borrar los archivos locales', errorMeta(error));

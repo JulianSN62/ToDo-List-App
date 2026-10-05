@@ -3,7 +3,7 @@ import { Suspense, useCallback, useState, type ReactNode } from 'react';
 import { useToday } from '@/app/hooks/useToday';
 import { lazyComponent } from '@/app/lazyComponent';
 import { useUiStore } from '@/app/uiStore';
-import { useTask, useTaskFiles, useTaskLinks, useTaskTagIds } from '@/data';
+import { useTask, useTaskFiles, useTaskLinks, useTaskReminders, useTaskTagIds } from '@/data';
 import { es } from '@/i18n/es';
 import { IconButton } from '@/ui/button';
 import { ConfirmDialog } from '@/ui/confirm-dialog';
@@ -171,10 +171,16 @@ function EditTaskSheetContent({
   const tagIds = useTaskTagIds(session.taskId);
   const links = useTaskLinks(session.taskId);
   const files = useTaskFiles(session.taskId);
+  const reminders = useTaskReminders(session.taskId);
   // Mientras la consulta se actualiza puede devolver la tarea anterior: se ignora.
   const task = result.task?.id === session.taskId ? result.task : null;
-  // El formulario se arma una sola vez, con etiquetas, links y archivos ya cargados.
-  const ready = task !== null && !tagIds.isLoading && !links.isLoading && !files.isLoading;
+  // El formulario se arma una sola vez, con etiquetas, links, archivos y recordatorios ya cargados.
+  const ready =
+    task !== null &&
+    !tagIds.isLoading &&
+    !links.isLoading &&
+    !files.isLoading &&
+    !reminders.isLoading;
   const today = useToday();
 
   return (
@@ -202,6 +208,7 @@ function EditTaskSheetContent({
               tagIds: tagIds.tagIds,
               links: links.links,
               files: files.files,
+              reminders: reminders.reminders,
             }}
             today={today}
             onClose={controls.close}
