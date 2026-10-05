@@ -2,8 +2,15 @@
 
 **Estado:** ✅ Hecha la parte web (2026-10-02), en el **Bloque 5** (X96). Decisiones X97–X104.
 
-- **Queda para después:** la foto con la **cámara** y abrir archivos con otras apps en **Android**. Están armados (selector y menú de compartir), pero sin probar en el celular (X84).
-- **Lo que tenés que hacer vos:** probar con tu cuenta (pasos abajo). La migración ya la corriste (2026-10-02).
+- **Bloque 8 (2026-10-05, X127):** **"+ Foto"** con la cámara, probado en tu celular. Una foto sacada en modo avión quedó "Se sube cuando haya conexión" y se subió al volver la red. Visor, links y menú de compartir también probados.
+- **Lo que tenés que hacer vos (opcional):** mirar en Supabase → Storage que aparezcan tus archivos y abrir una tarea con adjuntos desde la otra plataforma (pasos abajo).
+
+## Cámara (Bloque 8, X127)
+- **"+ Foto"** junto a "+ Link" y "+ Archivo". Aparece en la app de Android y en el navegador con pantalla táctil, no en la PC.
+- En Android abre la app de cámara del teléfono, sin pedir el permiso de cámara. La foto se copia a la app y se borra la copia temporal.
+- Se llama `foto-AAAA-MM-DD-HHmmss.jpg` y pasa por la compresión de siempre. En el celular, una foto de varios MB quedó en 215 KB.
+- **Código:** `takePhoto` en `src/platform/web/files.ts` y `src/platform/capacitor/files.ts`, `AttachmentsField.tsx`, `<queries>` en `AndroidManifest.xml` y `camera` en `file_paths.xml`.
+- **Tests:** `TaskForm.test.tsx` (el botón solo con pantalla táctil, el nombre, cancelar y error) y `e2e/attachments.spec.ts` (`accept` y `capture` en mobile; sin botón en desktop).
 
 ## Qué se hizo
 

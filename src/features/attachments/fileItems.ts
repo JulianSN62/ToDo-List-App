@@ -10,7 +10,8 @@ export interface FileListItem {
   name: string;
   mimeType: string;
   size: number;
-  status: FileStatus | 'draft';
+  /** 'loading': archivo guardado cuyo estado todavía no llegó de la base local. */
+  status: FileStatus | 'draft' | 'loading';
   cached: boolean;
   /** Contenido de los archivos nuevos (todavía en memoria). */
   data: Blob | null;
@@ -29,7 +30,9 @@ export function toFileListItem(file: TaskFile): FileListItem {
   };
 }
 
-// Archivos de la ventana con el estado actual de los ya guardados.
+// Archivos de la ventana con el estado actual de los ya guardados. Mientras la consulta no
+// devuelve un archivo guardado, su estado es 'loading' (sin texto): antes se mostraba "En la
+// nube" un momento aunque estuviera pendiente de subir.
 export function draftsToFileItems(
   drafts: readonly FileDraft[],
   saved: readonly TaskFile[],
@@ -43,7 +46,7 @@ export function draftsToFileItems(
       name: draft.name,
       mimeType: draft.mimeType,
       size: draft.size,
-      status: draft.id === null ? 'draft' : (live?.status ?? 'remote'),
+      status: draft.id === null ? 'draft' : (live?.status ?? 'loading'),
       cached: live?.cached ?? false,
       data: draft.data,
     };

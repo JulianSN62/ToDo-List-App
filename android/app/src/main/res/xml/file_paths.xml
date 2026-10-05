@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Carpetas que la app puede compartir con otras apps (menú de compartir de Android).
-  Solo copias temporales dentro de la caché de la app: el respaldo JSON (exports/) y los
-  archivos adjuntos que se guardan o se abren (attachments/). Nada del almacenamiento
-  compartido del teléfono. Si se agrega la cámara (Bloque 8), sumar
-  <external-files-path name="camera" path="Pictures/" />, que es la carpeta propia de la app.
+  Solo copias temporales de la app: el respaldo JSON (exports/) y los archivos adjuntos que
+  se guardan o se abren (attachments/), en la caché, y la foto que saca la app de cámara
+  (Pictures/ de la carpeta externa propia de la app, que se borra al leerla). Nada del
+  almacenamiento compartido del teléfono.
 -->
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
     <cache-path name="exports" path="exports/" />
     <cache-path name="attachments" path="attachments/" />
+    <external-files-path name="camera" path="Pictures/" />
 </paths>

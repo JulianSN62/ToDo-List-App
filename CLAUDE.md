@@ -5,7 +5,7 @@ Leerlos antes de empezar una fase y consultarlos ante dudas.
 
 ## Reglas
 - Trabajar por **bloques** acordados con el usuario (fases de la sección 14 del spec, agrupadas; el plan vigente está en `docs/progress/README.md`). Al terminar un bloque: lint + typecheck + tests + build + e2e, resumen, y esperar confirmación.
-- **Prioridad actual:** web y PWA. El proyecto Android (Capacitor) debe seguir compilando (`npm run android:build`), pero no se prueba en el celular hasta nuevo aviso (X84).
+- **Estado actual:** v1.0.0 en producción (web en Netlify, APK firmado en el celular del usuario, Android 12; X126). Cada cambio se prueba en web (E2E) y, si toca Android, en el celular por cable o en el emulador (`docs/SETUP.md` paso 9). El proyecto Android debe seguir compilando (`npm run android:build`).
 - **Registro de avance obligatorio:** al terminar cada fase o funcionalidad, actualizar `docs/progress/README.md` (estado y próximo paso recomendado) y el archivo de la fase en `docs/progress/`.
 - **Git:** remoto público en GitHub (`origin`, rama `main`). Un commit al cerrar cada bloque (con lint, typecheck, tests, build y e2e en verde y la documentación al día). **Push solo cuando el usuario lo pide**, y antes reescanear los archivos en busca de secretos (repositorio público). No agregar remotos. El autor está configurado solo en este repositorio; no tocar la configuración global de git.
 - Offline-first: la UI solo lee/escribe en la base local mediante `src/data` (repositorios y hooks). Nunca importar PowerSync ni Supabase desde `src/features` o `src/ui`.

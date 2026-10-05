@@ -1,9 +1,11 @@
 # Fase 10 — Pulido, accesibilidad y entrega
 
-**Estado:** ✅ Hecha la parte web (2026-10-03), en el **Bloque 6** (X106). Decisiones X107–X115. Versión de la app: **0.9.0**.
+**Estado:** ✅ Hecha. Parte web en el **Bloque 6** (2026-10-03, X106–X115) y entrega en el **Bloque 8** (2026-10-05, X126–X133). Versión de la app: **1.0.0**.
 
-- **Queda para el Bloque 8 (Android):** revisar la UX en el celular (gestos, teclado, áreas seguras), instalar y probar el APK de release firmado, la cámara y pasar a la versión 1.0.0. El APK de release ya se compila y se firma (probado con un keystore descartable), pero no se instaló en el celular (X84).
-- **Lo que tenés que hacer vos:** crear tu keystore cuando quieras instalar el APK firmado ([SETUP.md, paso 9](../SETUP.md#apk-firmado-para-instalar-y-actualizar)). El resto de los pendientes con tu cuenta siguen como estaban (ver el [registro](./README.md#próximo-paso-recomendado)).
+## Bloque 8 — entrega (2026-10-05)
+- **UX en el celular:** gestos, teclado, áreas seguras, botón atrás, tema claro y oscuro y vista horizontal, revisados con capturas en tu moto g71 5G (detalle en [phase-08-android-base.md](./phase-08-android-base.md#bloque-8--en-tu-celular-2026-10-05-x126)). Las barras del sistema se veían grises: se activó la pantalla de borde a borde (X128).
+- **APK de release 1.0.0** (código 10000), firmado con tu keystore (esquema v2, verificado con `apksigner`). Está instalado en tu celular en lugar del de prueba.
+- **Web 1.0.0** publicada en Netlify (X131).
 
 ## Qué se hizo
 

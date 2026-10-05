@@ -25,6 +25,37 @@ function toPicked(file: File): PickedFile {
   return { name: file.name, mimeType: file.type, size: file.size, data: file };
 }
 
+// Selector del sistema con un <input type="file"> temporal. Con capture, el navegador del
+// celular abre la cámara (y en Android, el WebView de Capacitor abre la app de cámara).
+function openFileInput({
+  multiple,
+  accept,
+  capture,
+}: {
+  multiple: boolean;
+  accept?: string;
+  capture?: 'environment';
+}): Promise<PickedFile[]> {
+  return new Promise((resolve) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = multiple;
+    if (accept) input.accept = accept;
+    if (capture) input.setAttribute('capture', capture);
+    input.hidden = true;
+    const finish = (files: PickedFile[]) => {
+      input.remove();
+      resolve(files);
+    };
+    input.addEventListener('change', () => finish([...(input.files ?? [])].map(toPicked)), {
+      once: true,
+    });
+    input.addEventListener('cancel', () => finish([]), { once: true });
+    document.body.append(input);
+    input.click();
+  });
+}
+
 // Se descarga con un tipo genérico: así el navegador nunca interpreta el contenido
 // (un HTML adjunto, por ejemplo, no se ejecuta con el origen de la app).
 function saveBinary(file: BinaryFile): void {
@@ -41,23 +72,16 @@ export const webFiles: FileService = {
   async clearShared() {},
 
   pickFiles({ multiple = true, accept } = {}) {
-    return new Promise((resolve) => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.multiple = multiple;
-      if (accept) input.accept = accept;
-      input.hidden = true;
-      const finish = (files: PickedFile[]) => {
-        input.remove();
-        resolve(files);
-      };
-      input.addEventListener('change', () => finish([...(input.files ?? [])].map(toPicked)), {
-        once: true,
-      });
-      input.addEventListener('cancel', () => finish([]), { once: true });
-      document.body.append(input);
-      input.click();
+    return openFileInput({ multiple, accept });
+  },
+
+  async takePhoto() {
+    const [photo] = await openFileInput({
+      multiple: false,
+      accept: 'image/*',
+      capture: 'environment',
     });
+    return photo ?? null;
   },
 
   async saveFile(file) {

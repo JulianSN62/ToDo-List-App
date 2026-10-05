@@ -117,9 +117,7 @@ describe('respaldo JSON', () => {
   });
 
   it('arma el nombre del archivo con la fecha local', () => {
-    expect(backupFileName(new Date(2026, 0, 5, 23, 59))).toBe(
-      'mis-tareas-respaldo-2026-01-05.json',
-    );
+    expect(backupFileName(new Date(2026, 0, 5, 23, 59))).toBe('todo-list-respaldo-2026-01-05.json');
   });
 
   it('serializa en JSON válido', () => {

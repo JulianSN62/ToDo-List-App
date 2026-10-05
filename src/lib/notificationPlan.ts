@@ -10,6 +10,12 @@ import { formatPath, indexById } from './tree';
 
 export type NotificationKind = 'due' | 'reminder' | 'pin';
 export type NotificationChannelId = 'due_alerts' | 'reminders' | 'pinned';
+/**
+ * Canal que crea el plugin de notificaciones al arrancar, con el nombre "Default" en inglés.
+ * La app no lo usa: se vuelve a crear con un nombre en español para que se vea bien en los
+ * ajustes de Android (crear un canal que ya existe solo cambia el nombre y la descripción).
+ */
+export const PLUGIN_DEFAULT_CHANNEL_ID = 'default';
 
 /** Días hacia adelante que se programan (spec 9.4). El resto, en reconciliaciones posteriores. */
 export const SCHEDULE_WINDOW_DAYS = 60;
@@ -21,11 +27,11 @@ export const TEST_NOTIFICATION_ID = 2_000_000_000;
 const DESCRIPTION_PREVIEW = 120;
 
 export interface NotificationChannelSpec {
-  id: NotificationChannelId;
+  id: NotificationChannelId | typeof PLUGIN_DEFAULT_CHANNEL_ID;
   name: string;
   description: string;
-  /** 4 = alta (suena y aparece arriba); 2 = baja (sin sonido ni vibración). */
-  importance: 2 | 4;
+  /** 4 = alta (suena y aparece arriba); 3 = normal; 2 = baja (sin sonido ni vibración). */
+  importance: 2 | 3 | 4;
   vibration: boolean;
 }
 
@@ -51,6 +57,13 @@ export function notificationChannels(): NotificationChannelSpec[] {
       name: es.notifications.channelPinned,
       description: es.notifications.channelPinnedDescription,
       importance: 2,
+      vibration: false,
+    },
+    {
+      id: PLUGIN_DEFAULT_CHANNEL_ID,
+      name: es.notifications.channelOther,
+      description: es.notifications.channelOtherDescription,
+      importance: 3,
       vibration: false,
     },
   ];

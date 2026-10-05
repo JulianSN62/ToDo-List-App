@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fondo de la ventana, igual al fondo de la app (color-background de design/tokens.css).
+         Se ve detrás de las barras del sistema si el WebView no recibe las áreas seguras. -->
+    <color name="app_background">#F8FAFC</color>
+</resources>

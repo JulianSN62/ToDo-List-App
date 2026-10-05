@@ -85,7 +85,9 @@ Atajos de fecha: Hoy / Mañana / Próxima semana / Sin fecha — chips de 40px a
 
 ## Adjuntos: archivos (cambio del 2026-10-02, X97–X104)
 
-En "Adjuntos", debajo de los links, va la lista de archivos y la fila de botones **[+ Link] [+ Archivo]** (este último permite elegir varios; mientras comprime fotos muestra un spinner y "Preparando…").
+En "Adjuntos", debajo de los links, va la lista de archivos y la fila de botones **[+ Link] [+ Archivo] [Foto]**. "+ Archivo" permite elegir varios; mientras comprime fotos muestra un spinner y "Preparando…".
+
+- **Foto** (Bloque 8, X127): ícono `Camera`; abre la cámara del teléfono. Aparece en la app de Android y en el navegador con pantalla táctil, no en la PC. La foto se llama `foto-AAAA-MM-DD-HHmmss.jpg`.
 
 ```
 ┌──────────────────────────────────────────────┐

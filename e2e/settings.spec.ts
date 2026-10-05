@@ -78,8 +78,11 @@ test('exportar el respaldo JSON', async ({ page }) => {
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: es.backup.export }).click();
   const download = await downloadPromise;
+  const fileName = `todo-list-respaldo-${localDate()}.json`;
+  // El aviso dura unos segundos: se comprueba antes de leer el archivo, que puede tardar
+  // con la PC ocupada.
+  await expect(page.getByText(es.backup.exported(fileName))).toBeVisible();
 
-  const fileName = `mis-tareas-respaldo-${localDate()}.json`;
   expect(download.suggestedFilename()).toBe(fileName);
   const backup = JSON.parse(await readFile(await download.path(), 'utf8')) as {
     formatVersion: number;
@@ -105,7 +108,6 @@ test('exportar el respaldo JSON', async ({ page }) => {
     expect(Array.isArray(backup[key]), key).toBe(true);
   }
 
-  await expect(page.getByText(es.backup.exported(fileName))).toBeVisible();
   const [lastBackupPrefix = ''] = es.backup.lastBackup('\u0000').split('\u0000');
   await expect(page.getByText(lastBackupPrefix)).toBeVisible();
 });

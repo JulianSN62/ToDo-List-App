@@ -1,6 +1,6 @@
 # Fase 8 — Android y notificaciones
 
-**Estado:** ✅ Hecha en código y probada en el **emulador** (Bloque 7, 2026-10-04, versión 0.10.0). Falta probarla en tu celular (Android 12), en el Bloque 8.
+**Estado:** ✅ Hecha y **probada en tu celular** (Bloque 8, 2026-10-05): moto g71 5G, Android 12, WebView 153. Versión **1.0.0** firmada e instalada.
 
 ## Base (2026-10-01)
 - Capacitor 8 configurado (`capacitor.config.ts`): `appId` `com.todolistapp.app`, nombre "ToDo List", esquema `https`, sin contenido mixto.
@@ -50,16 +50,32 @@
 - Los datos de prueba se borraron y las alertas volvieron a tu configuración (09:00, 1 día antes y el mismo día).
 - **Android 12 en el emulador:** su WebView (91) es muy viejo para la app. Ahí se comprobó el aviso "Hay que actualizar el navegador".
 
-## Lo que tenés que hacer vos (Bloque 8, en el celular)
-1. Instalar el APK nuevo (`npm run android:build`, ver `docs/SETUP.md` paso 9) e iniciar sesión.
-2. En Ajustes → Notificaciones, comprobar que todo esté en verde y mandar la notificación de prueba. Si la batería sale con advertencia, seguir la guía.
-3. Lista del spec 15.2:
-   - un recordatorio con dos fechas cercanas, con la app cerrada y sin internet;
-   - una tarea anclada: intentar deslizarla (en Android 12 no se debería poder), desanclarla y completarla;
-   - reiniciar el celular y ver que vuelven la anclada y los avisos pendientes;
-   - cambiar la hora de las alertas y la fecha de una tarea;
-   - el modo ahorro de batería.
-4. Crear un recordatorio **desde la PC** y abrir la app en el celular: se programa al abrirla.
+## Bloque 8 — en tu celular (2026-10-05, X126)
+Probado por cable: Claude manejó la app desde la PC (Playwright `_android` sobre el APK de debug, `adb` y `uiautomator`) y vos hiciste lo físico. Evidencia con `dumpsys alarm`, `dumpsys notification` y capturas.
+
+**Lista del spec 15.2**
+- **Avisos con la app cerrada y sin internet:** recordatorio con dos fechas (11:59 y 12:01) y aviso de vencimiento (12:03) en modo avión, con la app cerrada desde Recientes: llegaron los tres a la hora justa. Tocarlos abre la tarea. Al dispararse la última fecha, el recordatorio desaparece solo.
+- **Anclada:** no se puede deslizar ni sacar con "Borrar todo" (Android 12). Completarla (deslizando la fila) la quita.
+- **Reinicio** (`svc power reboot`), sin abrir la app: la anclada volvió y el recordatorio de las 12:17 llegó a las 12:17:00. La sesión sigue abierta.
+- **Actualizar la app** (`adb install -r`): la anclada vuelve sola.
+- **Reprogramación:** cambiar la hora de las alertas (a 12:40) y la fecha de una tarea (a dos días) reemplaza las alarmas exactas en el sistema.
+- **Permisos:**
+  - Notificaciones desactivadas: el Diagnóstico muestra la cruz roja y "Abrir ajustes" lleva a la pantalla de Android. No se programa nada y la anclada se quita. Al reactivarlas se reprograma todo.
+  - Sin alarmas exactas: Android cierra la app y borra sus alarmas. Al abrirla se reprograman inexactas (ventana de hasta una hora) y el Diagnóstico lo explica. Su botón abre "Alarmas y recordatorios".
+- **Ahorro de batería:** el recordatorio llegó a la hora justa (12:36:00).
+- **Notificación de prueba:** llega con el ícono y el color de la app.
+
+**Además**
+- **Gestos:** deslizar a la derecha completa y a la izquierda elimina con "Deshacer". Un deslizamiento desde el borde usa el gesto de volver de Android y no toca la tarea.
+- **Teclado:** no tapa el campo y los botones quedan arriba.
+- **Botón atrás:** cierra el teclado, pide confirmar si hay cambios, sube de carpeta y minimiza desde el inicio.
+- **Otras pantallas:** tema claro y oscuro, vista horizontal (barra lateral), visor de fotos, links en Chrome (Custom Tab) y respaldo con el menú de compartir.
+- **Correcciones (X128–X130):**
+  - pantalla de borde a borde (las barras se veían grises);
+  - permiso `ACCESS_NETWORK_STATE`;
+  - canal "Default" renombrado "Otras";
+  - texto de alarmas exactas;
+  - estado "En la nube" que se veía un momento.
 
 ## Cómo probar
 `npm run android:build` → instalar el APK → iniciar sesión. Para el emulador, ver `docs/SETUP.md` (paso 9, "Probar en un emulador").

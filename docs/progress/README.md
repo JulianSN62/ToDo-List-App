@@ -2,45 +2,81 @@
 
 Estado del desarrollo por fase (según la sección 14 de `docs/specs-and-design.md`), con lo hecho, lo pendiente y por dónde seguir. Se actualiza al terminar cada fase o funcionalidad.
 
-**Última actualización:** 2026-10-04 (Bloque 7) · Versión de la app: **0.10.0** · Git: repositorio público en GitHub ([JulianSN62/ToDo-List-App](https://github.com/JulianSN62/ToDo-List-App)) desde el 2026-10-02 (X88). Push solo cuando se pide explícitamente (X89).
+**Última actualización:** 2026-10-05 (Bloque 8) · Versión de la app: **1.0.0** · Git: repositorio público en GitHub ([JulianSN62/ToDo-List-App](https://github.com/JulianSN62/ToDo-List-App)) desde el 2026-10-02 (X88). Push solo cuando se pide explícitamente (X89).
 
-**Avance estimado: ~95 % de la v1.** Web, PWA y notificaciones de Android están **completas en código**; las notificaciones se probaron en un emulador con tu cuenta. Falta un bloque:
-- **Bloque 8:** entrega en el celular (lista de pruebas del spec 15.2, cámara, APK firmado instalado, revisión de UX ahí, versión 1.0.0).
-
-**Prioridad (X84):** el celular todavía no se probó. Las notificaciones se probaron en el emulador (X116).
+**Avance: 100 % de la v1. La app está en producción:**
+- la **web** está publicada en Netlify e instalada como app en tu PC;
+- el **APK firmado 1.0.0** está instalado en tu celular (moto g71 5G, Android 12);
+- la **limpieza diaria** del servidor está desplegada.
 
 ## Estado general
 
 | Fase | Estado | Detalle |
 |---|---|---|
 | 0 — Fundamentos | ✅ Hecha | [phase-00-foundations.md](./phase-00-foundations.md) |
-| 1 — Backend y autenticación | ✅ Hecha · login real probado por vos en el navegador · Spike B resuelto en el Bloque 7 (Android 12, plugin propio para las ancladas, X118) | [phase-01-backend-auth.md](./phase-01-backend-auth.md) |
-| 2 — Datos local-first y sync | ✅ Hecha (falta probar sync real entre dispositivos) | [phase-02-data-sync.md](./phase-02-data-sync.md) |
+| 1 — Backend y autenticación | ✅ Hecha · login real en web y celular · sesión persistente tras reiniciar · Spike B confirmado en tu celular | [phase-01-backend-auth.md](./phase-01-backend-auth.md) |
+| 2 — Datos local-first y sync | ✅ Hecha · sincronización real PC ↔ celular, también sin conexión | [phase-02-data-sync.md](./phase-02-data-sync.md) |
 | 3 — Carpetas | ✅ Hecha | [phase-03-folders.md](./phase-03-folders.md) |
-| 4 — Tareas (núcleo) | ✅ Hecha · ajustada tras tus pruebas (ventana de tarea, filas expandibles) | [phase-04-tasks.md](./phase-04-tasks.md) |
-| 5 — Etiquetas, Hoy, búsqueda, links | ✅ Hecha (+ Ajustes → Etiquetas) · falta probar sync real y links en el celular | [phase-05-tags-today-search.md](./phase-05-tags-today-search.md) |
-| 6 — Configuración, respaldo, limpieza programada | ✅ Hecha (Bloques 3 y 4: alertas de vencimiento también en web) · funciones SQL de limpieza ya corridas por vos · falta la tarea diaria, la Edge Function y Vault | [phase-06-settings-backup-cleanup.md](./phase-06-settings-backup-cleanup.md) |
-| 7 — PWA y desktop | ✅ Hecha en código (Bloque 3) · falta que publiques la web en Netlify | [phase-07-pwa.md](./phase-07-pwa.md) |
-| 8 — Android y notificaciones | ✅ Hecha en código (Bloque 7) · avisos, recordatorios, ancladas y diagnóstico **probados en el emulador** con tu cuenta · falta tu celular (Bloque 8) | [phase-08-android-base.md](./phase-08-android-base.md) |
-| 9 — Archivos y fotos | ✅ Hecha en web (Bloque 5) · migración corrida por vos · falta probar con tu cuenta · cámara y Android sin probar (X84) | [phase-09-files.md](./phase-09-files.md) |
-| 10 — Pulido y entrega | ✅ Hecha en web (Bloque 6) · APK de release firmado listo · falta revisarlo e instalarlo en el celular (Bloque 8) | [phase-10-polish.md](./phase-10-polish.md) |
-| Tests E2E (spec 15.1) | ✅ En el repo (Bloque 4): `npm run e2e`, 94 tests (recordatorios y anclado en la web en el Bloque 7) | [e2e-tests.md](./e2e-tests.md) |
+| 4 — Tareas (núcleo) | ✅ Hecha | [phase-04-tasks.md](./phase-04-tasks.md) |
+| 5 — Etiquetas, Hoy, búsqueda, links | ✅ Hecha · links probados en el celular | [phase-05-tags-today-search.md](./phase-05-tags-today-search.md) |
+| 6 — Configuración, respaldo, limpieza programada | ✅ Hecha · Edge Function desplegada · falta solo la prueba manual 12.5 (opcional) | [phase-06-settings-backup-cleanup.md](./phase-06-settings-backup-cleanup.md) |
+| 7 — PWA y desktop | ✅ Hecha · **publicada en Netlify** | [phase-07-pwa.md](./phase-07-pwa.md) |
+| 8 — Android y notificaciones | ✅ Hecha · **lista del spec 15.2 completa en tu celular** | [phase-08-android-base.md](./phase-08-android-base.md) |
+| 9 — Archivos y fotos | ✅ Hecha · **cámara** y subida sin conexión probadas en el celular | [phase-09-files.md](./phase-09-files.md) |
+| 10 — Pulido y entrega | ✅ Hecha · UX revisada en el celular · **APK firmado 1.0.0 instalado** | [phase-10-polish.md](./phase-10-polish.md) |
+| Tests E2E (spec 15.1) | ✅ `npm run e2e`, 96 tests | [e2e-tests.md](./e2e-tests.md) |
 
-## Plan vigente (2026-10-04, decisiones X84, X106 y X116)
+## Plan (cerrado el 2026-10-05)
 
 Bloques chicos, cada uno cerrado con lint, typecheck, tests, build y E2E en verde, documentación al día, **un commit** y tu confirmación.
 
-- **Bloques 3, 4 y 5 — ✅ hechos:** Fases 6 y 7, tests E2E y alertas en web, archivos adjuntos en web.
-- **Bloque 6 — ✅ hecho:** pulido web (Fase 10).
-- **Bloque 7 — ✅ hecho:** notificaciones de Android (resto de la Fase 8). Detalle abajo.
-- **Bloque 8 — siguiente: entrega Android en tu celular (Android 12).**
-  - Lista del spec 15.2 en el teléfono (ver [phase-08-android-base.md](./phase-08-android-base.md#lo-que-tenés-que-hacer-vos-bloque-8-en-el-celular)).
-  - Cámara (y su carpeta en `file_paths.xml`).
-  - Instalar el APK firmado con tu keystore.
-  - Revisar gestos, teclado y áreas seguras en el celular.
-  - Versión 1.0.0.
+- **Bloques 0 a 7 — ✅ hechos:** app web, PWA, sincronización, archivos, pulido y notificaciones de Android.
+- **Bloque 8 — ✅ hecho:** entrega en el celular y versión 1.0.0. Detalle abajo.
+- **Después de la v1:** las mejoras de la sección 16 del spec, cuando quieras (por ejemplo: importar respaldo, papelera, tareas recurrentes o widget).
 
-## Última tanda: Bloque 7 — Notificaciones de Android (2026-10-04)
+## Última tanda: Bloque 8 — Entrega en el celular y versión 1.0.0 (2026-10-05)
+
+Plan de la sesión en 7 fases (X126):
+- 8A: cámara y versión 1.0.0.
+- 8B: servidor.
+- 8C: celular por cable.
+- 8D: cuenta real.
+- 8E: correcciones.
+- 8F: builds de producción.
+- 8G: cierre.
+
+Decisiones X126–X133.
+
+- **Cámara:** "+ Foto" en la ventana de la tarea abre la cámara del celular (también en el navegador de un celular). La foto se comprime y se sube como cualquier adjunto (X127).
+- **Probado en tu celular** (moto g71 5G, Android 12), por cable, con tu cuenta real. Detalle en [phase-08-android-base.md](./phase-08-android-base.md):
+  - avisos y recordatorios con la app cerrada y sin internet;
+  - la anclada que no se puede sacar;
+  - reinicio, actualización de la app y reprogramación;
+  - permisos quitados y ahorro de batería;
+  - gestos, teclado, botón atrás, temas y vista horizontal;
+  - trabajo sin conexión y sincronización al volver la red.
+- **Corregido gracias al celular:**
+  - las barras del sistema se veían grises: ahora la app es de borde a borde (X128);
+  - en modo avión la app creía que había internet (X129);
+  - un estado "En la nube" que aparecía un momento;
+  - un canal de notificaciones en inglés ("Default", ahora "Otras");
+  - el texto de las alarmas exactas;
+  - el nombre del respaldo, `todo-list-respaldo-…json` (X130).
+- **Producción:**
+  - Edge Function de limpieza desplegada (X132);
+  - web publicada en Netlify y comprobada (X131);
+  - APK firmado 1.0.0 con tu keystore, instalado en el celular;
+  - `docs/SETUP.md` paso 16: uso diario, respaldo y planes gratuitos (X133).
+
+**Verificación:**
+- `npm run lint`, `npm run typecheck`, `npm test` (**274 tests**, 39 archivos) y `npm run build`: sin errores.
+- `npm run e2e`: **96 de 96** en verde.
+- `npm run android:build` (debug) y `npm run android:release` (firmado, verificado con `apksigner`: esquema v2, versión 1.0.0, código 10000).
+- En el celular: la lista completa del spec 15.2, con evidencia del sistema (`dumpsys alarm` y `dumpsys notification`) y capturas.
+- Sitio publicado: rutas, cabeceras de seguridad, caché y service worker comprobados.
+- Datos de prueba borrados, alertas otra vez en 09:00 y tema en "Sistema".
+
+## Tanda anterior: Bloque 7 — Notificaciones de Android (2026-10-04)
 
 Plan de la sesión en 6 fases (X116): 7A datos y lógica pura, 7B interfaz, 7C servicio de Android y reconciliación, 7D diagnóstico, 7E pruebas y 7F cierre. Detalle en [phase-08-android-base.md](./phase-08-android-base.md); decisiones X116–X125.
 
@@ -168,21 +204,10 @@ Pedidos del usuario después de probar el login en el navegador (detalle en [pha
 
 ## Próximo paso recomendado
 
-1. **Vos — probar el Bloque 5:**
-   1. ✅ Migraciones corridas en Supabase (2026-10-02): `20261002120000_cleanup_functions.sql` y `20261003120000_attachment_files.sql`.
-   2. Con `npm run dev` y tu cuenta, seguir la lista de [phase-09-files.md](./phase-09-files.md#lo-que-tenés-que-hacer-vos):
-      - adjuntar una foto y un PDF y verlos en Storage;
-      - abrirlos en otro navegador;
-      - adjuntar sin conexión y reconectar.
-2. **Vos — pendientes de antes:**
-   - Terminar la limpieza programada (`docs/SETUP.md` paso 12). Las funciones SQL ya están. Faltan:
-     - la secret key (12.1);
-     - la migración `20261002120100_cleanup_schedule.sql` (12.2, punto 2);
-     - la Edge Function (12.3);
-     - los secretos de Vault (12.4).
-   - Publicar en Netlify (paso 10).
-   - Probar la sincronización real entre dos navegadores.
-   - Probar Ajustes → Alertas con datos reales.
-3. **Vos — cuando quieras el APK firmado:** crear tu keystore y `android/keystore.properties` ([SETUP.md, paso 9](../SETUP.md#apk-firmado-para-instalar-y-actualizar)).
-4. **Vos — notificaciones (opcional antes del Bloque 8):** instalar el APK nuevo en el celular y seguir la lista de [phase-08-android-base.md](./phase-08-android-base.md#lo-que-tenés-que-hacer-vos-bloque-8-en-el-celular).
-5. **Siguiente sesión: Bloque 8** (entrega en el celular, versión 1.0.0).
+**Usar la app.** Además, cuando puedas:
+
+1. **Respaldo:** exportá un respaldo JSON cada tanto (Ajustes → Datos) y guardalo en Drive. El plan gratuito de Supabase no hace copias.
+2. **Keystore:** guardá una copia de `todo-list.jks` fuera de la PC. Sin él no se puede actualizar la app del celular.
+3. **Opcional, la limpieza diaria:** probala una vez a mano con la consulta del paso 12.5 de `docs/SETUP.md`. Tiene que responder `200` con `{"ok":true,...}`.
+4. **Opcional, los archivos:** mirá en Supabase → Storage que estén tus archivos ([phase-09-files.md](./phase-09-files.md#lo-que-tenés-que-hacer-vos)).
+5. **Versiones nuevas:** seguí `docs/SETUP.md` paso 15. Cada cambio se prueba en web (E2E) y, si toca Android, en el celular.

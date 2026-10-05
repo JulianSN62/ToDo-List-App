@@ -3,8 +3,8 @@
 **Estado:** ✅ Hecha (2026-10-02), dentro del **Bloque 3** (X72). Decisiones X73–X77. La pantalla de **alertas de vencimiento** (SET-3) se sumó en el **Bloque 4** (X85, X91–X92; ver más abajo).
 
 - **Ya estaban de antes:** el tema, la cuenta, la sincronización, "Acerca de" y Ajustes → Etiquetas (Fase 5).
-- **Queda para después:** el diagnóstico de notificaciones (SET-6), con las notificaciones de Android, pospuestas (X84).
-- **Lo que tenés que hacer vos:** la parte del servidor (pasos abajo).
+- El diagnóstico de notificaciones (SET-6) se hizo en el Bloque 7.
+- **Limpieza diaria (Bloque 8, X132):** la secret key, la migración de la tarea diaria y Vault los hiciste vos; la Edge Function se desplegó el 2026-10-05 y responde 401 sin la clave. Falta solo la prueba manual del paso 12.5 (opcional).
 
 ## Qué se hizo
 
@@ -24,7 +24,7 @@ Siguen los grupos de `design/screens/settings.md`:
 - En mobile el stepper va debajo del texto; desde 640px, a la derecha.
 
 ### Exportar respaldo JSON (SET-5, spec 7.8, X75)
-- El botón está en Ajustes → Datos y genera `mis-tareas-respaldo-YYYY-MM-DD.json`.
+- El botón está en Ajustes → Datos y genera `todo-list-respaldo-YYYY-MM-DD.json` (hasta el Bloque 8 se llamaba `mis-tareas-respaldo-…`).
 - **Contenido:**
   - `formatVersion: 1`, `exportedAt` y `folders`, `tasks`, `tags`, `taskTags`, `attachments`, `reminders`, `reminderTimes` y `settings`.
   - Las filas tienen las mismas columnas que la base del servidor, con booleanos `true/false`.
@@ -107,13 +107,12 @@ Siguen los grupos de `design/screens/settings.md`:
 
 ## Pasos para vos
 1. Supabase: seguir `docs/SETUP.md`, **paso 12** (Limpieza programada):
-   1. Crear la secret key `cleanup`.
-   2. Correr las 2 migraciones.
-   3. `npx supabase login` y `npx supabase functions deploy cleanup --project-ref <ref> --no-verify-jwt --use-api`.
-   4. Cargar `project_url` y `cleanup_secret_key` en Vault.
-   5. Probarla una vez a mano (paso 12.5).
+   1. ✅ Crear la secret key `cleanup`.
+   2. ✅ Correr las 2 migraciones.
+   3. ✅ `npx supabase login` y `npx supabase functions deploy cleanup --project-ref <ref> --no-verify-jwt --use-api` (2026-10-05).
+   4. ✅ Cargar `project_url` y `cleanup_secret_key` en Vault.
+   5. ⏳ Probarla una vez a mano (paso 12.5, opcional).
 2. En la app: Ajustes → Retención, cambiarla y ver que "Se borra en N días" de una completada cambia. Exportar un respaldo en la PC y en el celular.
 
 ## Pendiente
-- Diagnóstico de notificaciones (SET-6) → con las notificaciones de Android, pospuestas (X84).
 - Importar un respaldo: fuera de la v1 (spec 16).

@@ -104,9 +104,9 @@ export function buildBackup(rows: BackupRows, exportedAt: Date): BackupFile {
   };
 }
 
-// mis-tareas-respaldo-YYYY-MM-DD.json, con la fecha local del dispositivo.
+// todo-list-respaldo-YYYY-MM-DD.json, con la fecha local del dispositivo.
 export function backupFileName(date: Date): string {
-  return `mis-tareas-respaldo-${todayLocalDate(date)}.json`;
+  return `todo-list-respaldo-${todayLocalDate(date)}.json`;
 }
 
 export function serializeBackup(backup: BackupFile): string {

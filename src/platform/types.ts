@@ -40,8 +40,8 @@ export interface NotificationChannelConfig {
   id: string;
   name: string;
   description: string;
-  /** 4 = alta (suena y aparece arriba); 2 = baja (sin sonido). */
-  importance: 2 | 4;
+  /** 4 = alta (suena y aparece arriba); 3 = normal; 2 = baja (sin sonido). */
+  importance: 2 | 3 | 4;
   vibration: boolean;
 }
 
@@ -146,7 +146,7 @@ export interface PickFilesOptions {
   accept?: string;
 }
 
-/** Archivos: exportación (Fase 6), adjuntos (Fase 9). La cámara llega con Android. */
+/** Archivos: exportación (Fase 6), adjuntos (Fase 9) y cámara (Bloque 8). */
 export interface FileService {
   /** Web: descarga el archivo. Android: lo guarda en la caché y abre el menú de compartir. */
   saveAndShare(file: ExportFile): Promise<SaveResult>;
@@ -156,10 +156,15 @@ export interface FileService {
   saveFile(file: BinaryFile): Promise<SaveResult>;
   /** Web: abre un PDF en una pestaña nueva; si el navegador lo bloquea, lo descarga. */
   openPdf(file: BinaryFile): Promise<void>;
-  takePhoto?(): Promise<PickedFile | null>;
   /**
-   * Borra las copias temporales que se compartieron (respaldo y adjuntos). Android las deja en
-   * la caché de la app; se borran al cerrar sesión. En la web no hay nada que borrar.
+   * Abre la cámara del teléfono para sacar una foto. Devuelve null si se cierra sin sacarla.
+   * En una PC el navegador abre el selector de archivos (la app no ofrece el botón ahí).
+   */
+  takePhoto(): Promise<PickedFile | null>;
+  /**
+   * Borra las copias temporales que se compartieron (respaldo y adjuntos) y las fotos de la
+   * cámara. Android las deja en carpetas de la app; se borran al cerrar sesión. En la web no
+   * hay nada que borrar.
    */
   clearShared(): Promise<void>;
 }

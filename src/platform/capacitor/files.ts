@@ -8,7 +8,8 @@ import { webFiles } from '../web/files';
 // (adjuntos), las únicas carpetas que el FileProvider comparte (res/xml/file_paths.xml), y se
 // abre el menú de compartir para guardarlo en Drive, en Archivos o mandarlo a otra app.
 // Los adjuntos se eligen con el mismo selector que en la web (el WebView lo soporta).
-// Sin probar en el celular todavía (X84).
+// La cámara también: con capture, Capacitor abre la app de cámara y la foto queda en
+// Pictures/ de la carpeta externa propia de la app (file_paths.xml); se borra al leerla.
 
 async function share(uri: string, title: string, dialogTitle?: string): Promise<SaveResult> {
   try {
@@ -44,6 +45,17 @@ async function shareBinary(file: BinaryFile): Promise<SaveResult> {
 
 const SHARED_DIRS = ['exports', 'attachments'];
 
+// Carpeta donde Capacitor guarda las fotos de la cámara (getExternalFilesDir(Pictures)).
+const CAMERA_DIR = 'Pictures';
+
+async function removeDir(path: string, directory: Directory): Promise<void> {
+  try {
+    await Filesystem.rmdir({ path, directory, recursive: true });
+  } catch {
+    // La carpeta no existe (nunca se usó): no hay nada que borrar.
+  }
+}
+
 export const capacitorFiles: FileService = {
   async saveAndShare(file) {
     const { uri } = await Filesystem.writeFile({
@@ -57,16 +69,23 @@ export const capacitorFiles: FileService = {
   },
 
   async clearShared() {
-    for (const path of SHARED_DIRS) {
-      try {
-        await Filesystem.rmdir({ path, directory: Directory.Cache, recursive: true });
-      } catch {
-        // La carpeta no existe (nunca se compartió nada): no hay nada que borrar.
-      }
-    }
+    for (const path of SHARED_DIRS) await removeDir(path, Directory.Cache);
+    await removeDir(CAMERA_DIR, Directory.External);
   },
 
   pickFiles: webFiles.pickFiles,
+
+  // La foto se copia a memoria antes de borrar el archivo temporal de la cámara.
+  async takePhoto() {
+    const photo = await webFiles.takePhoto();
+    if (!photo) return null;
+    try {
+      const data = new Blob([await photo.data.arrayBuffer()], { type: photo.mimeType });
+      return { ...photo, data, size: data.size };
+    } finally {
+      await removeDir(CAMERA_DIR, Directory.External);
+    }
+  },
 
   saveFile: shareBinary,
 

@@ -1,6 +1,11 @@
 # Fase 2 — Capa de datos local-first y sincronización
 
-**Estado:** ✅ Hecha (2026-10-01) · ⏳ Falta probar la sincronización real entre dispositivos
+**Estado:** ✅ Hecha (2026-10-01). Sincronización real probada en el Bloque 8 entre tu PC y tu celular.
+
+## Bloque 8 (2026-10-05) — sincronización real
+- Al iniciar sesión en el celular bajaron las carpetas creadas desde la PC.
+- En modo avión se crearon y editaron tareas y se adjuntó una foto: "Sin conexión · 5 pendientes". Al volver la red se subió todo ("Sincronizado", sin pendientes) y la foto quedó en la nube.
+- **Corrección (X129):** el APK no tenía el permiso `ACCESS_NETWORK_STATE` y el WebView creía que siempre había red ("Error · reintentando" en vez de "Sin conexión").
 
 ## Qué se hizo
 - Base local SQLite con PowerSync (`src/data/db.ts`): SQLite nativo en Android, WASM en navegador. Logs del SDK filtrados (sin datos).

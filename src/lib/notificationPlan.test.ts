@@ -157,6 +157,7 @@ describe('conjunto deseado', () => {
       ['due_alerts', 4],
       ['reminders', 4],
       ['pinned', 2],
+      ['default', 3],
     ]);
   });
 });

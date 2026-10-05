@@ -281,6 +281,11 @@ export const es = {
   files: {
     add: 'Archivo',
     addLabel: 'Adjuntar archivos',
+    photo: 'Foto',
+    photoLabel: 'Sacar una foto con la cámara',
+    /** Nombre de la foto sacada con la cámara: "foto-2026-10-05-143012.jpg". */
+    photoName: (stamp: string, extension: string) => `foto-${stamp}.${extension}`,
+    photoError: 'No se pudo leer la foto. Probá de nuevo.',
     preparing: 'Preparando…',
     tooLarge: (name: string, size: string, max: string) =>
       `«${name}» pesa ${size}. El límite es ${max} por archivo.`,
@@ -477,6 +482,8 @@ export const es = {
     channelRemindersDescription: 'Los recordatorios que agregaste a tus tareas.',
     channelPinned: 'Tareas ancladas',
     channelPinnedDescription: 'Tareas fijas en la barra de notificaciones. No suenan.',
+    channelOther: 'Otras',
+    channelOtherDescription: 'Avisos generales de la app.',
     dueTitle: (days: number, title: string) => {
       if (days <= 0) return `Vence hoy: ${title}`;
       if (days === 1) return `Vence mañana: ${title}`;
@@ -497,7 +504,7 @@ export const es = {
     allow: 'Permitir',
     exactAlarms: 'Alarmas exactas',
     exactOk: 'Permitidas: los avisos llegan a la hora justa.',
-    exactOff: 'Sin permiso: los avisos pueden llegar varios minutos tarde.',
+    exactOff: 'Sin permiso: los avisos pueden llegar hasta una hora tarde.',
     battery: 'Optimización de batería',
     batteryOk: 'Sin restricciones: los avisos llegan aunque la app esté cerrada.',
     batteryWarning: 'Android puede demorar los avisos para ahorrar batería.',

@@ -1,6 +1,6 @@
 # Puesta en marcha — ToDo List
 
-Guía paso a paso para crear la base de datos, conectar la sincronización, correr la app en la PC, instalarla como PWA, compilar el APK de Android (de prueba y firmado) y publicar la web en Netlify. Al final: cómo [armar todo de nuevo desde cero](#14-restaurar-desde-cero-servidor-nuevo) y cómo [publicar una versión nueva](#15-publicar-una-versión-nueva).
+Guía paso a paso para crear la base de datos, conectar la sincronización, correr la app en la PC, instalarla como PWA, compilar el APK de Android (de prueba y firmado) y publicar la web en Netlify. Al final: cómo [armar todo de nuevo desde cero](#14-restaurar-desde-cero-servidor-nuevo), cómo [publicar una versión nueva](#15-publicar-una-versión-nueva) y qué tener en cuenta en el [uso diario](#16-uso-diario-y-mantenimiento).
 
 > **Regla de oro:** ninguna contraseña ni clave secreta se escribe en archivos del proyecto. En `.env` van **solo valores públicos** (URL del proyecto, publishable key y URL de PowerSync). El build se cancela solo si detecta un secreto ahí.
 
@@ -158,7 +158,9 @@ Hace el build web, copia los archivos al proyecto Android (`cap sync`) y compila
 - **Sin cable:** copiá el APK al celular y abrilo (hay que permitir "instalar apps desconocidas").
 - **Desde Android Studio:** `npm run android:open` → botón Run.
 
-Para ver la consola de la app en el celular: Chrome en la PC → `chrome://inspect/#devices`.
+Para ver la consola de la app en el celular: Chrome en la PC → `chrome://inspect/#devices` (solo con el APK de prueba; el firmado no se puede inspeccionar).
+
+Para usar la app todos los días se instala el **APK firmado** (más abajo). El de prueba sirve para probar cambios.
 
 Importante: el `.env` se "congela" dentro del APK al compilar. Si cambiás algún valor, volvé a correr `npm run android:build`.
 
@@ -167,11 +169,15 @@ Importante: el `.env` se "congela" dentro del APK al compilar. Si cambiás algú
 La primera vez que actives las alertas, agregues un recordatorio o anclés una tarea, la app pide permiso (en Android 13 o más aparece el pedido del sistema). En **Ajustes → Notificaciones** (solo en Android) ves si falta algo, con un botón para cada ajuste del sistema:
 
 - **Permiso de notificaciones.**
-- **Alarmas exactas:** sin ellas los avisos pueden llegar varios minutos tarde. En Android 12 vienen permitidas; en Android 14 hay que darlas a mano.
+- **Alarmas exactas:** sin ellas los avisos pueden llegar hasta una hora tarde (Android los agrupa para ahorrar batería). En Android 12 vienen permitidas; en Android 14 hay que darlas a mano.
 - **Optimización de batería:** algunos fabricantes (Samsung, Xiaomi, Motorola…) cortan las apps en segundo plano. Conviene poner ToDo List en "No optimizar" o "Sin restricciones".
 - **"Enviar notificación de prueba"** para comprobar que llegan.
 
-Si forzás la detención de la app desde los ajustes de Android, se borran sus alarmas: se reprograman solas la próxima vez que la abras.
+Si forzás la detención de la app desde los ajustes de Android, se borran sus alarmas: se reprograman solas la próxima vez que la abras. Cerrarla desde Recientes no las borra (probado en un Motorola con Android 12).
+
+### Cámara
+
+"+ Foto", en la ventana de la tarea, abre la app de cámara del celular. La foto se comprime, se adjunta al guardar y se sube como cualquier archivo. La app no pide el permiso de cámara: la foto la saca la app de cámara del teléfono.
 
 ### Probar en un emulador (sin el celular)
 
@@ -249,7 +255,7 @@ Arrastrá **solo `dist`**, nunca la carpeta del proyecto: subirías el código, 
 
 1. Abrí `https://<nombre>.netlify.app`, entrá a **Hoy** y **recargá la página**: no tiene que dar 404 (eso confirma `_redirects`).
 2. DevTools → *Network* → el pedido del documento → *Response Headers*: tienen que aparecer `x-frame-options: DENY` y `strict-transport-security` (eso confirma `_headers`).
-3. En la consola no tiene que haber errores de CSP.
+3. En la consola no tiene que haber errores de CSP de la app. Con el plan gratuito, Netlify agrega a la página un script propio (una insignia, el *Netlify HUD*) que intenta ejecutar código en línea: la CSP lo bloquea a propósito y queda **un** error que lo nombra (`Executing inline script violates…`). No afecta en nada a la app.
 
 El dominio personalizado se agrega después en *Domain management*, sin cambiar nada del código.
 
@@ -376,3 +382,27 @@ Para armar todo de nuevo si se pierde el proyecto de Supabase o de PowerSync, o 
 4. **Web:** `npm run build` y publicar `dist` ([paso 10](#10-netlify-publicar-la-web)). Quien tenga la app abierta ve "Hay una nueva versión disponible" con **Actualizar**; una pestaña con la versión anterior se recarga sola si le falta alguna parte.
 5. **Android:** `npm run android:release` e instalar encima de la anterior (se conservan los datos).
 6. Commit y, cuando quieras, push (con un repaso de que no haya secretos: el repositorio es público).
+
+## 16. Uso diario y mantenimiento
+
+### Dónde está la app
+- **Celular:** el APK firmado (`npm run android:release`). Se actualiza instalando el nuevo encima, sin perder datos.
+- **PC:** la web publicada en Netlify, instalada como app desde Edge (ícono de instalar en la barra de direcciones). Para tenerla en el escritorio: `edge://apps` → "⋯" de ToDo List → **Crear acceso directo en el escritorio**, o arrastrarla desde Inicio → Todas las aplicaciones.
+- Las dos sincronizan solas; sin conexión se usan igual y los cambios se suben al volver internet.
+
+### Respaldo
+El plan gratuito de Supabase **no hace copias de seguridad**. Cada tanto (por ejemplo, una vez por semana), en **Ajustes → Datos → Exportar respaldo (JSON)** guardá un archivo en Drive o en la PC. Los archivos adjuntos no se incluyen; quedan en Supabase Storage.
+
+### Planes gratuitos: inactividad
+Según la documentación vigente (octubre de 2026):
+- **Supabase** pausa un proyecto gratuito que pasa **7 días** con poca actividad. Antes manda un email de aviso. Se evita usando la app (o entrando al panel), y uno pausado se restaura desde el panel, con los datos intactos.
+- **PowerSync** da de baja una instancia gratuita después de **7 días** sin conexiones de la app. Se reactiva desde su panel volviendo a desplegar las **Sync Streams** (`powersync/sync-config.yaml`); los dispositivos vuelven a bajar todo, sin perder lo que tengan.
+- Con el uso diario no pasa nada de esto. Si vas a dejar de usarla más de una semana, abrila un momento o entrá a los dos paneles antes de que se cumpla.
+
+### Espacio
+- **Storage:** 1 GB en el plan gratuito. En **Ajustes → Datos** ves cuánto usás. Las fotos se comprimen antes de subirse.
+- Lo eliminado se borra del servidor a los 30 días y las completadas según la retención de Ajustes (limpieza diaria, paso 12).
+
+### Si algo no llega
+- **Avisos en el celular:** Ajustes → Notificaciones muestra qué falta (permiso, alarmas exactas, batería) con un botón para cada ajuste de Android.
+- **Sincronización:** el indicador de arriba dice "Sin conexión", "Error · reintentando" o cuántos cambios faltan subir. "Sincronizar ahora" está en Ajustes.

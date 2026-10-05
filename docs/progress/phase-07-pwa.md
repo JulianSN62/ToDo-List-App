@@ -1,6 +1,16 @@
 # Fase 7 — PWA y versión desktop
 
-**Estado:** ✅ Hecha en código (2026-10-02). Falta que publiques la web en Netlify (paso tuyo, `docs/SETUP.md` paso 10).
+**Estado:** ✅ Hecha y **publicada en Netlify** (Bloque 8, 2026-10-05, X131).
+
+## Bloque 8 (2026-10-05) — publicada
+- Subiste `dist` a Netlify (arrastrar la carpeta). La URL no se escribe en este repositorio público.
+- Comprobado en el sitio publicado:
+  - todas las rutas responden 200 (recargar en cualquier pantalla no da 404);
+  - cabeceras `X-Frame-Options: DENY`, HSTS, `nosniff`, `Referrer-Policy` y `Permissions-Policy`;
+  - `sw.js` sin caché y los archivos con hash en caché por un año;
+  - el login abre en Edge (390 px y 1280 px) y el service worker queda activo ("La app ya funciona sin conexión").
+- Único error de consola: la CSP bloquea el script en línea que Netlify agrega a los sitios publicados (*Netlify HUD*). Es a propósito y no afecta a la app (`docs/SETUP.md` paso 10).
+- Instalaste la PWA en la PC, con acceso directo en el escritorio.
 
 ## Primera tanda (2026-10-01)
 - **`vite-plugin-pwa`:**
@@ -77,5 +87,4 @@ Prueba automatizada en Edge, con el build de producción, sin red y una sesión 
 5. Ícono "?" junto al indicador de sincronización.
 
 ## Pendiente
-- **Publicar en Netlify (vos):** `docs/SETUP.md` paso 10 (la forma más simple: `npm run build` y arrastrar `dist`). Después, opcional: el dominio personalizado.
-- Dividir el bundle principal (~1,2 MB) con carga diferida → Fase 10.
+- Opcional: dominio personalizado (*Domain management* en Netlify, sin cambiar código).

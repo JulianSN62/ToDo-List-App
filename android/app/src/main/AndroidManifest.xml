@@ -51,7 +51,19 @@
         </provider>
     </application>
 
+    <!-- Cámara para adjuntar fotos: Capacitor abre la app de cámara del teléfono, que guarda
+         la foto en la carpeta de la app. Sin esta consulta, desde Android 11 no la encuentra
+         y abre el selector de archivos. No hace falta el permiso CAMERA. -->
+    <queries>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+    </queries>
+
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Sin este permiso el WebView no detecta los cambios de red: navigator.onLine queda
+         siempre en true y nunca llegan los eventos online/offline (modo avión incluido). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 </manifest>

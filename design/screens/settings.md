@@ -96,7 +96,7 @@ Fila 48px: punto de color 12px + nombre + menú de más opciones (Renombrar, Cam
 
 ## Exportar backup (JSON)
 
-Botón único en Ajustes → genera `mis-tareas-respaldo-YYYY-MM-DD.json`. Mobile: usa el share sheet nativo (Filesystem + compartir). Web: descarga directa (Blob). Tras exportar, un toast confirma "Backup exportado" con el nombre del archivo.
+Botón único en Ajustes → genera `todo-list-respaldo-YYYY-MM-DD.json`. Mobile: usa el share sheet nativo (Filesystem + compartir). Web: descarga directa (Blob). Tras exportar, un toast confirma "Backup exportado" con el nombre del archivo.
 
 ## Diagnóstico de notificaciones [NATIVE — Android]
 

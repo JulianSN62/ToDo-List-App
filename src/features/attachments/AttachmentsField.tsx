@@ -1,24 +1,30 @@
-import { Link2, Paperclip, Pencil, Plus, X } from 'lucide-react';
+import { format } from 'date-fns';
+import { Camera, Link2, Paperclip, Pencil, Plus, X } from 'lucide-react';
 import { useEffect, useId, useState, type KeyboardEvent } from 'react';
 import { es } from '@/i18n/es';
-import { formatFileSize, MAX_FILE_BYTES } from '@/lib/files';
+import { extensionForType, formatFileSize, MAX_FILE_BYTES } from '@/lib/files';
 import { newId } from '@/lib/ids';
 import { linkDisplayText } from '@/lib/links';
 import { errorMeta, logger } from '@/lib/logger';
 import type { FileDraft, LinkDraft, LinkEditorDraft } from '@/lib/taskForm';
 import { LIMITS } from '@/lib/validation';
-import { files as fileService } from '@/platform';
+import { files as fileService, platform, type PickedFile } from '@/platform';
 import { Button, IconButton } from '@/ui/button';
 import { Input } from '@/ui/input';
 import { Spinner } from '@/ui/spinner';
+import { useMediaQuery } from '@/ui/useMediaQuery';
 import type { FileListItem } from './fileItems';
 import { FileList } from './FileList';
 import { openExternalLink } from './openLink';
 import { prepareFile } from './prepareFiles';
 
+// Pantalla táctil (celular o tablet): ahí se ofrece sacar una foto con la cámara.
+const TOUCH_QUERY = '(pointer: coarse)';
+
 // Campo "Adjuntos" de la ventana de tarea: links (agregar, editar, quitar) y archivos
-// (elegir varios, quitar). Todo se guarda al tocar "Guardar"/"Crear". El link en edición
-// lo maneja la ventana, para no perderlo si se guarda la tarea sin tocar "Listo".
+// (elegir varios, sacar una foto, quitar). Todo se guarda al tocar "Guardar"/"Crear". El
+// link en edición lo maneja la ventana, para no perderlo si se guarda la tarea sin tocar
+// "Listo".
 export function AttachmentsField({
   links,
   draft,
@@ -46,14 +52,15 @@ export function AttachmentsField({
   const id = useId();
   const [preparing, setPreparing] = useState(false);
   const [fileErrors, setFileErrors] = useState<string[]>([]);
+  const isTouch = useMediaQuery(TOUCH_QUERY);
+  const canTakePhoto = platform.isNative || isTouch;
 
   useEffect(() => {
     onBusyChange?.(preparing);
   }, [preparing, onBusyChange]);
 
-  // Elige archivos, comprime las fotos y descarta los que superan el límite.
-  async function pickFiles() {
-    const picked = await fileService.pickFiles({ multiple: true });
+  // Comprime las fotos y descarta los archivos que superan el límite.
+  async function addPicked(picked: PickedFile[]) {
     if (picked.length === 0) return;
     setPreparing(true);
     setFileErrors([]);
@@ -82,6 +89,26 @@ export function AttachmentsField({
     } finally {
       setPreparing(false);
     }
+  }
+
+  async function pickFiles() {
+    await addPicked(await fileService.pickFiles({ multiple: true }));
+  }
+
+  // La foto llega con un nombre propio de la cámara; se le pone uno con la fecha.
+  async function takePhoto() {
+    let photo: PickedFile | null;
+    try {
+      photo = await fileService.takePhoto();
+    } catch (caught) {
+      logger.warn('No se pudo leer la foto de la cámara', errorMeta(caught));
+      setFileErrors([es.files.photoError]);
+      return;
+    }
+    if (!photo) return;
+    const stamp = format(new Date(), 'yyyy-MM-dd-HHmmss');
+    const name = es.files.photoName(stamp, extensionForType(photo.mimeType) ?? 'jpg');
+    await addPicked([{ ...photo, name }]);
   }
 
   // Enter agrega el link sin enviar la ventana (Ctrl/Cmd + Enter sigue guardando la tarea).
@@ -227,6 +254,18 @@ export function AttachmentsField({
           {preparing ? <Spinner /> : <Plus />}
           {preparing ? es.files.preparing : es.files.add}
         </Button>
+        {canTakePhoto ? (
+          <Button
+            variant="secondary"
+            size="sm"
+            aria-label={es.files.photoLabel}
+            disabled={preparing}
+            onClick={() => void takePhoto()}
+          >
+            <Camera />
+            {es.files.photo}
+          </Button>
+        ) : null}
       </div>
     </div>
   );

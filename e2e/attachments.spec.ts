@@ -14,9 +14,9 @@ import {
   test,
 } from './fixtures';
 
-// Archivos adjuntos (Fase 9, spec 10.2): elegir, comprimir fotos, límite de 10 MB, cola de
-// subida con "Reintentar", descarga con URL firmada, caché para ver sin conexión, quitar
-// y borrado de los archivos del dispositivo al cerrar sesión. Storage es ficticio: las
+// Archivos adjuntos (Fase 9, spec 10.2): elegir, sacar una foto, comprimir fotos, límite de
+// 10 MB, cola de subida con "Reintentar", descarga con URL firmada, caché para ver sin
+// conexión, quitar y borrado de los archivos del dispositivo al cerrar sesión. Storage es ficticio: las
 // peticiones al Supabase de prueba se responden desde el test.
 
 const STORAGE = 'https://e2e.supabase.invalid/storage/v1/object';
@@ -230,6 +230,33 @@ test('las fotos se comprimen y se rechaza lo que supera 10 MB', async ({ page })
   expect(stored[0]?.type).toBe('image/jpeg');
   expect(stored[0]?.size).toEqual({ width: 1600, height: 1200 });
   expect(stored[0]?.bytes).toBeLessThan(photo.length);
+});
+
+// "+ Foto" solo aparece con pantalla táctil y pide la cámara al navegador (capture).
+test('"+ Foto" abre la cámara en el celular y no aparece en la PC', async ({ page }, testInfo) => {
+  const form = await openNewTask(page);
+  const photoButton = form.getByRole('button', { name: es.files.photoLabel });
+  if (testInfo.project.name === 'desktop') {
+    await expect(form.getByRole('button', { name: es.files.addLabel })).toBeVisible();
+    await expect(photoButton).toHaveCount(0);
+    return;
+  }
+
+  await form.getByRole('textbox', { name: es.tasks.titleLabel }).fill('Foto del medidor');
+  const chooserEvent = page.waitForEvent('filechooser');
+  await photoButton.click();
+  const chooser = await chooserEvent;
+  expect(chooser.isMultiple()).toBe(false);
+  expect(await chooser.element().getAttribute('accept')).toBe('image/*');
+  expect(await chooser.element().getAttribute('capture')).toBe('environment');
+  await chooser.setFiles({ name: 'image.jpg', mimeType: 'image/jpeg', buffer: photo });
+
+  await expect(openFileButton(form, /^Abrir foto-\d{4}-\d{2}-\d{2}-\d{6}\.jpg$/)).toBeVisible();
+  await form.getByRole('button', { name: es.common.create, exact: true }).click();
+  await expect(form).toBeHidden();
+  const stored = await storedFiles(page);
+  expect(stored).toHaveLength(1);
+  expect(stored[0]?.size).toEqual({ width: 1600, height: 1200 });
 });
 
 test('si la subida falla queda "Reintentar"; al reintentar se sube', async ({

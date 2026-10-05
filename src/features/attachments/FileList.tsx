@@ -27,6 +27,8 @@ const FETCH_ERRORS: Record<FileFetchErrorKind, string> = {
 
 function statusText(item: FileListItem, online: boolean): string | null {
   switch (item.status) {
+    case 'loading':
+      return null;
     case 'draft':
       return es.files.status.draft;
     case 'pending':

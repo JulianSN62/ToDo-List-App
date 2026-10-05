@@ -11,6 +11,9 @@ const create = vi.fn<(input: unknown) => Promise<string>>();
 const applyEdits = vi.fn<(id: string, edits: unknown) => Promise<void>>();
 const showToast = vi.fn();
 const pickFiles = vi.fn<() => Promise<PickedFile[]>>();
+const takePhoto = vi.fn<() => Promise<PickedFile | null>>();
+// Pantalla táctil (celular): ahí aparece "+ Foto".
+let touchScreen = false;
 const retryUpload = vi.fn(async (_id: string) => undefined);
 let savedFiles: TaskFile[] = [];
 
@@ -50,11 +53,22 @@ vi.mock('@/ui/toast', () => ({
 vi.mock('@/platform', () => ({
   platform: { isNative: false },
   externalLinks: { open: vi.fn() },
-  files: { pickFiles: () => pickFiles(), openPdf: vi.fn(), saveFile: vi.fn() },
+  files: {
+    pickFiles: () => pickFiles(),
+    takePhoto: () => takePhoto(),
+    openPdf: vi.fn(),
+    saveFile: vi.fn(),
+  },
   // Sin compresión: los archivos se adjuntan tal cual.
   images: { compress: vi.fn(async () => null) },
   // En web no hay notificaciones: los recordatorios se editan igual.
   notifications: { isSupported: () => false },
+}));
+
+vi.mock('@/ui/useMediaQuery', () => ({
+  useMediaQuery: (query: string) => query === '(pointer: coarse)' && touchScreen,
+  useIsSidebarLayout: () => false,
+  useIsDesktopLayout: () => false,
 }));
 
 function picked(name: string, mimeType: string, size: number): PickedFile {
@@ -565,8 +579,10 @@ describe('archivos en la ventana', () => {
     applyEdits.mockReset();
     applyEdits.mockResolvedValue();
     pickFiles.mockReset();
+    takePhoto.mockReset();
     retryUpload.mockClear();
     savedFiles = [];
+    touchScreen = false;
   });
 
   const savedFile = (overrides: Partial<TaskFile> = {}): TaskFile => ({
@@ -638,6 +654,62 @@ describe('archivos en la ventana', () => {
     expect(applyEdits).toHaveBeenCalledWith(
       't1',
       expect.objectContaining({ files: { add: [], remove: ['a1'] } }),
+    );
+  });
+
+  it('con mouse no ofrece sacar una foto', () => {
+    renderCreate();
+    expect(screen.getByRole('button', { name: 'Adjuntar archivos' })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Sacar una foto con la cámara' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('en una pantalla táctil adjunta la foto de la cámara con la fecha en el nombre', async () => {
+    touchScreen = true;
+    const user = userEvent.setup();
+    const { onClose, title } = renderCreate();
+    takePhoto.mockResolvedValue(picked('JPEG_20261005_143012_123.jpg', 'image/jpeg', 3000));
+
+    await user.click(screen.getByRole('button', { name: 'Sacar una foto con la cámara' }));
+
+    const photo = await screen.findByRole('button', {
+      name: /^Abrir foto-\d{4}-\d{2}-\d{2}-\d{6}\.jpg$/,
+    });
+    expect(photo).toBeInTheDocument();
+    await user.type(title, 'Foto del medidor');
+    await user.click(screen.getByRole('button', { name: 'Crear' }));
+
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        files: [
+          {
+            name: expect.stringMatching(/^foto-\d{4}-\d{2}-\d{2}-\d{6}\.jpg$/),
+            mimeType: 'image/jpeg',
+            size: 3000,
+            data: expect.any(Blob),
+          },
+        ],
+      }),
+    );
+  });
+
+  it('cerrar la cámara sin sacar la foto no agrega nada y un error se avisa', async () => {
+    touchScreen = true;
+    const user = userEvent.setup();
+    renderCreate();
+    const button = screen.getByRole('button', { name: 'Sacar una foto con la cámara' });
+
+    takePhoto.mockResolvedValue(null);
+    await user.click(button);
+    expect(screen.queryByRole('button', { name: /^Abrir foto-/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    takePhoto.mockRejectedValue(new Error('sin acceso'));
+    await user.click(button);
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'No se pudo leer la foto. Probá de nuevo.',
     );
   });
 

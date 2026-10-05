@@ -1,6 +1,10 @@
 # Fase 1 — Backend, autenticación y spikes
 
-**Estado:** ✅ Código hecho (2026-10-01) · ⏳ Falta aplicarlo en tu proyecto de Supabase · ⏳ Spike B pendiente
+**Estado:** ✅ Hecha. Migración y Auth aplicadas por vos (2026-10-01), login real probado en el navegador y en el celular. Spike B resuelto en el Bloque 7 (X118) y **confirmado en tu celular** en el Bloque 8.
+
+## Bloque 8 (2026-10-05) — en tu celular
+- **Sesión persistente:** después de cerrar la app y de reiniciar el celular, abre directo en tus carpetas sin pedir el código.
+- **Spike B:** en Android 12 la tarea anclada no se puede deslizar ni sacar con "Borrar todo"; vuelve sola al reiniciar y al actualizar la app.
 
 ## Qué se hizo
 - **Migración completa** `supabase/migrations/20261001000000_initial_schema.sql` (copiar y pegar en el SQL Editor):
@@ -21,8 +25,4 @@
 Seguir `docs/SETUP.md` pasos 1 a 7. Luego: login con código; cerrar y volver a abrir la app (y el navegador) sin que pida el código; cerrar sesión y verificar que vuelva al login con la app vacía.
 
 ## Pendiente
-- Aplicar la migración y la configuración de Auth en tu proyecto (pasos manuales en `docs/SETUP.md`).
-- Verificar RLS con un segundo usuario de prueba (opcional: crearlo, comprobar que no ve datos del otro y borrarlo).
-- **Spike A (sincronización):** queda cubierto por la Fase 2; falta la prueba real con PowerSync.
-- **Spike B (notificación anclada en Android):** necesito modelo y versión de Android del celular. Se hace antes de la Fase 8.
-- Rate limits y SMTP propio: configuración del panel de Supabase (ver SETUP).
+- Opcional: verificar RLS con un segundo usuario de prueba (crearlo, comprobar que no ve datos del otro y borrarlo).
